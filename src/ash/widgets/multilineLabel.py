@@ -1,3 +1,10 @@
+# ---------------------------------------------------------------------------------------------
+#  Copyright (c) Akash Nag. All rights reserved.
+#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
+# ---------------------------------------------------------------------------------------------
+
+# This module implements a multiline label widget
+
 from ash.widgets import *
 
 class MultilineLabel(Widget):
@@ -11,6 +18,7 @@ class MultilineLabel(Widget):
 		self.text = text
 		self.repaint()
 	
+	# draw the label using word-wrap wherever required
 	def repaint(self):
 		n = len(self.text)
 		row = self.y
@@ -40,5 +48,6 @@ class MultilineLabel(Widget):
 
 		self.parent.addstr(row, self.x, text, self.theme)
 
+	# returns the label text
 	def __str__(self):
 		return self.text

@@ -1,3 +1,11 @@
+# ---------------------------------------------------------------------------------------------
+#  Copyright (c) Akash Nag. All rights reserved.
+#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
+# ---------------------------------------------------------------------------------------------
+
+# This module implements a TopLevel window, which always spans the entire screen
+# Ideally, an instance of Ash should contain exactly 1 TopLevel window visible at any given time
+
 from ash.widgets import *
 from ash.widgets.window import *
 from ash.widgets.utils.utils import *
@@ -12,12 +20,15 @@ class TopLevelWindow(Window):
 		self.win = stdscr
 		self.handler_func = handler_func
 				
+	# adds a status bar
 	def add_status_bar(self, status):
 		self.status = status
 
+	# returns the statusbar widget if any
 	def get_status_bar(self):
 		return self.status
 			
+	# shows the window and starts the event-loop
 	def show(self):
 		curses.curs_set(False)
 		self.win.keypad(True)
@@ -28,7 +39,9 @@ class TopLevelWindow(Window):
 			ch = self.win.getch()
 			if(ch == -1): continue
 			
-			if(self.handler_func != None):# and is_ctrl_or_func(ch)):
+			# send keypresses to main handler first
+			# ideally only Ctrl/Func key combinations should be sent
+			if(self.handler_func != None):
 				ch = self.handler_func(ch)
 				if(self.win == None): return
 			
@@ -51,10 +64,13 @@ class TopLevelWindow(Window):
 
 			self.repaint()
 			
-		
+	# check if terminal window has been resized, if so, readjust
 	def readjust(self):
 		self.height, self.width = self.win.getmaxyx()
+		for w in self.widgets:
+			w.readjust()
 
+	# draws the window
 	def repaint(self):
 		if(self.win == None): return
 		

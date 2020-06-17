@@ -1,3 +1,10 @@
+# ---------------------------------------------------------------------------------------------
+#  Copyright (c) Akash Nag. All rights reserved.
+#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
+# ---------------------------------------------------------------------------------------------
+
+# This module implements the CheckBox widget
+
 from ash.widgets import *
 
 class CheckBox(Widget):
@@ -13,17 +20,21 @@ class CheckBox(Widget):
 		self.checked = False
 		self.repaint()
 
+	# when checkbox receives focus
 	def focus(self):
 		self.is_in_focus = True
 		self.repaint()
 
+	# when checkbox loses focus
 	def blur(self):
 		self.is_in_focus = False
 		self.repaint()
 
+	# returns checkbox state
 	def isChecked(self):
 		return self.checked
 
+	# draws the checkbox
 	def repaint(self):
 		if(self.is_in_focus): curses.curs_set(False)
 
@@ -37,6 +48,7 @@ class CheckBox(Widget):
 		
 		self.parent.addstr(self.y, self.x, s, paint_theme)
 	
+	# when keypress occurs: space toggles checkbox state
 	def perform_action(self, ch):
 		self.focus()
 		if(ch == ord(" ")):
@@ -45,5 +57,6 @@ class CheckBox(Widget):
 		else:
 			curses.beep()
 
+	# returns the string representation: checkbox text
 	def __str__(self):
 		return self.text

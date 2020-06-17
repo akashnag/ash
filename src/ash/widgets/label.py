@@ -1,3 +1,10 @@
+# ---------------------------------------------------------------------------------------------
+#  Copyright (c) Akash Nag. All rights reserved.
+#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
+# ---------------------------------------------------------------------------------------------
+
+# This module implements the Label widget
+
 from ash.widgets import *
 
 class Label(Widget):
@@ -9,11 +16,14 @@ class Label(Widget):
 		self.theme = theme
 		self.text = text
 	
+	# draw the label
 	def repaint(self):
 		self.parent.addstr(self.y, self.x, self.text, self.theme)
 
+	# sets the text of the label
 	def set_text(self, text):
 		self.text = text
 
+	# returns the text of the label
 	def __str__(self):
 		return self.text

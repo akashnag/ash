@@ -1,3 +1,10 @@
+# ---------------------------------------------------------------------------------------------
+#  Copyright (c) Akash Nag. All rights reserved.
+#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
+# ---------------------------------------------------------------------------------------------
+
+# This module implements the ModalDialog window
+
 from ash.widgets import *
 from ash.widgets.window import *
 from ash.widgets.utils.utils import *
@@ -10,6 +17,7 @@ class ModalDialog(Window):
 		self.handler_func = handler_func
 		self.win = None		
 
+	# show the window and start the event-loop
 	def show(self):
 		self.win = curses.newwin(self.height, self.width, self.y, self.x)
 		
@@ -17,7 +25,9 @@ class ModalDialog(Window):
 		self.win.keypad(True)
 		self.win.timeout(0)
 		
-		self.repaint()	
+		self.repaint()
+
+		# start of the event loop	
 		while(True):
 			ch = self.win.getch()
 			if(ch == -1): continue
@@ -58,6 +68,7 @@ class ModalDialog(Window):
 
 			self.repaint()
 		
+	# draw the window
 	def repaint(self):
 		if(self.win == None): return
 

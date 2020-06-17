@@ -1,3 +1,10 @@
+# ---------------------------------------------------------------------------------------------
+#  Copyright (c) Akash Nag. All rights reserved.
+#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
+# ---------------------------------------------------------------------------------------------
+
+# This module implements the TextArea widget
+
 from ash.widgets import *
 from ash.widgets.utils.utils import *
 from ash.widgets.utils.formatting import *
@@ -22,14 +29,17 @@ class TextArea(Widget):
 		
 		self.focus()
 	
+	# when focus received
 	def focus(self):
 		self.is_in_focus = True
 		self.repaint()
 
+	# when focus lost
 	def blur(self):
 		self.is_in_focus = False
 		self.repaint()
 
+	# handles key presses
 	def perform_action(self, ch):
 		self.focus()
 
@@ -62,6 +72,12 @@ class TextArea(Widget):
 				self.curpos += 1
 			else:
 				curses.beep()
+		elif(ch == curses.KEY_UP):
+			# TO DO: implement cursor move to previous line
+			pass
+		elif(ch == curses.KEY_DOWN):
+			# TO DO: implement cursor move to next line
+			pass
 		else:
 			char = str(chr(ch))
 			if(self.charset.find(char) != -1):
@@ -75,6 +91,7 @@ class TextArea(Widget):
 		
 		self.repaint()
 
+	# draw the text area
 	def repaint(self):
 		if(self.is_in_focus): curses.curs_set(True)
 		paint_theme = self.theme
@@ -109,9 +126,12 @@ class TextArea(Widget):
 				self.parent.addstr(self.y + i - start, self.x, self.lines[i], paint_theme)
 			self.parent.move(self.y + vcurpos_row, self.x + self.curpos_col)
 		
+	# returns the text contained in the textarea
 	def __str__(self):
 		return self.text
 
+	# breaks (through word-wrap) the text and returns it as a set
+	# of separate lines
 	def __get_lines(self):
 		lines = list()
 		

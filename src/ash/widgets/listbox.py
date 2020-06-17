@@ -1,3 +1,10 @@
+# ---------------------------------------------------------------------------------------------
+#  Copyright (c) Akash Nag. All rights reserved.
+#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
+# ---------------------------------------------------------------------------------------------
+
+# This module implements the ListBox widget
+
 from ash.widgets import *
 
 class ListBox(Widget):
@@ -15,23 +22,28 @@ class ListBox(Widget):
 		self.is_in_focus = False
 		self.repaint()
 
+	# when focus received
 	def focus(self):
 		self.is_in_focus = True
 		self.repaint()
 
+	# when focus lost
 	def blur(self):
 		self.is_in_focus = False
 		self.repaint()
 
+	# returns the index of the selected item
 	def get_sel_index(self):
 		return self.sel_index
 
+	# returns the text of the selected item
 	def get_sel_text(self):
 		if(self.sel_index < 0):
 			return None
 		else:
 			return self.items[self.sel_index]
 
+	# draw the listbox
 	def repaint(self):
 		if(self.is_in_focus): curses.curs_set(False)
 		
@@ -73,6 +85,7 @@ class ListBox(Widget):
 			else:				
 				self.parent.addstr(self.y + i - start, self.x, text, self.theme)
 	
+	# handle key presses
 	def perform_action(self, ch):
 		self.focus()
 		n = len(self.items)
@@ -90,16 +103,20 @@ class ListBox(Widget):
 			curses.beep()
 		self.repaint()
 
+	# append an item to the list
 	def add_item(self, item):
 		self.items.append(item)
 
+	# remove an item from the list
 	def remove_item(self, index):
 		self.items.pop(index)
 		if(self.sel_index == index): self.sel_index = -1
 
+	# insert an item in the middle of the list
 	def insert_item(self, index, item):
 		self.items.insert(index, item)
 		if(self.sel_index == index): self.sel_index += 1
 
+	# returns the text of the selected item
 	def __str__(self):
 		return self.get_sel_text()

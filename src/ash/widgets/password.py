@@ -1,3 +1,10 @@
+# ---------------------------------------------------------------------------------------------
+#  Copyright (c) Akash Nag. All rights reserved.
+#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
+# ---------------------------------------------------------------------------------------------
+
+# This module implements the Password widget
+
 from ash.widgets import *
 from ash.widgets.utils.utils import *
 from ash.widgets.utils.formatting import *
@@ -24,14 +31,17 @@ class Password(Widget):
 
 		self.focus()
 	
+	# when focus received
 	def focus(self):
 		self.is_in_focus = True
 		self.repaint()
 
+	# when focus lost
 	def blur(self):
 		self.is_in_focus = False
 		self.repaint()
 
+	# handles key presses
 	def perform_action(self, ch):
 		self.focus()
 
@@ -80,6 +90,7 @@ class Password(Widget):
 		
 		self.repaint()
 
+	# draws the password box
 	def repaint(self):
 		if(self.is_in_focus): curses.curs_set(True)
 		paint_theme = self.theme
@@ -92,12 +103,6 @@ class Password(Widget):
 			self.parent.addstr(self.y, self.x, self.password_symbol * len(self.text), paint_theme)
 			self.parent.move(self.y, self.x+self.curpos)
 		else:
-			# width=50, n=51
-			# curpos=51, flank=25
-			# start=26, end=76 (end>n)
-			# delta=76 - 51=25
-			# start=1, end=51, vcurpos=51-1=50
-			
 			flank = self.width // 2
 			start = self.curpos - flank
 			end = self.curpos + flank
@@ -117,5 +122,6 @@ class Password(Widget):
 			self.parent.addstr(self.y, self.x, self.password_symbol * len(vtext), paint_theme)
 			self.parent.move(self.y, self.x+vcurpos)
 		
+	# returns the password
 	def __str__(self):
 		return self.text

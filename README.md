@@ -6,7 +6,7 @@ This source code is available to everyone under the standard [MIT license](https
 
 ## Ash
 
-Ash is a simple command-line code editor with modern key-bindings, and is capable of working with multiple files simultaneously.
+Ash is a terminal code editor with modern key-bindings.
 
 ## Contributing
 
@@ -15,8 +15,7 @@ There are many ways in which you can participate in the project, for example:
 * [Submit bugs and feature requests](https://github.com/akashnag/ash/issues), and help us verify as they are checked in
 * Review [source code changes](https://github.com/akashnag/ash/pulls)
 
-If you are interested in fixing issues and contributing directly to the code base,
-please see the document [How to Contribute](CONTRIBUTING.md).
+If you are interested in fixing issues and contributing directly to the code base, please see the document [How to Contribute](CONTRIBUTING.md). For a list of tasks to be completed, see [To Do's](TASKLIST.md).
 
 ## Feedback
 

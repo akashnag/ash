@@ -1,6 +1,4 @@
 # Ash
-[![Feature Requests](https://img.shields.io/github/issues/akashnag/ash/feature-request.svg)](https://github.com/akashnag/ash/issues?q=is%3Aopen+is%3Aissue+label%3Afeature-request+sort%3Areactions-%2B1-desc)
-[![Bugs](https://img.shields.io/github/issues/akashnag/ash/bug.svg)](https://github.com/akashnag/ash/issues?utf8=✓&q=is%3Aissue+is%3Aopen+label%3Abug)
 
 ## The Repository
 

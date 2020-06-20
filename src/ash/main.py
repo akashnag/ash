@@ -25,14 +25,11 @@ class AshEditorApp:
 		init_colors()
 		curses.raw()
 		
-		self.main_window = TopLevelWindow(stdscr, "Ash v1.0", gc(COLOR_WHITE_ON_BLUE), self.key_handler)
+		self.main_window = TopLevelWindow(stdscr, "Ash v1.0", self.key_handler)
 		self.main_window.add_status_bar(StatusBar(self.main_window, [ 1.0 ]))		
 		
 		txtEditor = Editor(self.main_window, 1, 0, 2, 0)
-		txtEditor.set_general_theme(gc(), gc(COLOR_BLACK_ON_YELLOW), gc(COLOR_GRAY_ON_BLACK), gc(COLOR_YELLOW_ON_BLACK))
-
 		self.main_window.add_widget("txtEditor", txtEditor)
-
 		self.main_window.show()
 		
 	# FOR TESTING: primary key handler to receive all key combinations

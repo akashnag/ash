@@ -9,6 +9,11 @@ from ash.widgets.utils import *
 
 # <---------------------- key bindings --------------------------->
 
+# check if Caps Lock is on/off
+def is_capslock_on():
+	x = int(subprocess.getoutput("xset q | grep LED")[65])
+	return(True if x==1 else False)
+
 # check if a Ctrl+Key combination was pressed
 def is_ctrl(ch, key):
 	key = str(key).upper()

@@ -8,8 +8,8 @@
 from ash.widgets import *
 from ash.widgets.utils.utils import *
 from ash.widgets.utils.formatting import *
-
-import copy
+from ash.widgets.editorKeyHandler import *
+from ash.widgets.editorUtility import *
 
 # This class abstracts a position in the document
 class CursorPosition:
@@ -17,7 +17,7 @@ class CursorPosition:
 		self.y = y
 		self.x = x
 
-	def __str__(self):
+	def str__(self):
 		return "Ln " + str(self.y+1) + ", Col " + str(self.x+1)
 
 # This is the text editor class
@@ -27,6 +27,10 @@ class Editor(Widget):
 		
 		# initialize parent window
 		self.parent = parent
+
+		# initialize helper classes
+		self.utility = EditorUtility(self)
+		self.keyHandler = EditorKeyHandler(self)
 		
 		# initialize dimensions
 		self.y = y
@@ -34,21 +38,27 @@ class Editor(Widget):
 		self.height_offset = height_offset
 		self.width_offset = width_offset
 		self.line_number_width = 6
-		self.readjust()
-
+		self.height = self.parent.get_height() - self.height_offset
+		self.full_width = self.parent.get_width() - self.width_offset
+		self.width = self.full_width - self.line_number_width - 1
+				
 		# set up the text and cursor data structures
 		self.lines = [ "" ]
 		self.curpos = CursorPosition(0,0)
+		self.filename = None
+		self.has_been_allotted_file = False
+		self.save_status = False
 
 		# set accepted charset
 		self.separators = "~`!@#$%^&*()-_=+\\|[{]};:\'\",<.>/? "
 		self.charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 		self.charset += self.separators
+		self.newline = "\n"
 		
 		# set initial selection status
 		self.selection_mode = False
-		self.sel_start = None
-		self.sel_end = None
+		self.sel_start = CursorPosition(0,0)
+		self.sel_end = CursorPosition(0,0)
 
 		# set default tab size
 		self.tab_size = 4
@@ -60,8 +70,7 @@ class Editor(Widget):
 		self.col_end = self.width
 
 		# set up default color themes
-		self.set_general_theme(gc(), gc(COLOR_BLACK_ON_YELLOW), gc(COLOR_GRAY_ON_BLACK), gc(COLOR_YELLOW_ON_BLACK))
-		self.set_language_theme(None, None, None, None)
+		self.set_theme()
 		self.set_comment_symbol(None, None, None)
 
 		# receive focus
@@ -69,9 +78,21 @@ class Editor(Widget):
 	
 	# readjust routine
 	def readjust(self):
-		self.height = self.parent.get_height() - self.height_offset
-		self.full_width = self.parent.get_width() - self.width_offset
+		h = self.parent.get_height() - self.height_offset
+		fw = self.parent.get_width() - self.width_offset
+		if(h == self.height and fw == self.full_width): return
+
+		self.height = h
+		self.full_width = fw
+		
 		self.width = self.full_width - self.line_number_width - 1
+		self.selection_mode = False
+		self.curpos.x = 0
+		self.curpos.y = 0
+		self.col_start = 0
+		self.col_end = self.width
+		self.line_start = 0
+		self.line_end = self.height
 
 	# when focus received
 	def focus(self):
@@ -88,18 +109,14 @@ class Editor(Widget):
 		return str(self.curpos)
 
 	# set general text theme
-	def set_general_theme(self, text_theme, selection_theme, line_number_theme, highlighted_line_number_theme):
-		self.text_theme = text_theme
-		self.selection_theme = selection_theme
-		self.line_number_theme = line_number_theme
-		self.highlighted_line_number_theme = highlighted_line_number_theme
-
-	# set programming-language specific themes
-	def set_language_theme(self, keyword_theme1, keyword_theme2, string_theme, comment_theme):
-		self.keyword_theme1 = keyword_theme1
-		self.keyword_theme2 = keyword_theme2
-		self.string_theme = string_theme
-		self.comment_theme = comment_theme
+	def set_theme(self):
+		self.text_theme = gc(COLOR_DEFAULT)
+		self.selection_theme = gc(COLOR_SELECTION)
+		self.line_number_theme = gc(COLOR_LINENUMBER)
+		self.highlighted_line_number_theme = gc(COLOR_HIGHLIGHTED_LINENUMBER)
+		self.keyword_theme = gc(COLOR_KEYWORD)
+		self.string_theme = gc(COLOR_STRING)
+		self.comment_theme = gc(COLOR_COMMENT)
 
 	# set programming-language comment symbol
 	def set_comment_symbol(self, single_line_comment, multiline_comment_start, multiline_comment_end):
@@ -116,34 +133,36 @@ class Editor(Widget):
 			return None
 		
 		if(ch == curses.KEY_BACKSPACE):
-			self.__handle_backspace_key(ch)
+			self.keyHandler.handle_backspace_key(ch)
 		elif(ch == curses.KEY_DC):
-			self.__handle_delete_key(ch)
+			self.keyHandler.handle_delete_key(ch)
 		elif(ch in [ curses.KEY_HOME, curses.KEY_END ]):
-			self.__handle_home_end_keys(ch)
+			self.keyHandler.handle_home_end_keys(ch)
 		elif(ch in [ curses.KEY_SHOME, curses.KEY_SEND ]):
-			self.__handle_shift_home_end_keys(ch)
+			self.keyHandler.handle_shift_home_end_keys(ch)
 		elif(ch in [ curses.KEY_LEFT, curses.KEY_RIGHT, curses.KEY_UP, curses.KEY_DOWN ]):
-			self.__handle_arrow_keys(ch)
+			self.keyHandler.handle_arrow_keys(ch)
 		elif(ch in [ curses.KEY_PPAGE, curses.KEY_NPAGE ]):
-			self.__handle_page_navigation_keys(ch)
+			self.keyHandler.handle_page_navigation_keys(ch)
 		elif(ch in [ curses.KEY_SLEFT, curses.KEY_SRIGHT, curses.KEY_SR, curses.KEY_SF ]):
-			self.__handle_shift_arrow_keys(ch)
+			self.keyHandler.handle_shift_arrow_keys(ch)
 		elif(is_ctrl_arrow(ch, "LEFT") or is_ctrl_arrow(ch, "RIGHT")):
-			self.__handle_ctrl_arrow_keys(ch)
+			self.keyHandler.handle_ctrl_arrow_keys(ch)
 		elif(is_tab(ch) or ch == curses.KEY_BTAB):
-			self.__handle_tab_keys(ch)
+			self.keyHandler.handle_tab_keys(ch)
 		elif(is_newline(ch)):
-			self.__handle_newline(ch)
+			self.keyHandler.handle_newline(ch)
 		elif(str(chr(ch)) in self.charset):
-			self.__handle_printable_character(ch)
+			self.keyHandler.handle_printable_character(ch)
+		elif(is_ctrl_or_func(ch)):
+			self.keyHandler.handle_ctrl_and_func_keys(ch)
 		else:
 			curses.beep()
 		
 		self.repaint()
 
 	# returns the vertical portion of the editor to be displayed
-	def __determine_vertical_visibility(self):
+	def determine_vertical_visibility(self):
 		if(self.curpos.y < self.line_start):
 			delta = abs(self.line_start - self.curpos.y)
 			self.line_start -= delta
@@ -155,9 +174,9 @@ class Editor(Widget):
 		return(self.curpos.y - self.line_start)
 
 	# returns the horizontal portion of the editor to be displayed
-	def __determine_horizontal_visibility(self):
+	def determine_horizontal_visibility(self):
 		ctab = (self.tab_size - 1) * self.lines[self.curpos.y][0:self.curpos.x].count("\t")
-		curpos_col = self.curpos.x + ctab		# actual cursor position w.r.t whitespaces
+		curpos_col = self.curpos.x + ctab		# visible cursor position w.r.t whitespaces
 
 		if(curpos_col < self.col_start):
 			delta = abs(self.col_start - curpos_col)
@@ -175,92 +194,10 @@ class Editor(Widget):
 
 		return curpos_col - self.col_start		# visible curpos position w.r.t. screen
 	
-	# checks if line_index is within the text that was selected
-	def __is_in_selection(self, line_index):
-		if(self.selection_mode):
-			if(is_start_before_end(self.sel_start, self.sel_end)):
-				return(True if (line_index >= self.sel_start.y and line_index <= self.sel_end.y) else False)
-			else:
-				return(True if (line_index >= self.sel_end.y and line_index <= self.sel_start.y) else False)
-		else:
-			return False
-
-	# returns the selection endpoints in the correct order
-	def __get_selection_endpoints(self):
-		forward_sel = is_start_before_end(self.sel_start, self.sel_end)
-		if(forward_sel):
-			start = copy.copy(self.sel_start)
-			end = copy.copy(self.sel_end)
-		else:
-			start = copy.copy(self.sel_end)
-			end = copy.copy(self.sel_start)
-		return (start, end)
-
-	# delete the selected text
-	def __delete_selected_text(self):
-		start, end = self.__get_selection_endpoints()
-		
-		if(start.y == end.y):
-			sel_len = end.x - start.x
-			self.lines[start.y] = self.lines[start.y][0:start.x] + self.lines[start.y][end.x:]			
-		else:
-			# delete entire lines between selection start and end
-			lc = end.y - start.y - 1
-			while(lc > 0):
-				self.lines.pop(start.y + 1)
-				self.curpos.y -= 1
-				end.y -= 1
-				lc -= 1
-
-			# delete a portion of the selection start line
-			self.lines[start.y] = self.lines[start.y][0:start.x]
-
-			# delete a portion of the selection end line
-			self.lines[end.y] = self.lines[end.y][end.x:]
-
-			# bring the selection end line up towards the end of the selection start line
-			text = self.lines[end.y]
-			self.lines.pop(end.y)
-			self.curpos.y = start.y
-			self.curpos.x = len(self.lines[start.y])
-			self.lines[start.y] += text
-		
-		# turn off selection mode
-		self.selection_mode = False
-		self.curpos.x = max(self.curpos.x, 0)
-		self.curpos.x = min(self.curpos.x, len(self.lines[self.curpos.y]))
 	
-	# increase indent of selected lines
-	def __shift_selection_right(self):
-		start, end = self.__get_selection_endpoints()
-		for i in range(start.y, end.y+1):
-			self.lines[i] = "\t" + self.lines[i]
-		self.curpos.x += 1
-		self.sel_start.x += 1
-		self.sel_end.x += 1
-
-	# decrease indent of selected lines
-	def __shift_selection_left(self):
-		start, end = self.__get_selection_endpoints()
-
-		# check if all lines have at least 1 indent
-		has_tab_in_all = True
-		for i in range(start.y, end.y+1):
-			if(not self.lines[i].startswith("\t")):
-				has_tab_in_all = False
-				break
-
-		# decrease indent only if all lines are indented
-		if(has_tab_in_all):
-			for i in range(start.y, end.y+1):
-				self.lines[i] = self.lines[i][1:]
-			self.curpos.x -= 1
-			self.sel_start.x -= 1
-			self.sel_end.x -= 1
-
-	# print selected text using selection-theme (reverse-color)
-	def __print_selection(self, line_index):
-		start, end = self.__get_selection_endpoints()
+	# print selected text using selection-theme
+	def print_selection(self, line_index):
+		start, end = self.get_selection_endpoints()
 		text = self.lines[line_index]
 		wstext = text.replace("\t", " " * self.tab_size)
 		vtext = wstext[self.col_start:] if self.col_end > len(wstext) else wstext[self.col_start:self.col_end]
@@ -290,10 +227,11 @@ class Editor(Widget):
 
 	# the primary draw routine for the editor
 	def repaint(self):
+		self.readjust()
 		curses.curs_set(self.is_in_focus)
 
-		curpos_row = self.__determine_vertical_visibility()
-		curpos_col = self.__determine_horizontal_visibility()
+		curpos_row = self.determine_vertical_visibility()
+		curpos_col = self.determine_horizontal_visibility()
 		nlines = len(self.lines)
 
 		for i in range(self.line_start, self.line_end):
@@ -307,321 +245,123 @@ class Editor(Widget):
 			if(self.col_start < len(text)):
 				vtext = text[self.col_start:] if self.col_end > len(text) else text[self.col_start:self.col_end]
 				
-				if(self.__is_in_selection(i)):
-					self.__print_selection(i)
+				if(self.is_in_selection(i)):
+					self.print_selection(i)
 				else:
 					self.parent.addstr(self.y + i - self.line_start, self.x + self.line_number_width + 1, vtext, self.text_theme)
 		
 		# reposition the cursor
-		self.parent.move(self.y + curpos_row, self.x + self.line_number_width + 1 + curpos_col)
+		try:
+			self.parent.move(self.y + curpos_row, self.x + self.line_number_width + 1 + curpos_col)
+		except:
+			pass
 	
-	# TO DO: return the string representation of the document
+	# returns the string representation of the document
 	def __str__(self):
-		pass
+		data = ""
+		for line in self.lines:
+			data += self.newline + line
+		return data[len(self.newline):]
 
-	# handle the 4 arrow keys
-	def __handle_arrow_keys(self, ch):
-		row = self.curpos.y
-		col = self.curpos.x
-		clen = len(self.lines[row])
-		nlen = len(self.lines)
-		self.selection_mode = False		# turn off selection mode
-		if(ch == curses.KEY_LEFT):
-			if(row == 0 and col == 0):
-				curses.beep()
-			elif(col == 0):
-				self.curpos.y -= 1
-				self.curpos.x = len(self.lines[row-1])
-			else:
-				self.curpos.x -= 1
-		elif(ch == curses.KEY_RIGHT):
-			if(row == nlen-1 and col == clen):
-				curses.beep()
-			elif(col == clen):
-				self.curpos.y += 1
-				self.curpos.x = 0
-			else:
-				self.curpos.x += 1
-		elif(ch == curses.KEY_DOWN):
-			if(row == nlen-1):
-				curses.beep()
-			else:
-				if(self.curpos.x > len(self.lines[row+1])):
-					# cannot preserve column
-					self.curpos.x = len(self.lines[row+1])
-				self.curpos.y += 1
-		elif(ch == curses.KEY_UP):
-			if(row == 0):
-				curses.beep()
-			else:
-				if(self.curpos.x > len(self.lines[row-1])):
-					# cannot preserve column
-					self.curpos.x = len(self.lines[row-1])
-				self.curpos.y -= 1
+	def get_data(self):
+		return({
+			"text": self.__str__(),
+			"curpos": self.curpos,
+			"selection_mode": self.selection_mode,
+			"sel_start": self.sel_start,
+			"sel_end": self.sel_end,
+			"filename": self.filename,
+			"has_been_allotted_file": self.has_been_allotted_file,
+			"save_status": self.save_status
+		})
 
-		# ensure cursor position does not exceed editor/document limits
-		self.curpos.x = min([self.curpos.x, len(self.lines[self.curpos.y])])
-		self.curpos.x = max(0, self.curpos.x)
-		self.curpos.y = min([self.curpos.y, len(self.lines)-1])
-		self.curpos.y = max(0, self.curpos.y)
+	def set_data(self, data):
+		text = data.get("text")
+		self.curpos = data.get("curpos")
+		self.selection_mode = data.get("selection_mode")
+		self.sel_start = data.get("sel_start")
+		self.sel_end = data.get("sel_end")
+		self.filename = data.get("filename")
+		self.has_been_allotted_file = data.get("has_been_allotted_file")
+		self.save_status = data.get("save_status")
+
+		self.lines.clear()
+		lines = text.splitlines()
+		for line in lines:
+			self.lines.append(line)
+
+		self.repaint()
+
+	# allots a file and writes to it
+	def allot_and_save_file(self, filename):
+		self.filename = filename
+		self.has_been_allotted_file = True
+		self.save_to_file()
+		self.save_status = True
+
+	# allots a file and reads from it
+	def allot_and_save_file(self, filename):
+		self.filename = filename
+		self.has_been_allotted_file = True
+		self.read_from_file()
+		self.save_status = True
+
+	# saves data to a file, overwrites it if it exists
+	def save_to_file(self):
+		data = self.__str__()
+		textFile = open(self.filename, "wt")
+		textFile.write(data)
+		textFile.close()
+
+	# saves data to a file, overwrites it if it exists
+	def read_from_file(self):
+		textFile = open(self.filename, "rt")
+		text = textFile.read()
+		textFile.close()
+
+		self.selection_mode = False
+		self.lines.clear()
+		lines = text.splitlines()
+		for line in lines:
+			self.lines.append(line)
 		
+		self.curpos.y = len(self.lines)-1
+		self.curpos.x = len(self.lines[self.curpos.y])
+
+	# <--------------------- stub functions ---------------------->
+
+	# delete the selected text
+	def delete_selected_text(self):
+		return self.utility.delete_selected_text()
+	
+	# returns the selected text
+	def get_selected_text(self):
+		return self.utility.get_selected_text()
+
+	# increase indent of selected lines
+	def shift_selection_right(self):
+		self.utility.shift_selection_right()
+
+	# decrease indent of selected lines
+	def shift_selection_left(self):
+		self.utility.shift_selection_left()	
+	
 	# returns the block of leading whitespaces on a given line 
-	def __get_leading_whitespaces(self, line_index):
-		text = self.lines[line_index]
-		nlen = len(text)
-		ws = ""
-		for i in range(nlen):
-			if(text[i] == " " or text[i] == "\t"): 
-				ws += text[i]
-			else:
-				break
-		return ws
-
-	# handles Ctrl+Arrow key combinations
-	# behaviour: move to the next/previous separator position
-	def __handle_ctrl_arrow_keys(self, ch):
-		if(is_ctrl_arrow(ch, "LEFT")):
-			if(self.curpos.x == 0):
-				curses.beep()
-			else:
-				for i in range(self.curpos.x-1, -1, -1):
-					c = self.lines[self.curpos.y][i]
-					if(c in self.separators):
-						self.curpos.x = i
-						return
-				self.curpos.x = 0
-		elif(is_ctrl_arrow(ch, "RIGHT")):
-			nlen = len(self.lines[self.curpos.y])
-			if(self.curpos.x == nlen):
-				curses.beep()
-			else:
-				for i in range(self.curpos.x+1, nlen):
-					c = self.lines[self.curpos.y][i]
-					if(c in self.separators):
-						self.curpos.x = i
-						return
-				self.curpos.x = nlen
-
-	# handles Shift+Arrow key combinations
-	# behaviour: initiates/extends text selection
-	def __handle_shift_arrow_keys(self, ch):
-		row = self.curpos.y
-		col = self.curpos.x
-		nlen = len(self.lines)
-		clen = len(self.lines[row])
-
-		if(not self.selection_mode):
-			self.selection_mode = True
-			self.sel_start = copy.copy(self.curpos)
-		
-		if(ch == curses.KEY_SLEFT):
-			if(row == 0 and col == 0):
-				curses.beep()
-			elif(col == 0):
-				self.curpos.y -= 1
-				self.curpos.x = len(self.lines[row-1])
-			else:
-				self.curpos.x -= 1
-		elif(ch == curses.KEY_SRIGHT):
-			if(row == nlen-1 and col == clen):
-				curses.beep()
-			elif(col == clen):
-				self.curpos.y += 1
-				self.curpos.x = 0
-			else:
-				self.curpos.x += 1
-		elif(ch == curses.KEY_SF):
-			if(row == nlen-1):
-				curses.beep()
-			else:
-				if(self.curpos.x > len(self.lines[row+1])):
-					# cannot preserve column
-					self.curpos.x = len(self.lines[row+1])
-				self.curpos.y += 1
-		elif(ch == curses.KEY_SR):
-			if(row == 0):
-				curses.beep()
-			else:
-				if(self.curpos.x > len(self.lines[row-1])):
-					# cannot preserve column
-					self.curpos.x = len(self.lines[row-1])
-				self.curpos.y -= 1
-
-		# ensure cursor does not exceed bounds
-		self.curpos.x = min([self.curpos.x, len(self.lines[self.curpos.y])])
-		self.curpos.x = max(0, self.curpos.x)
-		self.curpos.y = min([self.curpos.y, len(self.lines)-1])
-		self.curpos.y = max(0, self.curpos.y)
-		self.sel_end = copy.copy(self.curpos)
-
-	# handles DEL key press: delete a character to the right
-	# of the cursor, or deletes the selected text
-	def __handle_delete_key(self, ch):
-		if(self.selection_mode):
-			self.__delete_selected_text()
-			return
-		
-		text = self.lines[self.curpos.y]
-		clen = len(text)
-		col = self.curpos.x
-
-		if(self.curpos.y == len(self.lines)-1 and col == clen):
-			curses.beep()
-			return
-		
-		if(col == clen):
-			ntext = self.lines[self.curpos.y + 1]
-			self.lines.pop(self.curpos.y + 1)
-			self.lines[self.curpos.y] += ntext
-		else:
-			left = text[0:col] if col > 0 else ""
-			right = text[col+1:] if col < len(text)-1 else ""
-			self.lines[self.curpos.y] = left + right
+	def get_leading_whitespaces(self, line_index):
+		return self.utility.get_leading_whitespaces(line_index)
 	
-	# handles backspace key: deletes the character to the left of the
-	# cursor, or deletes the selected text
-	def __handle_backspace_key(self, ch):
-		if(self.selection_mode):
-			self.__delete_selected_text()
-			return		
+	# checks if line_index is within the text that was selected
+	def is_in_selection(self, line_index):
+		return self.utility.is_in_selection(line_index)
 
-		text = self.lines[self.curpos.y]
-		col = self.curpos.x
+	# returns the selection endpoints in the correct order
+	def get_selection_endpoints(self):
+		return self.utility.get_selection_endpoints()
 
-		if(col == 0 and self.curpos.y == 0):
-			curses.beep()
-			return
-
-		if(col == 0):
-			self.lines.pop(self.curpos.y)
-			temp = len(self.lines[self.curpos.y-1])
-			self.lines[self.curpos.y - 1] += text
-			self.curpos.x = temp
-			self.curpos.y -= 1
-		else:
-			left = text[0:col-1] if col > 1 else ""
-			right = text[col:] if col < len(text) else ""
-			self.lines[self.curpos.y] = left + right
-			self.curpos.x -= 1		
-
-	# handles HOME and END keys
-	def __handle_home_end_keys(self, ch):
-		if(ch == curses.KEY_HOME):
-			# toggle between beginning of line and beginning of indented-code
-			if(self.curpos.x == 0):
-				self.curpos.x = len(self.__get_leading_whitespaces(self.curpos.y))
-			else:
-				self.curpos.x = 0
-		elif(ch == curses.KEY_END):
-			self.curpos.x = len(self.lines[self.curpos.y])
-
-	# handles Shift+Home and Shift+End keys
-	def __handle_shift_home_end_keys(self, ch):
-		if(not self.selection_mode):
-			self.selection_mode = True
-			self.sel_start = copy.copy(self.curpos)
-		
-		if(ch == curses.KEY_SHOME):
-			self.curpos.x = 0
-		elif(ch == curses.KEY_SEND):
-			self.curpos.x = len(self.lines[self.curpos.y])
-				
-		self.sel_end = copy.copy(self.curpos)
-
-	# handles TAB/Ctrl+I and Shift+TAB keys
-	# in selection mode: increase / decrease indent
-	def __handle_tab_keys(self, ch):
-		if(self.selection_mode):
-			if(is_tab(ch)):
-				self.__shift_selection_right()
-				return
-			elif(ch == curses.KEY_BTAB):
-				self.__shift_selection_left()
-				return
-
-		col = self.curpos.x
-		text = self.lines[self.curpos.y]
-
-		if(is_tab(ch)):
-			left = text[0:col] if col > 0 else ""
-			right = text[col:] if len(text) > 0 else ""
-			self.lines[self.curpos.y] = left + "\t" + right
-			self.curpos.x += 1
-		elif(ch == curses.KEY_BTAB):
-			if(col == 0):
-				curses.beep()
-			elif(col == len(self.__get_leading_whitespaces(self.curpos.y))):
-				left = text[0:col-1] if col > 1 else ""
-				right = text[col:] if col < len(text) else ""
-				self.lines[self.curpos.y] = left + right
-				self.curpos.x -= 1
-			else:
-				curses.beep()
-
-	# handles ENTER / Ctrl+J
-	def __handle_newline(self, ch):
-		if(self.selection_mode): self.__delete_selected_text()
-
-		text = self.lines[self.curpos.y]
-		col = self.curpos.x
-		left = text[0:col] if col > 0 else ""
-		right = text[col:] if len(text) > 0 else ""
-		whitespaces = self.__get_leading_whitespaces(self.curpos.y)
-		right = whitespaces + right
-		self.lines[self.curpos.y] = left
-		if(len(self.lines) == self.curpos.y + 1):
-			self.lines.append(right)
-		else:
-			self.lines.insert(self.curpos.y + 1, right)
-		self.curpos.y += 1
-		self.curpos.x = len(whitespaces)
-	
-	# handles printable characters in the charset
-	# TO DO: add support for Unicode
-	def __handle_printable_character(self, ch):
-		if(self.selection_mode): self.__delete_selected_text()
-		
-		sch = str(chr(ch))
-		text = self.lines[self.curpos.y]
-		col = self.curpos.x
-		left = text[0:col] if col > 0 else ""
-		right = text[col:] if len(text) > 0 else ""
-		self.lines[self.curpos.y] = left + sch + right
-		self.curpos.x += 1
-	
-	# handles the PGUP and PGDOWN keys
-	def __handle_page_navigation_keys(self, ch):
-		h = self.height
-		nlen = len(self.lines)
-		if(ch == curses.KEY_PPAGE):			# pg-up
-			if(self.curpos.y == 0):
-				if(self.curpos.x == 0):
-					curses.beep()
-				else:
-					self.curpos.x = 0
-					return
-			elif(self.curpos.y <= h):
-				self.curpos.y = 0
-			else:
-				self.curpos.y -= h-1
-			self.curpos.x = 0
-		elif(ch == curses.KEY_NPAGE):		# pg-down
-			if(self.curpos.y == nlen-1):
-				if(self.curpos.x == len(self.lines[nlen-1])):
-					curses.beep()
-				else:
-					self.curpos.x = len(self.lines[nlen-1])
-					return
-			elif(nlen - self.curpos.y <= h):
-				self.curpos.y = nlen-1
-			else:
-				self.curpos.y += h-1
-			self.curpos.x = 0
-
-	# TO DO: implement the find() function
+	# implements search
 	def find(self, str):
-		pass
+		self.utility.find(str)
 
-	# TO DO: replace the first occurrence (after last find/replace operation)
+	# replaces the first occurrence (after last find/replace operation)
 	def find_and_replace(self, strf, strr):
-		pass
+		self.utility.replace(strf, strr)

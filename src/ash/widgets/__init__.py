@@ -7,6 +7,9 @@ import curses
 from ash.widgets.utils.formatting import *
 from ash.widgets.utils.utils import *
 
+import copy
+import pyperclip as clipboard
+
 # define the widget type constants
 WIDGET_TYPE_LABEL			= 1
 WIDGET_TYPE_MULTILINE_LABEL	= 2

@@ -3,8 +3,7 @@
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
-# This is an abstract Window class from which Dialog and TopLevelWindow
-# are derived
+# This is an abstract Window class from which Dialog and TopLevelWindow are derived
 
 from ash.widgets import *
 from ash.widgets.utils.utils import *
@@ -47,8 +46,12 @@ class Window:
 		self.win = None
 
 	# interface to curses-window.addstr()
-	def addstr(self, y, x, str, theme):
-		if(self.win != None): self.win.addstr(y, x, str, theme)
+	def addstr(self, y, x, s, theme):
+		try:
+			if(self.win != None): self.win.addstr(y, x, s, theme)
+		except:
+			pass
+			#self.win.addstr(0, 0, "ERROR: " + str(self.get_height()) + ", " + str(self.get_width()) + ", " + str(y) + ", " + str(x) + ", " + str(len(s)), gc(COLOR_TITLEBAR))
 
 	# interface to curses-window.move()
 	def move(self, newy, newx):

@@ -12,11 +12,10 @@ from ash.widgets.utils.utils import *
 from ash.widgets.utils.formatting import *
 
 class TopLevelWindow(Window):
-	def __init__(self, stdscr, title, contrast_theme, handler_func):
+	def __init__(self, stdscr, title, handler_func):
 		height, width = stdscr.getmaxyx()
 		super().__init__(0, 0, height, width, title)
 		self.status = None
-		self.contrast_theme = contrast_theme
 		self.win = stdscr
 		self.handler_func = handler_func
 				
@@ -66,9 +65,11 @@ class TopLevelWindow(Window):
 			
 	# check if terminal window has been resized, if so, readjust
 	def readjust(self):
-		self.height, self.width = self.win.getmaxyx()
-		for w in self.widgets:
-			w.readjust()
+		h, w = self.win.getmaxyx()
+		if(h != self.height or w != self.width):
+			self.height, self.width = h, w
+			for w in self.widgets:
+				w.readjust()
 
 	# draws the window
 	def repaint(self):
@@ -76,8 +77,8 @@ class TopLevelWindow(Window):
 		
 		self.readjust()
 		self.win.clear()
-		self.win.addstr(0, 0, pad_center_str(self.title, self.width), curses.A_BOLD | self.contrast_theme)
-		if(self.status != None): self.win.addstr(self.height-1, 0, str(self.status), self.contrast_theme)
+		self.win.addstr(0, 0, pad_center_str(self.title, self.width), curses.A_BOLD | gc(COLOR_TITLEBAR))
+		if(self.status != None): self.win.addstr(self.height-1, 0, str(self.status), gc(COLOR_STATUSBAR))
 
 		for w in self.widgets: 
 			w.repaint()

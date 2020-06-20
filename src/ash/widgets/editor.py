@@ -17,7 +17,7 @@ class CursorPosition:
 		self.y = y
 		self.x = x
 
-	def str__(self):
+	def __str__(self):
 		return "Ln " + str(self.y+1) + ", Col " + str(self.x+1)
 
 # This is the text editor class
@@ -300,11 +300,12 @@ class Editor(Widget):
 		self.save_status = True
 
 	# allots a file and reads from it
-	def allot_and_save_file(self, filename):
+	def allot_and_open_file(self, filename):
 		self.filename = filename
 		self.has_been_allotted_file = True
-		self.read_from_file()
+		if(os.path.isfile(self.filename)): self.read_from_file()
 		self.save_status = True
+		self.parent.update_status()
 
 	# saves data to a file, overwrites it if it exists
 	def save_to_file(self):
@@ -312,6 +313,8 @@ class Editor(Widget):
 		textFile = open(self.filename, "wt")
 		textFile.write(data)
 		textFile.close()
+		self.save_status = True
+		self.parent.update_status()
 
 	# saves data to a file, overwrites it if it exists
 	def read_from_file(self):
@@ -325,8 +328,8 @@ class Editor(Widget):
 		for line in lines:
 			self.lines.append(line)
 		
-		self.curpos.y = len(self.lines)-1
-		self.curpos.x = len(self.lines[self.curpos.y])
+		self.curpos.y = 0
+		self.curpos.x = 0
 
 	# <--------------------- stub functions ---------------------->
 
@@ -365,3 +368,11 @@ class Editor(Widget):
 	# replaces the first occurrence (after last find/replace operation)
 	def find_and_replace(self, strf, strr):
 		self.utility.replace(strf, strr)
+
+	# count lines and SLOC
+	def get_loc(self):
+		return self.utility.get_loc()
+
+	# get file size
+	def get_file_size(self):
+		return self.utility.get_file_size()

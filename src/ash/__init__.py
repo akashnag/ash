@@ -4,6 +4,8 @@
 # ---------------------------------------------------------------------------------------------
 
 import curses
+import os
+import pathlib
 
 from ash.widgets.checkbox import *
 from ash.widgets.combo import *

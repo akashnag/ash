@@ -5,17 +5,39 @@
 
 from ash import *
 
+APP_VERSION			= "v1.0"
+
 APP_MODE_BLANK		= 1		# if ash is invoked without arguments
 APP_MODE_FILE		= 2		# if ash is invoked with one or more file names
-APP_MODE_PROJECT	= 3		# if ash is invoked with "-d" followed by a directory name
+APP_MODE_PROJECT	= 3		# if ash is invoked with a single directory name
 
 class AshEditorApp:
 	def __init__(self, args):
 		self.args = args
-		
+		self.argc = len(args)
+				
 	def run(self):
-		# TO DO: check arguments and set flags
-		pass
+		# check arguments and set flags
+		if(self.argc == 1):
+			self.app_mode = APP_MODE_BLANK
+			self.active_file1 = None
+			self.active_file2 = None
+		elif(self.argc == 2 and os.path.isdir(self.args[1])):
+			self.app_mode = APP_MODE_PROJECT			
+			self.project_dir = str(pathlib.Path(self.args[1]).absolute())
+			self.active_file1 = None
+			self.active_file2 = None
+		else:
+			self.app_mode = APP_MODE_FILE
+			self.files = list()
+			for i in range(1, len(self.args)):
+				if(os.path.isdir(self.args[i])):
+					print("ERROR: cannot open more than 1 project")
+					return
+				self.files.append(str(pathlib.Path(self.args[i]).absolute()))
+		
+			self.active_file1 = self.files[0]
+			self.active_file2 = None
 
 		# invoke the GUI initialization routine
 		curses.wrapper(self.app_main)
@@ -25,22 +47,24 @@ class AshEditorApp:
 		init_colors()
 		curses.raw()
 		
-		self.main_window = TopLevelWindow(stdscr, "Ash v1.0", self.key_handler)
-		self.main_window.add_status_bar(StatusBar(self.main_window, [ 1.0 ]))		
+		app_title = "Ash " + APP_VERSION
+		if(self.app_mode == APP_MODE_FILE):
+			app_title = get_file_title(self.files[0]) + " - " + app_title
+		elif(self.app_mode == APP_MODE_PROJECT):
+			app_title = "[" + get_file_title(self.project_dir) + "] - " + app_title
+
+		self.main_window = TopLevelWindow(stdscr, app_title, self.key_handler)
+		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 15, 28, 11, 23 ]))
 		
-		txtEditor = Editor(self.main_window, 1, 0, 2, 0)
-		self.main_window.add_widget("txtEditor", txtEditor)
+		if(self.app_mode != APP_MODE_PROJECT):
+			editor1 = Editor(self.main_window, 1, 0, 2, 0)
+			if(self.active_file1 != None): 
+				editor1.allot_and_open_file(self.active_file1)
+			self.main_window.set_editors(editor1, None)
+		
 		self.main_window.show()
 		
 	# FOR TESTING: primary key handler to receive all key combinations
 	def key_handler(self, ch):
-		if(is_ctrl(ch, "Q")):
-			self.main_window.hide()
-		else:
-			#x = str(self.main_window.get_widget("txtName"))
-			self.main_window.get_status_bar().set(0, str(curses.keyname(ch)))
-			#txtEditor = self.main_window.get_widget("txtEditor")
-			#nlen = len(txtEditor.lines[txtEditor.curpos.y])
-			#self.main_window.get_status_bar().set(0, str(txtEditor.selection_mode) + " -> " + str(txtEditor.sel_start) + " : " + str(txtEditor.sel_end))
-			##self.main_window.win.addstr(1,1, str(self.main_window.get_widget("txtName")), gc())
+		if(is_ctrl(ch, "Q")): self.main_window.hide()
 		return ch

@@ -52,6 +52,7 @@ class EditorUtility:
 		self.ed.selection_mode = False
 		self.ed.curpos.x = max(self.ed.curpos.x, 0)
 		self.ed.curpos.x = min(self.ed.curpos.x, len(self.ed.lines[self.ed.curpos.y]))
+		self.ed.save_status = False
 		return del_text
 
 	# returns the selected text
@@ -78,6 +79,7 @@ class EditorUtility:
 		self.ed.curpos.x += 1
 		self.ed.sel_start.x += 1
 		self.ed.sel_end.x += 1
+		self.ed.save_status = False
 
 	# decrease indent of selected lines
 	def shift_selection_left(self):
@@ -97,6 +99,7 @@ class EditorUtility:
 			self.ed.curpos.x -= 1
 			self.ed.sel_start.x -= 1
 			self.ed.sel_end.x -= 1
+			self.ed.save_status = False
 
 	# returns the block of leading whitespaces on a given line 
 	def get_leading_whitespaces(self, line_index):
@@ -131,6 +134,23 @@ class EditorUtility:
 			end = copy.copy(self.ed.sel_start)
 		return (start, end)
 
+	# count lines and SLOC
+	def get_loc(self):
+		nlines = len(self.ed.lines)
+		sloc = 0
+		
+		for x in self.ed.lines:
+			if(len(x.strip()) == 0):
+				sloc += 1
+
+		return (nlines, nlines - sloc)
+
+	# get file size
+	def get_file_size(self):
+		if(self.ed.has_been_allotted_file):
+			return get_file_size(self.ed.filename)
+		else:
+			return "0 bytes"
 
 	# implements search
 	def find(self, str):

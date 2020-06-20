@@ -64,6 +64,12 @@ class Window:
 		else:
 			return self.widgets[self.active_widget_index]
 
+	# removes all widgets
+	def remove_all_widgets(self):
+		self.widgets = []
+		self.widget_map = dict()
+		self.active_widget_index = -1
+
 	# returns the widget by name
 	def get_widget(self, widget_name):
 		index = self.widget_map.get(widget_name)

@@ -67,6 +67,7 @@ class EditorKeyHandler:
 		self.ed.curpos.x = max(0, self.ed.curpos.x)
 		self.ed.curpos.y = min([self.ed.curpos.y, len(self.ed.lines)-1])
 		self.ed.curpos.y = max(0, self.ed.curpos.y)
+
 	
 	# handles Ctrl+Arrow key combinations
 	# behaviour: move to the next/previous separator position
@@ -78,7 +79,7 @@ class EditorKeyHandler:
 				for i in range(self.ed.curpos.x-1, -1, -1):
 					c = self.ed.lines[self.ed.curpos.y][i]
 					if(c in self.ed.separators):
-						self.ed.curpos.x = i
+						self.ed.curpos.x = i						
 						return
 				self.ed.curpos.x = 0
 		elif(is_ctrl_arrow(ch, "RIGHT")):
@@ -89,7 +90,7 @@ class EditorKeyHandler:
 				for i in range(self.ed.curpos.x+1, nlen):
 					c = self.ed.lines[self.ed.curpos.y][i]
 					if(c in self.ed.separators):
-						self.ed.curpos.x = i
+						self.ed.curpos.x = i					
 						return
 				self.ed.curpos.x = nlen
 
@@ -168,12 +169,15 @@ class EditorKeyHandler:
 			left = text[0:col] if col > 0 else ""
 			right = text[col+1:] if col < len(text)-1 else ""
 			self.ed.lines[self.ed.curpos.y] = left + right
+		
+		self.ed.save_status = False
 	
 	# handles backspace key: deletes the character to the left of the
 	# cursor, or deletes the selected text
 	def handle_backspace_key(self, ch):
 		if(self.ed.selection_mode):
 			self.ed.delete_selected_text()
+			self.ed.save_status = False			
 			return		
 
 		text = self.ed.lines[self.ed.curpos.y]
@@ -194,6 +198,8 @@ class EditorKeyHandler:
 			right = text[col:] if col < len(text) else ""
 			self.ed.lines[self.ed.curpos.y] = left + right
 			self.ed.curpos.x -= 1		
+		
+		self.ed.save_status = False
 
 	# handles HOME and END keys
 	def handle_home_end_keys(self, ch):
@@ -224,10 +230,10 @@ class EditorKeyHandler:
 	def handle_tab_keys(self, ch):
 		if(self.ed.selection_mode):
 			if(is_tab(ch)):
-				self.ed.shift_selection_right()
+				self.ed.shift_selection_right()				
 				return
 			elif(ch == curses.KEY_BTAB):
-				self.ed.shift_selection_left()
+				self.ed.shift_selection_left()				
 				return
 
 		col = self.ed.curpos.x
@@ -248,7 +254,9 @@ class EditorKeyHandler:
 				self.ed.curpos.x -= 1
 			else:
 				curses.beep()
-
+		
+		self.ed.save_status = False
+		
 	# handles ENTER / Ctrl+J
 	def handle_newline(self, ch):
 		if(self.ed.selection_mode): self.ed.delete_selected_text()
@@ -260,13 +268,16 @@ class EditorKeyHandler:
 		whitespaces = self.ed.get_leading_whitespaces(self.ed.curpos.y)
 		right = whitespaces + right
 		self.ed.lines[self.ed.curpos.y] = left
+
 		if(len(self.ed.lines) == self.ed.curpos.y + 1):
 			self.ed.lines.append(right)
 		else:
 			self.ed.lines.insert(self.ed.curpos.y + 1, right)
+		
 		self.ed.curpos.y += 1
 		self.ed.curpos.x = len(whitespaces)
-	
+		self.ed.save_status = False
+			
 	# handles printable characters in the charset
 	# TO DO: add support for Unicode
 	def handle_printable_character(self, ch):
@@ -279,7 +290,8 @@ class EditorKeyHandler:
 		right = text[col:] if len(text) > 0 else ""
 		self.ed.lines[self.ed.curpos.y] = left + sch + right
 		self.ed.curpos.x += 1
-	
+		self.ed.save_status = False
+			
 	# handles the PGUP and PGDOWN keys
 	def handle_page_navigation_keys(self, ch):
 		h = self.ed.height
@@ -351,7 +363,7 @@ class EditorKeyHandler:
 			if(self.ed.has_been_allotted_file):
 				self.ed.save_to_file()
 			else:
-				self.ed.parent.invoke_file_save_as()
+				self.ed.parent.invoke_file_save_as()			
 
 	def handle_select_all(self):
 		nlen = len(self.ed.lines)
@@ -370,7 +382,8 @@ class EditorKeyHandler:
 		if(not self.ed.selection_mode): return
 		del_text = self.ed.delete_selected_text()
 		clipboard.copy(del_text)
-
+		self.ed.save_status = False
+		
 	def handle_paste(self):
 		data = clipboard.paste().splitlines()
 		if(self.ed.selection_mode): self.ed.delete_selected_text()
@@ -395,3 +408,5 @@ class EditorKeyHandler:
 			self.ed.lines.insert(row+1, data[n-1] + right)
 			for i in range(n-2, 0, -1):
 				self.ed.lines.insert(row+1, data[i])
+
+		self.ed.save_status = False

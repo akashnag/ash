@@ -33,6 +33,9 @@ class StatusBar(Widget):
 		# no place to go
 		w = int(self.parent.get_width())-1
 		for i in range(len(self.section_widths)):
-			width = int(w * float(self.section_widths[i]))
-			str += pad_right_str(self.sections[i], width)
-		return str
+			str += pad_right_str(" " + self.sections[i] + " ", self.section_widths[i])
+
+		if(len(str) > w):
+			return str[0:w]
+		else:
+			return str + (" " * (w - len(str)))

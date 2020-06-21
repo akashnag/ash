@@ -28,7 +28,7 @@ class TopLevelWindow(Window):
 	def add_editor(self, ed):
 		if(len(self.editors) == 6): return
 		self.editors.append(ed)
-		if(self.active_editor_index < 0): self.active_editor_index = 0
+		if(self.active_editor_index < 0 and ed != None): self.active_editor_index = 0
 
 	# removes an editor from the workspace
 	def remove_editor(self, index):
@@ -46,9 +46,13 @@ class TopLevelWindow(Window):
 		if(index < len(self.editors)):
 			self.editors[index].set_data(data)
 
+	# checks if layout can be changed
+	def can_change_layout(self, layout_type):
+		return self.layout_manager.can_change_layout(layout_type)
+	
 	# sets layout
 	def set_layout(self, layout_type):
-		self.layout = layout_type
+		self.layout_manager.set_layout(layout_type)
 		self.layout_manager.readjust()
 
 	# adds a status bar
@@ -118,12 +122,13 @@ class TopLevelWindow(Window):
 			if(ch == -1): continue
 			
 			# send keypresses to main handler first
-			# ideally only Ctrl/Func key combinations should be sent
 			if(self.handler_func != None):
 				ch = self.handler_func(ch)
 				if(self.win == None): return
+
+			if(ch == -1): continue
 			
-			if(ch > -1 and self.active_editor_index > -1):
+			if(self.active_editor_index > -1):
 				self.get_active_editor().perform_action(ch)
 
 			self.repaint()

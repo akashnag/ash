@@ -203,6 +203,8 @@ class EditorKeyHandler:
 
 	# handles HOME and END keys
 	def handle_home_end_keys(self, ch):
+		self.ed.selection_mode = False
+
 		if(ch == curses.KEY_HOME):
 			# toggle between beginning of line and beginning of indented-code
 			if(self.ed.curpos.x == 0):

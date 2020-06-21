@@ -32,7 +32,7 @@ class ModalDialog(Window):
 			ch = self.win.getch()
 			if(ch == -1): continue
 			
-			if(self.handler_func != None and is_ctrl_or_func(ch) and (not is_tab(ch))):
+			if(self.handler_func != None):
 				ch = self.handler_func(ch)
 				if(self.win == None): return
 

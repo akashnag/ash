@@ -1,1 +1,5 @@
 src/test.py
+__pycache__
+*.pc
+*.pyc
+*.pyo

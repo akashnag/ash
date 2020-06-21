@@ -8,16 +8,16 @@
 from ash.widgets import *
 
 class ListBox(Widget):
-	def __init__(self, parent, y, x, width, row_count, items, theme, focus_theme):
+	def __init__(self, parent, y, x, width, row_count):
 		super(ListBox, self).__init__(WIDGET_TYPE_LISTBOX)
 		self.parent = parent
 		self.y = y
 		self.x = x
 		self.width = width
 		self.row_count = row_count
-		self.items = items
-		self.theme = theme
-		self.focus_theme = focus_theme
+		self.items = list()
+		self.theme = gc(COLOR_FORMFIELD)
+		self.focus_theme = gc(COLOR_FORMFIELD_FOCUSSED)
 		self.sel_index = -1
 		self.is_in_focus = False
 		self.repaint()

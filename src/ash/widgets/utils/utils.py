@@ -28,6 +28,24 @@ def is_ctrl_or_func(ch):
 	sch = str(curses.keyname(ch))
 	return(True if sch.startswith("b'KEY_F(") or sch.startswith("b'^") or (sch.startswith("b'k") and sch.endswith("5'")) else False)
 
+# check if a particular function key has been pressed
+def is_func(ch, k=None):
+	sch = str(curses.keyname(ch))
+	if(k == None):
+		return(True if sch.startswith("b'KEY_F(") else False)
+	else:
+		return(True if sch == "b'KEY_F(" + str(k) + ")'" else False)
+
+def get_func_key(ch):
+	if(not is_func(ch)):
+		return None
+	else:
+		sch = str(curses.keyname(ch))
+		if(sch[9] == ")"):
+			return int(sch[8])
+		else:
+			return int(sch[8:10])
+
 # check if Enter or Ctrl+J has been pressed
 def is_newline(ch):
 	return (ch == curses.KEY_ENTER or is_ctrl(ch, "J"))
@@ -82,6 +100,7 @@ def is_start_before_end(start, end):
 	return False
 
 def get_file_title(filename):
+	if(filename == None): return "Untitled"
 	pos = filename.rfind("/")
 	if(pos == -1):
 		return filename

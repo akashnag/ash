@@ -6,19 +6,13 @@
 # This module implements the text-editor widget
 
 from ash.widgets import *
-from ash.widgets.utils.utils import *
-from ash.widgets.utils.formatting import *
+from ash.widgets.cursorPosition import *
 from ash.widgets.editorKeyHandler import *
 from ash.widgets.editorUtility import *
+from ash.widgets.fileData import *
+from ash.widgets.utils.formatting import *
+from ash.widgets.utils.utils import *
 
-# This class abstracts a position in the document
-class CursorPosition:
-	def __init__(self, y, x):
-		self.y = y
-		self.x = x
-
-	def __str__(self):
-		return "Ln " + str(self.y+1) + ", Col " + str(self.x+1)
 
 # This is the text editor class
 class Editor(Widget):
@@ -75,8 +69,8 @@ class Editor(Widget):
 		self.line_end = -1
 	
 	# resize editor
-	def resize(self, y, x, height, width):
-		if(height == self.height and width == self.full_width): return
+	def resize(self, y, x, height, width, forced=False):
+		if(not forced and height == self.height and width == self.full_width): return
 
 		self.y = y
 		self.x = x
@@ -91,6 +85,8 @@ class Editor(Widget):
 		self.col_end = self.width
 		self.line_start = 0
 		self.line_end = self.height
+
+		self.repaint()
 
 	# when focus received
 	def focus(self):
@@ -248,11 +244,8 @@ class Editor(Widget):
 					self.parent.addstr(self.y + i - self.line_start, self.x + self.line_number_width + 1, vtext, self.text_theme)
 		
 		# reposition the cursor
-		try:
-			self.parent.move(self.y + curpos_row, self.x + self.line_number_width + 1 + curpos_col)
-		except:
-			pass
-	
+		self.parent.move(self.y + curpos_row, self.x + self.line_number_width + 1 + curpos_col)
+		
 	# <---------------------------- Data and File I/O ----------------------------->
 
 	# returns the string representation of the document
@@ -263,33 +256,28 @@ class Editor(Widget):
 		return data[len(self.newline):]
 
 	def get_data(self):
-		return({
-			"text": self.__str__(),
-			"curpos": self.curpos,
-			"selection_mode": self.selection_mode,
-			"sel_start": self.sel_start,
-			"sel_end": self.sel_end,
-			"filename": self.filename,
-			"has_been_allotted_file": self.has_been_allotted_file,
-			"save_status": self.save_status
-		})
+		file_data = FileData(self.filename, self.__str__(), self.curpos, self.save_status, self.selection_mode, self.sel_start, self.sel_end)
+		return file_data
 
-	def set_data(self, data):
-		text = data.get("text")
-		self.curpos = data.get("curpos")
-		self.selection_mode = data.get("selection_mode")
-		self.sel_start = data.get("sel_start")
-		self.sel_end = data.get("sel_end")
-		self.filename = data.get("filename")
-		self.has_been_allotted_file = data.get("has_been_allotted_file")
-		self.save_status = data.get("save_status")
+	def set_data(self, file_data):
+		text = file_data.buffer
+
+		self.curpos = file_data.curpos
+		self.selection_mode = file_data.selection_mode
+		self.sel_start = file_data.sel_start
+		self.sel_end = file_data.sel_end
+		self.filename = file_data.filename
+		self.has_been_allotted_file = file_data.has_been_allotted_file
+		self.save_status = file_data.save_status
 
 		self.lines.clear()
-		lines = text.splitlines()
-		for line in lines:
-			self.lines.append(line)
 
-		self.repaint()
+		if(len(text) == 0):
+			self.lines.append("")
+		else:
+			lines = text.splitlines()
+			for line in lines:
+				self.lines.append(line)
 
 	# allots a file and writes to it
 	def allot_and_save_file(self, filename):
@@ -297,7 +285,7 @@ class Editor(Widget):
 		self.has_been_allotted_file = True
 		try:
 			self.save_to_file()
-			self.save_status = True
+			self.parent.update_status()
 		except:
 			self.filename = None
 			self.has_been_allotted_file = False
@@ -317,8 +305,7 @@ class Editor(Widget):
 		textFile = open(self.filename, "wt")
 		textFile.write(data)
 		textFile.close()
-		self.save_status = True
-		self.parent.update_status()
+		self.save_status = True		
 
 	# saves data to a file, overwrites it if it exists
 	def read_from_file(self):

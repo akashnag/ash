@@ -22,7 +22,7 @@ class EditorKeyHandler:
 		
 		if(ch == curses.KEY_LEFT):
 			if(row == 0 and col == 0):
-				curses.beep()
+				beep()
 			elif(col == 0):
 				self.ed.curpos.y -= 1
 				self.ed.curpos.x = len(self.ed.lines[row-1])
@@ -31,7 +31,7 @@ class EditorKeyHandler:
 				if(not self.ed.selection_mode): self.ed.curpos.x -= 1
 		elif(ch == curses.KEY_RIGHT):
 			if(row == nlen-1 and col == clen):
-				curses.beep()
+				beep()
 			elif(col == clen):
 				self.ed.curpos.y += 1
 				self.ed.curpos.x = 0
@@ -45,7 +45,7 @@ class EditorKeyHandler:
 					self.ed.curpos.x = end.x
 		elif(ch == curses.KEY_DOWN):
 			if(row == nlen-1):
-				curses.beep()
+				beep()
 			else:
 				if(self.ed.curpos.x > len(self.ed.lines[row+1])):
 					# cannot preserve column, so move to end
@@ -53,7 +53,7 @@ class EditorKeyHandler:
 				self.ed.curpos.y += 1
 		elif(ch == curses.KEY_UP):
 			if(row == 0):
-				curses.beep()
+				beep()
 			else:
 				if(self.ed.curpos.x > len(self.ed.lines[row-1])):
 					# cannot preserve column, so move to end
@@ -74,7 +74,7 @@ class EditorKeyHandler:
 	def handle_ctrl_arrow_keys(self, ch):
 		if(is_ctrl_arrow(ch, "LEFT")):
 			if(self.ed.curpos.x == 0):
-				curses.beep()
+				beep()
 			else:
 				for i in range(self.ed.curpos.x-1, -1, -1):
 					c = self.ed.lines[self.ed.curpos.y][i]
@@ -85,7 +85,7 @@ class EditorKeyHandler:
 		elif(is_ctrl_arrow(ch, "RIGHT")):
 			nlen = len(self.ed.lines[self.ed.curpos.y])
 			if(self.ed.curpos.x == nlen):
-				curses.beep()
+				beep()
 			else:
 				for i in range(self.ed.curpos.x+1, nlen):
 					c = self.ed.lines[self.ed.curpos.y][i]
@@ -108,7 +108,7 @@ class EditorKeyHandler:
 		
 		if(ch == curses.KEY_SLEFT):
 			if(row == 0 and col == 0):
-				curses.beep()
+				beep()
 			elif(col == 0):
 				self.ed.curpos.y -= 1
 				self.ed.curpos.x = len(self.ed.lines[row-1])
@@ -116,7 +116,7 @@ class EditorKeyHandler:
 				self.ed.curpos.x -= 1
 		elif(ch == curses.KEY_SRIGHT):
 			if(row == nlen-1 and col == clen):
-				curses.beep()
+				beep()
 			elif(col == clen):
 				self.ed.curpos.y += 1
 				self.ed.curpos.x = 0
@@ -124,7 +124,7 @@ class EditorKeyHandler:
 				self.ed.curpos.x += 1
 		elif(ch == curses.KEY_SF):
 			if(row == nlen-1):
-				curses.beep()
+				beep()
 			else:
 				if(self.ed.curpos.x > len(self.ed.lines[row+1])):
 					# cannot preserve column
@@ -132,7 +132,7 @@ class EditorKeyHandler:
 				self.ed.curpos.y += 1
 		elif(ch == curses.KEY_SR):
 			if(row == 0):
-				curses.beep()
+				beep()
 			else:
 				if(self.ed.curpos.x > len(self.ed.lines[row-1])):
 					# cannot preserve column
@@ -158,7 +158,7 @@ class EditorKeyHandler:
 		col = self.ed.curpos.x
 
 		if(self.ed.curpos.y == len(self.ed.lines)-1 and col == clen):
-			curses.beep()
+			beep()
 			return
 		
 		if(col == clen):
@@ -184,7 +184,7 @@ class EditorKeyHandler:
 		col = self.ed.curpos.x
 
 		if(col == 0 and self.ed.curpos.y == 0):
-			curses.beep()
+			beep()
 			return
 
 		if(col == 0):
@@ -246,14 +246,14 @@ class EditorKeyHandler:
 			self.ed.curpos.x += 1
 		elif(ch == curses.KEY_BTAB):
 			if(col == 0):
-				curses.beep()
+				beep()
 			elif(col == len(self.ed.get_leading_whitespaces(self.ed.curpos.y))):
 				left = text[0:col-1] if col > 1 else ""
 				right = text[col:] if col < len(text) else ""
 				self.ed.lines[self.ed.curpos.y] = left + right
 				self.ed.curpos.x -= 1
 			else:
-				curses.beep()
+				beep()
 		
 		self.ed.save_status = False
 		
@@ -299,7 +299,7 @@ class EditorKeyHandler:
 		if(ch == curses.KEY_PPAGE):			# pg-up
 			if(self.ed.curpos.y == 0):
 				if(self.ed.curpos.x == 0):
-					curses.beep()
+					beep()
 				else:
 					self.ed.curpos.x = 0
 					return
@@ -311,7 +311,7 @@ class EditorKeyHandler:
 		elif(ch == curses.KEY_NPAGE):		# pg-down
 			if(self.ed.curpos.y == nlen-1):
 				if(self.ed.curpos.x == len(self.ed.lines[nlen-1])):
-					curses.beep()
+					beep()
 				else:
 					self.ed.curpos.x = len(self.ed.lines[nlen-1])
 					return
@@ -363,7 +363,7 @@ class EditorKeyHandler:
 			if(self.ed.has_been_allotted_file):
 				self.ed.save_to_file()
 			else:
-				self.ed.parent.invoke_file_save_as()			
+				self.ed.parent.app.invoke_file_save_as()			
 
 	def handle_select_all(self):
 		nlen = len(self.ed.lines)

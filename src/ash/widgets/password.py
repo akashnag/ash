@@ -54,10 +54,10 @@ class Password(Widget):
 				self.text = (self.text[0:self.curpos-1] if self.curpos > 1 else "") + (self.text[self.curpos:] if self.curpos < len(self.text) else "")
 				self.curpos -= 1
 			else:
-				curses.beep()
+				beep()
 		elif(ch == curses.KEY_DC):
 			if(self.curpos == len(self.text)):
-				curses.beep()
+				beep()
 			else:
 				self.text = (self.text[0:self.curpos] if self.curpos > 0 else "") + (self.text[self.curpos+1:] if self.curpos < len(self.text)-1 else "")
 		elif(ch == curses.KEY_END):
@@ -68,12 +68,12 @@ class Password(Widget):
 			if(self.curpos > 0): 
 				self.curpos -= 1
 			else:
-				curses.beep()
+				beep()
 		elif(ch == curses.KEY_RIGHT):
 			if(self.curpos < len(self.text)): 
 				self.curpos += 1
 			else:
-				curses.beep()
+				beep()
 		else:
 			char = str(chr(ch))
 			if(self.charset.find(char) != -1):
@@ -82,11 +82,11 @@ class Password(Widget):
 						self.text = (self.text[0:self.curpos] if self.curpos>0 else "") + char + (self.text[self.curpos:] if self.curpos<len(self.text) else "")
 						self.curpos += 1
 					else:
-						curses.beep()
+						beep()
 				else:
-					curses.beep()
+					beep()
 			else:
-				curses.beep()
+				beep()
 		
 		self.repaint()
 

@@ -22,7 +22,7 @@ class CursorPosition:
 
 # This is the text editor class
 class Editor(Widget):
-	def __init__(self, parent, y, x, height_offset, width_offset):
+	def __init__(self, parent):
 		super().__init__(WIDGET_TYPE_EDITOR, True, True)
 		
 		# initialize parent window
@@ -31,17 +31,9 @@ class Editor(Widget):
 		# initialize helper classes
 		self.utility = EditorUtility(self)
 		self.keyHandler = EditorKeyHandler(self)
-		
-		# initialize dimensions
-		self.y = y
-		self.x = x
-		self.height_offset = height_offset
-		self.width_offset = width_offset
-		self.line_number_width = 6
-		self.height = self.parent.get_height() - self.height_offset
-		self.full_width = self.parent.get_width() - self.width_offset
-		self.width = self.full_width - self.line_number_width - 1
 				
+		self.line_number_width = 6
+						
 		# set up the text and cursor data structures
 		self.lines = [ "" ]
 		self.curpos = CursorPosition(0,0)
@@ -63,29 +55,35 @@ class Editor(Widget):
 		# set default tab size
 		self.tab_size = 4
 		
-		# set initial visibility status
-		self.line_start = 0
-		self.line_end = self.height
-		self.col_start = 0
-		self.col_end = self.width
-
 		# set up default color themes
 		self.set_theme()
 		self.set_comment_symbol(None, None, None)
+		self.is_in_focus = False
 
-		# receive focus
-		self.focus()
+		# use dummy values
+		self.height = 0
+		self.width = 0
+		self.y = -1
+		self.x = -1
+		self.full_width = 0
+		self.selection_mode = False
+		self.curpos.x = -1
+		self.curpos.y = -1
+		self.col_start = -1
+		self.col_end = 0
+		self.line_start = -1
+		self.line_end = -1
 	
-	# readjust routine
-	def readjust(self):
-		h = self.parent.get_height() - self.height_offset
-		fw = self.parent.get_width() - self.width_offset
-		if(h == self.height and fw == self.full_width): return
+	# resize editor
+	def resize(self, y, x, height, width):
+		if(height == self.height and width == self.full_width): return
 
-		self.height = h
-		self.full_width = fw
-		
+		self.y = y
+		self.x = x
+		self.height = height
+		self.full_width = width
 		self.width = self.full_width - self.line_number_width - 1
+		
 		self.selection_mode = False
 		self.curpos.x = 0
 		self.curpos.y = 0
@@ -157,7 +155,7 @@ class Editor(Widget):
 		elif(is_ctrl_or_func(ch)):
 			self.keyHandler.handle_ctrl_and_func_keys(ch)
 		else:
-			curses.beep()
+			beep()
 		
 		self.repaint()
 
@@ -176,7 +174,7 @@ class Editor(Widget):
 	# returns the horizontal portion of the editor to be displayed
 	def determine_horizontal_visibility(self):
 		ctab = (self.tab_size - 1) * self.lines[self.curpos.y][0:self.curpos.x].count("\t")
-		curpos_col = self.curpos.x + ctab		# visible cursor position w.r.t whitespaces
+		curpos_col = self.curpos.x + ctab		# visible cursor position w.r.t. whitespaces
 
 		if(curpos_col < self.col_start):
 			delta = abs(self.col_start - curpos_col)
@@ -227,7 +225,6 @@ class Editor(Widget):
 
 	# the primary draw routine for the editor
 	def repaint(self):
-		self.readjust()
 		curses.curs_set(self.is_in_focus)
 
 		curpos_row = self.determine_vertical_visibility()
@@ -256,6 +253,8 @@ class Editor(Widget):
 		except:
 			pass
 	
+	# <---------------------------- Data and File I/O ----------------------------->
+
 	# returns the string representation of the document
 	def __str__(self):
 		data = ""
@@ -296,8 +295,13 @@ class Editor(Widget):
 	def allot_and_save_file(self, filename):
 		self.filename = filename
 		self.has_been_allotted_file = True
-		self.save_to_file()
-		self.save_status = True
+		try:
+			self.save_to_file()
+			self.save_status = True
+		except:
+			self.filename = None
+			self.has_been_allotted_file = False
+			raise
 
 	# allots a file and reads from it
 	def allot_and_open_file(self, filename):
@@ -325,11 +329,15 @@ class Editor(Widget):
 		self.selection_mode = False
 		self.lines.clear()
 		lines = text.splitlines()
+
 		for line in lines:
 			self.lines.append(line)
-		
+
 		self.curpos.y = 0
 		self.curpos.x = 0
+
+		self.save_status = False
+		self.parent.update_status()
 
 	# <--------------------- stub functions ---------------------->
 

@@ -8,18 +8,18 @@
 from ash.widgets import *
 
 class TextField(Widget):
-	def __init__(self, parent, y, x, width, theme, focus_theme = None, numeric = False, maxlen = -1):
+	def __init__(self, parent, y, x, width, initial_text = "", numeric = False, maxlen = -1):
 		super(TextField, self).__init__(WIDGET_TYPE_TEXTFIELD)
 		self.y = y
 		self.x = x
 		self.width = width
-		self.curpos = 0
-		self.theme = theme
-		self.text = ""
+		self.theme = gc(COLOR_FORMFIELD)
+		self.text = initial_text
+		self.curpos = len(self.text)
 		self.parent = parent
 		self.numeric = numeric
 		self.maxlen = maxlen
-		self.focus_theme = focus_theme
+		self.focus_theme = gc(COLOR_FORMFIELD_FOCUSSED)
 		self.is_in_focus = False
 
 		self.charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -51,10 +51,10 @@ class TextField(Widget):
 				self.text = (self.text[0:self.curpos-1] if self.curpos > 1 else "") + (self.text[self.curpos:] if self.curpos < len(self.text) else "")
 				self.curpos -= 1
 			else:
-				curses.beep()
+				beep()
 		elif(ch == curses.KEY_DC):
 			if(self.curpos == len(self.text)):
-				curses.beep()
+				beep()
 			else:
 				self.text = (self.text[0:self.curpos] if self.curpos > 0 else "") + (self.text[self.curpos+1:] if self.curpos < len(self.text)-1 else "")
 		elif(ch == curses.KEY_END):
@@ -65,12 +65,12 @@ class TextField(Widget):
 			if(self.curpos > 0): 
 				self.curpos -= 1
 			else:
-				curses.beep()
+				beep()
 		elif(ch == curses.KEY_RIGHT):
 			if(self.curpos < len(self.text)): 
 				self.curpos += 1
 			else:
-				curses.beep()
+				beep()
 		else:
 			char = str(chr(ch))
 			if(self.charset.find(char) != -1):
@@ -79,11 +79,11 @@ class TextField(Widget):
 						self.text = (self.text[0:self.curpos] if self.curpos>0 else "") + char + (self.text[self.curpos:] if self.curpos<len(self.text) else "")
 						self.curpos += 1
 					else:
-						curses.beep()
+						beep()
 				else:
-					curses.beep()
+					beep()
 			else:
-				curses.beep()
+				beep()
 		
 		self.repaint()
 

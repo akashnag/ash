@@ -112,5 +112,11 @@ def get_file_size(filename):
 		else:
 			return str(round(kb,2)) + " KB"
 
+def get_center_coords(app, elem_height, elem_width):
+	return ((app.screen_height - elem_height) // 2, (app.screen_width - elem_width) // 2)
+
+def beep():
+	curses.beep()
+
 # <----------------------- MAIN CODE --------------------------->
 read_file_associations()

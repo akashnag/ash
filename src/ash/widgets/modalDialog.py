@@ -10,12 +10,12 @@ from ash.widgets.window import *
 from ash.widgets.utils.utils import *
 
 class ModalDialog(Window):
-	def __init__(self, parent, y, x, height, width, title, theme, handler_func):
+	def __init__(self, parent, y, x, height, width, title, handler_func):
 		super().__init__(y, x, height, width, title)
 		self.parent = parent
-		self.theme = theme
+		self.theme = gc(COLOR_BORDER)
 		self.handler_func = handler_func
-		self.win = None		
+		self.win = None
 
 	# show the window and start the event-loop
 	def show(self):
@@ -77,7 +77,7 @@ class ModalDialog(Window):
 		self.win.border()
 		self.win.attroff(self.theme)
 		
-		self.win.addstr(1, 1+((self.width-2-len(self.title))//2), self.title, curses.A_BOLD | self.theme)
+		self.win.addstr(1, 2, self.title, curses.A_BOLD | self.theme)
 		
 		for w in self.widgets: 
 			w.repaint()

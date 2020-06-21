@@ -91,7 +91,7 @@ class ListBox(Widget):
 		n = len(self.items)
 		if(n == 0):
 			self.sel_index = -1
-			curses.beep()
+			beep()
 		elif(ch == curses.KEY_UP):
 			if(self.sel_index == -1):
 				self.sel_index = n-1
@@ -100,7 +100,7 @@ class ListBox(Widget):
 		elif(ch == curses.KEY_DOWN):
 			self.sel_index = (self.sel_index + 1) % n
 		else:
-			curses.beep()
+			beep()
 		self.repaint()
 
 	# append an item to the list

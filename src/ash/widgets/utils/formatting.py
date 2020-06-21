@@ -19,6 +19,7 @@ COLOR_LIGHTGRAY_ON_DARKGRAY	= 7		# line numbers
 COLOR_YELLOW_ON_DARKGRAY	= 8		# highlighted line numbers, strings
 COLOR_RED_ON_DARKGRAY		= 9		# errors
 COLOR_DARKGRAY_ON_YELLOW	= 10	# selection, widget in focus
+COLOR_WHITE_ON_RED			= 11	# message/alert box
 
 # color aliases
 COLOR_DARKGRAY 				= curses.COLOR_BLACK
@@ -43,6 +44,9 @@ COLOR_HIGHLIGHTED_LINENUMBER= COLOR_YELLOW_ON_DARKGRAY
 COLOR_STRING				= COLOR_YELLOW_ON_DARKGRAY
 COLOR_ERROR					= COLOR_RED_ON_DARKGRAY
 COLOR_SELECTION				= COLOR_DARKGRAY_ON_YELLOW
+COLOR_FORMFIELD				= COLOR_YELLOW_ON_DARKGRAY
+COLOR_FORMFIELD_FOCUSSED	= COLOR_DARKGRAY_ON_YELLOW
+COLOR_MSGBOX				= COLOR_WHITE_ON_RED
 
 # <----------------------- color formatting functions ----------------->
 
@@ -69,6 +73,7 @@ def init_colors():
 	curses.init_pair(COLOR_YELLOW_ON_DARKGRAY, COLOR_YELLOW, COLOR_DARKGRAY)
 	curses.init_pair(COLOR_RED_ON_DARKGRAY, COLOR_RED, COLOR_DARKGRAY)
 	curses.init_pair(COLOR_DARKGRAY_ON_YELLOW, COLOR_DARKGRAY, COLOR_YELLOW)
+	curses.init_pair(COLOR_WHITE_ON_RED, COLOR_WHITE, COLOR_RED)
 
 # retrieve a curses.color_pair() object for a given color combination
 def gc(cp = COLOR_DEFAULT):

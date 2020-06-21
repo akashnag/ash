@@ -31,8 +31,7 @@ class Window:
 	# sets the window title-bar text
 	def set_title(self, title):
 		self.title = (title if len(title) <= self.width-2 else title[0:self.width-2])
-		self.repaint()
-
+	
 	# stub for repaint(), to be overridden() by child
 	def repaint(self):
 		pass

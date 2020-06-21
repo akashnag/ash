@@ -55,7 +55,7 @@ class CheckBox(Widget):
 			self.checked = not self.checked
 			self.repaint()
 		else:
-			curses.beep()
+			beep()
 
 	# returns the string representation: checkbox text
 	def __str__(self):

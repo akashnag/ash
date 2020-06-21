@@ -10,45 +10,46 @@ from ash.widgets import *
 from ash.widgets.window import *
 from ash.widgets.utils.utils import *
 from ash.widgets.utils.formatting import *
-
-# <------------------- constants -------------------->
-SPLIT_TYPE_NONE 		= 0
-SPLIT_TYPE_HORIZONTAL	= 1
-SPLIT_TYPE_VERTICAL		= 2
-
-HORIZONTAL_BORDER_SYMBOL= "\u2500"
-VERTICAL_BORDER_SYMBOL	= "\u2502"
+from ash.widgets.layoutManager import *
 
 # <-------------------- class declaration --------------->
 class TopLevelWindow(Window):
-	def __init__(self, stdscr, title, handler_func):
-		height, width = stdscr.getmaxyx()
-		super().__init__(0, 0, height, width, title)
+	def __init__(self, app, stdscr, title, handler_func):
+		super().__init__(0, 0, 0, 0, title)
+		self.layout_manager = LayoutManager(self)
+		self.app = app
 		self.win = stdscr
 		self.handler_func = handler_func
-		self.split = SPLIT_TYPE_NONE
-		self.split_pos = -1
-		self.editor1 = None
-		self.editor2 = None
-		self.active_editor_index = 0
+		self.editors = list()
+		self.active_editor_index = -1
+		self.layout_type = LAYOUT_SINGLE
 			
-	# initialize editors
-	def set_editors(self, ed1, ed2):
-		self.editor1 = ed1
-		self.editor2 = ed2
-		self.active_editor_index = 1
+	# adds an editor to the workspace
+	def add_editor(self, ed):
+		if(len(self.editors) == 6): return
+		self.editors.append(ed)
+		if(self.active_editor_index < 0): self.active_editor_index = 0
 
-	# load data for editor
+	# removes an editor from the workspace
+	def remove_editor(self, index):
+		self.editors.pop(index)
+		if(self.active_editor_index == index):
+			if(len(self.editors) == 0):
+				self.active_editor_index = -1
+			elif(index == 0):
+				self.active_editor_index = 1
+			else:
+				self.active_editor_index -= 1
+
+	# load data for an editor
 	def set_editor_data(self, index, data):
-		if(index == 1 and self.editor1 != None):
-			self.editor1.set_data(data)
-		elif(index == 2 and self.editor2 != None):
-			self.editor2.set_data(data)
+		if(index < len(self.editors)):
+			self.editors[index].set_data(data)
 
-	# sets split mode
-	def set_split(self, split_type, split_pos = -1):
-		self.split = split_type
-		self.split_pos = split_pos
+	# sets layout
+	def set_layout(self, layout_type):
+		self.layout = layout_type
+		self.layout_manager.readjust()
 
 	# adds a status bar
 	def add_status_bar(self, status):
@@ -60,14 +61,10 @@ class TopLevelWindow(Window):
 	
 	# returns the active editor object
 	def get_active_editor(self):
-		if(self.active_editor_index < 1):
+		if(self.active_editor_index < 0):
 			return None
-		elif(self.active_editor_index == 1):
-			return self.editor1
-		elif(self.active_editor_index == 2):
-			return self.editor2
 		else:
-			return None
+			return self.editors[self.active_editor_index]
 
 	def update_status(self):
 		aed = self.get_active_editor()
@@ -101,15 +98,21 @@ class TopLevelWindow(Window):
 		self.status.set(2, loc_count)
 		self.status.set(3, file_size)
 		self.status.set(4, cursor_position)
-		
 
+		if(aed != None):
+			self.set_title(self.app.get_app_title(aed))
+		else:
+			self.set_title(self.app.get_app_title())
+	
 	# shows the window and starts the event-loop
 	def show(self):
 		curses.curs_set(False)
 		self.win.keypad(True)
 		self.win.timeout(0)
-		
-		self.repaint()	
+		self.repaint()
+
+		if(len(self.editors) > 0): self.editors[0].focus()
+
 		while(True):
 			ch = self.win.getch()
 			if(ch == -1): continue
@@ -120,55 +123,31 @@ class TopLevelWindow(Window):
 				ch = self.handler_func(ch)
 				if(self.win == None): return
 			
-			if(self.active_widget_index < 0 or not self.get_active_widget().does_handle_tab()):
-				if((is_tab(ch) or ch == curses.KEY_BTAB)):
-					old_index = self.active_widget_index
-					if(is_tab(ch)):
-						self.active_widget_index = self.get_next_focussable_widget_index()
-					elif(ch == curses.KEY_BTAB):
-						self.active_widget_index = self.get_previous_focussable_widget_index()
-					
-					if(old_index != self.active_widget_index):
-						if(old_index > -1): self.widgets[old_index].blur()
-						if(self.active_widget_index > -1): self.widgets[self.active_widget_index].focus()
-
-					ch = -1
-
-			if(ch > -1 and self.active_editor_index > 0):
+			if(ch > -1 and self.active_editor_index > -1):
 				self.get_active_editor().perform_action(ch)
 
 			self.repaint()
 			
-	# check if terminal window has been resized, if so, readjust
-	def readjust(self):
-		h, w = self.win.getmaxyx()
-		if(h != self.height or w != self.width):
-			self.height, self.width = h, w
-			for w in self.widgets:
-				w.readjust()
-
+	
 	# draws the window
 	def repaint(self):
 		if(self.win == None): return
 		
 		self.update_status()
-		self.readjust()
+		self.layout_manager.readjust()
 		self.win.clear()
 
 		self.win.addstr(0, 0, pad_center_str(self.title, self.width), curses.A_BOLD | gc(COLOR_TITLEBAR))
 		if(self.status != None): self.win.addstr(self.height-1, 0, str(self.status), gc(COLOR_STATUSBAR))
 
-		if(self.split != SPLIT_TYPE_NONE):
-			if(self.split == SPLIT_TYPE_HORIZONTAL):
-				self.win.addstr(self.height//2, 0, HORIZONTAL_BORDER_SYMBOL * self.width, gc(COLOR_BORDER))
-			else:
-				for row in range(1, self.height-1):
-					self.win.addstr(row, self.width//2, VERTICAL_BORDER_SYMBOL, gc(COLOR_BORDER))
-
-		if(self.active_editor_index < 1):
-			self.win.addstr(self.height//2, 0, pad_center_str("No files selected", self.width), gc(COLOR_LIGHTGRAY_ON_DARKGRAY))
-		else:
-			self.editor1.repaint()
-			if(self.editor2 != None): self.editor2.repaint()
-			
+		self.layout_manager.draw_layout_borders()
+		self.layout_manager.repaint_editors()
+		
 		self.win.refresh()
+
+	# <----------------------------------- dialog boxes ----------------------------------->
+	def do_save_as(self, filename):
+		aed = self.get_active_editor()
+		if(aed == None): return
+
+		aed.allot_and_save_file(filename)

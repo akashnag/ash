@@ -1,5 +1,4 @@
 src/test.py
-__pycache__
-*.pc
-*.pyc
-*.pyo
+src/ash/__pycache__
+src/ash/widgets/__pycache__
+src/ash/widgets/utils/__pycache__

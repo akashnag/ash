@@ -342,11 +342,6 @@ class EditorKeyHandler:
 			self.ed.parent.invoke_find()
 		elif(is_ctrl(ch, "H")):
 			self.ed.parent.invoke_find_and_replace()
-		elif(is_ctrl(ch, "Q")):
-			self.ed.parent.invoke_file_close()
-		elif(is_ctrl(ch, "W")):
-			self.handle_save()
-			self.ed.parent.invoke_file_close()
 		elif(is_ctrl(ch, "P")):
 			self.ed.parent.invoke_file_print()
 		elif(is_ctrl(ch, "Z")):

@@ -14,12 +14,63 @@ class DialogHandler:
 
 	# <----------------------------------- Close Editor/App --------------------------------->
 
+	def invoke_forced_quit(self):
+		self.app.main_window.hide()
+
 	def invoke_quit(self):
 		mw = self.app.main_window
-		
-		# ADD CODE
-		
-		mw.hide()
+		aed = mw.get_active_editor()
+
+		# Scenarios:
+		# 1. Active editor is saved: close editor (maintain buffer)
+		# 2. Active editor is unsaved: check if file-allotted or not
+		#		(a) if no file allotted: ask to be saved first, before closing
+		#		(b)	if file allotted: close editor (maintain buffer)
+		# 3. No active editor: check if other editors exist:
+		# 		(a) No other editors exist: quit application
+		# 		(b) Other editors exist: inform user that other editors exist
+
+		if(aed == None):
+			# case 3
+			n = len(mw.editors)
+			other_editors_exist = False
+			for i in range(n):
+				if(mw.editors[i] != None):
+					other_editors_exist = True
+					break
+			
+			if(other_editors_exist):
+				# case 3(b)
+				self.app.show_error("Close all windows to quit application or use Ctrl+@ to force-quit")
+			else:
+				# case 3(a)
+				mw.hide()
+		else:
+			if(aed.save_status):
+				# case 1
+				filename = aed.filename
+				buffer_index = get_file_buffer_index(self.app.files, filename)
+				filedata = aed.get_data()
+				self.app.files[buffer_index] = filedata
+				mw.close_active_editor()
+			else:
+				if(not aed.has_been_allotted_file):
+					# case 2(a)
+					if(self.app.ask_question("DISCARD CHANGES", "Do you want to save this file (Yes) or discard changes (No)?")):
+						self.invoke_file_save_as()
+						if(aed.save_status): 
+							# no need to add this filedata to list of active files as
+							# invoke_file_save_as() already does it
+							mw.close_active_editor()
+					else:
+						mw.close_active_editor()
+				else:
+					# case 2(b) [same as case 1]
+					filename = aed.filename
+					buffer_index = get_file_buffer_index(self.app.files, filename)
+					filedata = aed.get_data()
+					self.app.files[buffer_index] = filedata
+					mw.close_active_editor()
 
 	# <----------------------------------- File Open --------------------------------->
 

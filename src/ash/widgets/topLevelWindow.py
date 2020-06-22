@@ -68,7 +68,23 @@ class TopLevelWindow(Window):
 		if(self.active_editor_index < 0):
 			return None
 		else:
-			return self.editors[self.active_editor_index]
+			if(self.editors[self.active_editor_index] == None):
+				self.active_editor_index = -1
+				return None
+			else:
+				return self.editors[self.active_editor_index]
+
+	# closes the active editor
+	def close_active_editor(self):
+		if(self.active_editor_index >= 0):
+			self.editors[self.active_editor_index] = None
+			self.repaint()
+
+	# closes a given editor
+	def close_editor(self, index):
+		self.editors[index] = None
+		if(index == self.active_editor_index): self.active_editor_index = -1
+		self.repaint()
 
 	def update_status(self):
 		aed = self.get_active_editor()

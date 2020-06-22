@@ -143,5 +143,11 @@ def file_exists(file_list, filename):
 			return True
 	return False
 
+def get_file_buffer_index(file_list, filename):
+	n = len(file_list)
+	for i in range(n):
+		if(file_list[i].filename == filename): return i
+	return -1
+
 # <----------------------- MAIN CODE --------------------------->
 read_file_associations()

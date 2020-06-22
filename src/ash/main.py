@@ -22,7 +22,6 @@ class AshEditorApp:
 		self.files = list()
 		if(self.argc == 1):
 			self.app_mode = APP_MODE_FILE
-			self.files.append(FileData())
 		elif(self.argc == 2 and os.path.isdir(self.args[1])):
 			self.app_mode = APP_MODE_PROJECT			
 			self.project_dir = str(pathlib.Path(self.args[1]).absolute())
@@ -85,7 +84,10 @@ class AshEditorApp:
 		
 		if(self.app_mode != APP_MODE_PROJECT):
 			editor = Editor(self.main_window)
-			editor.set_data(self.files[0])
+			if(len(self.files) == 0):
+				editor.set_data(FileData())
+			else:
+				editor.set_data(self.files[0])
 			self.main_window.add_editor(editor)
 			self.main_window.layout_manager.readjust(True)
 		
@@ -93,14 +95,14 @@ class AshEditorApp:
 		
 	# primary key handler to receive all key combinations from TopLevelWindow
 	def main_key_handler(self, ch):
-		#y, x = get_center_coords(self, 5, 40)
-		#self.msgBox = MessageBox(self.stdscr, y, x, 5, 40, "INFO", "You pressed: " + str(curses.keyname(ch)) + "\n(O)K")
-		#while(True):
-		#	response = self.msgBox.show()
-		#	if(response == MSGBOX_OK): break	
-		#	beep()
+		#if(self.show_error("You pressed: " + str(curses.keyname(ch)))):
+		#	self.main_window.repaint()
+		#	return -1
 		
-		if(is_ctrl(ch, "Q")): 
+		if(is_ctrl(ch, "@")): 
+			# force quits the app without saving
+			self.dialog_handler.invoke_forced_quit()
+		elif(is_ctrl(ch, "Q")): 
 			# quits the active editor or the app
 			self.dialog_handler.invoke_quit()
 		elif(is_ctrl(ch, "L")):

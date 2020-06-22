@@ -97,6 +97,7 @@ class LayoutManager:
 	def repaint_editors(self):
 		ec = EDITOR_COUNTS[self.win.layout_type]
 		dim = self.get_dimensions(self.win.layout_type)
+		aed = self.win.get_active_editor()
 
 		# Note: editor repaint must be done after self.__addstr() to correctly
 		# reposition cursor inside the editor
@@ -108,8 +109,8 @@ class LayoutManager:
 		for i in range(ec):
 			if(self.editor_exists(i) and i != self.win.active_editor_index): 
 				self.win.editors[i].repaint()
-		
-		self.win.get_active_editor().repaint()
+				
+		if(aed != None): aed.repaint()
 		
 	# checks if given editor exists
 	def editor_exists(self, index):
@@ -245,11 +246,6 @@ class LayoutManager:
 			self.win.app.show_error("Selected editor does not exist")
 			return
 		
-		# error
-		if(aei < 0):
-			self.win.app.show_error("Active editor missing")
-			return
-		
 		# if already active, return
 		if(aei == ec): return
 
@@ -259,5 +255,5 @@ class LayoutManager:
 		self.win.active_editor_index = index
 		self.readjust(True)
 		self.win.repaint()
-		self.win.editors[aei].blur()
+		if(aei >= 0): self.win.editors[aei].blur()
 		self.win.editors[index].focus()

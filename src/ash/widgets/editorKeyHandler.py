@@ -334,16 +334,18 @@ class EditorKeyHandler:
 			self.handle_paste()
 		elif(is_ctrl(ch, "S")):
 			self.handle_save()
+		elif(is_ctrl(ch, "G")):
+			self.ed.parent.app.dialog_handler.invoke_go_to_line()
 		elif(is_ctrl(ch, "O")):
 			self.ed.parent.app.dialog_handler.invoke_file_open()
 		elif(is_ctrl(ch, "N")):
-			self.ed.parent.invoke_file_new()
+			self.ed.parent.app.dialog_handler.invoke_file_new()
 		elif(is_ctrl(ch, "F")):
-			self.ed.parent.invoke_find()
+			self.ed.parent.app.dialog_handler.invoke_find()
 		elif(is_ctrl(ch, "H")):
-			self.ed.parent.invoke_find_and_replace()
+			self.ed.parent.app.dialog_handler.invoke_find_and_replace()
 		elif(is_ctrl(ch, "P")):
-			self.ed.parent.invoke_file_print()
+			self.ed.parent.app.dialog_handler.invoke_file_print()
 		elif(is_ctrl(ch, "Z")):
 			self.handle_undo()
 		elif(is_ctrl(ch, "Y")):

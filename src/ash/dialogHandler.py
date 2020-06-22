@@ -11,6 +11,46 @@ class DialogHandler:
 	def __init__(self, app):
 		self.app = app
 
+	# <----------------------------------- Go to Line --------------------------------->
+
+	def invoke_go_to_line(self):
+		self.app.readjust()
+		y, x = get_center_coords(self.app, 4, 14)
+		self.app.dlgGoTo = ModalDialog(self.app.stdscr, y, x, 4, 14, "GO TO LINE", self.go_to_key_handler)
+		currentLine = str(self.app.main_window.get_active_editor().curpos.y + 1)
+		txtLineNumber = TextField(self.app.dlgGoTo, 2, 2, 10, currentLine, True)
+		self.app.dlgGoTo.add_widget("txtLineNumber", txtLineNumber)
+		self.app.dlgGoTo.show()
+
+	def go_to_key_handler(self, ch):
+		if(is_ctrl(ch, "Q")): 
+			self.app.dlgGoTo.hide()
+		elif(is_newline(ch)):
+			line = str(self.app.dlgGoTo.get_widget("txtLineNumber"))
+			if(len(line) == 0):
+				beep()
+				return ch
+				
+			pos = line.find(".")
+			if(pos > -1):
+				row = int(line[0:pos]) - 1
+				col = int(line[pos+1:]) - 1
+			else:
+				row = int(line) - 1
+				col = 0
+			
+			aed = self.app.main_window.get_active_editor()
+			if(row < 0 or row >= len(aed.lines)):
+				beep()
+			elif(col < 0 or col > len(aed.lines[row])):
+				beep()
+			else:
+				self.app.dlgGoTo.hide()
+				aed.curpos.y = row
+				aed.curpos.x = col
+				aed.repaint()
+		
+		return ch
 
 	# <----------------------------------- Close Editor/App --------------------------------->
 

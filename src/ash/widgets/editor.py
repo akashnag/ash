@@ -161,40 +161,6 @@ class Editor(Widget):
 		
 		self.repaint()
 
-	# returns the vertical portion of the editor to be displayed
-	def determine_vertical_visibility(self):
-		if(self.curpos.y < self.line_start):
-			delta = abs(self.line_start - self.curpos.y)
-			self.line_start -= delta
-			self.line_end -= delta
-		elif(self.curpos.y >= self.line_end):
-			delta = abs(self.curpos.y - self.line_end)
-			self.line_end += delta + 1
-			self.line_start += delta + 1
-		return(self.curpos.y - self.line_start)
-
-	# returns the horizontal portion of the editor to be displayed
-	def determine_horizontal_visibility(self):
-		ctab = (self.tab_size - 1) * self.lines[self.curpos.y][0:self.curpos.x].count("\t")
-		curpos_col = self.curpos.x + ctab		# visible cursor position w.r.t. whitespaces
-
-		if(curpos_col < self.col_start):
-			delta = abs(self.col_start - curpos_col)
-			self.col_start -= delta
-			self.col_end -= delta
-		elif(curpos_col >= self.col_end):
-			delta = abs(curpos_col - self.col_end)
-			self.col_end += delta + 1
-			self.col_start += delta + 1
-		
-		# the following ensures when deleting characters, atleast 1 character back is visible
-		if(self.col_start > 0 and self.col_start == len(self.lines[self.curpos.y])):
-			self.col_start -= 1
-			self.col_end -= 1
-
-		return curpos_col - self.col_start		# visible curpos position w.r.t. screen
-	
-	
 	# print selected text using selection-theme
 	def print_selection(self, line_index):
 		start, end = self.get_selection_endpoints()
@@ -225,6 +191,38 @@ class Editor(Widget):
 		else:
 			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext, self.selection_theme)
 
+	# returns the vertical portion of the editor to be displayed
+	def determine_vertical_visibility(self):
+		if(self.curpos.y < self.line_start):
+			delta = abs(self.line_start - self.curpos.y)
+			self.line_start -= delta
+			self.line_end -= delta
+		elif(self.curpos.y >= self.line_end):
+			delta = abs(self.curpos.y - self.line_end)
+			self.line_end += delta + 1
+			self.line_start += delta + 1
+		return(self.curpos.y - self.line_start)
+
+	# returns the horizontal portion of the editor to be displayed
+	def determine_horizontal_visibility(self):
+		curpos_col = get_horizontal_cursor_position(self.lines[self.curpos.y], self.curpos.x, self.tab_size)
+		
+		if(curpos_col < self.col_start):
+			delta = abs(self.col_start - curpos_col)
+			self.col_start -= delta
+			self.col_end -= delta
+		elif(curpos_col >= self.col_end):
+			delta = abs(curpos_col - self.col_end)
+			self.col_end += delta + 1
+			self.col_start += delta + 1
+		
+		# the following ensures when deleting characters, atleast 1 character back is visible
+		if(self.col_start > 0 and self.col_start == len(self.lines[self.curpos.y])):
+			self.col_start -= 1
+			self.col_end -= 1
+
+		return curpos_col - self.col_start		# visible curpos position w.r.t. screen
+	
 	# the primary draw routine for the editor
 	def repaint(self):
 		self.parent.layout_manager.readjust()
@@ -245,7 +243,8 @@ class Editor(Widget):
 			self.parent.addstr(self.y + i - self.line_start, self.x, pad_left_str(str(i+1), self.line_number_width), self.highlighted_line_number_theme if self.curpos.y == i else self.line_number_theme)
 			
 			# print the text
-			text = self.lines[i].replace("\t", " " * self.tab_size)
+			text = replace_tabs(self.lines[i], self.tab_size)
+
 			if(self.col_start < len(text)):
 				vtext = text[self.col_start:] if self.col_end > len(text) else text[self.col_start:self.col_end]
 				

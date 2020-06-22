@@ -6,6 +6,7 @@
 # This module handles all utility functions
 
 from ash.widgets.utils import *
+import copy
 
 # <--------------------- global variables ----------------------->
 file_assoc = dict()
@@ -149,5 +150,32 @@ def get_file_buffer_index(file_list, filename):
 		if(file_list[i].filename == filename): return i
 	return -1
 
+def get_horizontal_cursor_position(text, curpos, tab_size):
+	ptext = text[0:curpos]
+	x = 0
+	
+	for c in ptext:
+		if(c == "\t"):
+			x += (tab_size - (x % tab_size))
+		else:
+			x += 1
+
+	return x
+
+def replace_tabs(text, tab_size):
+	ptext = copy.copy(text)
+	rtext = ""
+	x = 0
+	
+	for c in ptext:
+		if(c == "\t"):
+			delta = (tab_size - (x % tab_size))
+			x += delta
+			rtext += (" " * delta)
+		else:
+			x += 1
+			rtext += c
+
+	return rtext
 # <----------------------- MAIN CODE --------------------------->
 read_file_associations()

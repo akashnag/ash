@@ -68,24 +68,14 @@ class DialogHandler:
 		if(is_ctrl(ch, "Q")): 
 			self.app.dlgSaveAs.hide()
 		elif(is_newline(ch)):
+			self.app.dlgSaveAs.hide()
 			txtFileName = self.app.dlgSaveAs.get_widget("txtFileName")
 			if(not os.path.isfile(str(txtFileName))):
 				self.save_or_overwrite(str(txtFileName))
-				return ch
-			else:
-				y, x = get_center_coords(self.app, 5, 40)
-				self.app.msgBox = MessageBox(self.app.stdscr, y, x, 5, 40, "Replace File", "File already exists, replace?\n(Y)es / (N)o")
-				while(True):
-					response = self.app.msgBox.show()
-					if(response == MSGBOX_YES):	
-						self.save_or_overwrite(str(txtFileName))
-						return ch
-					elif(response == MSGBOX_NO):
-						self.app.dlgSaveAs.hide()
-						return ch
-					else:
-						beep()
-
+			else:				
+				if(self.app.ask_question("REPLACE FILE", "File already exists, replace?")):
+					self.save_or_overwrite(str(txtFileName))
+					
 		return ch
 
 	def save_or_overwrite(self, filename):
@@ -93,11 +83,6 @@ class DialogHandler:
 		try:
 			self.app.main_window.do_save_as(filename)
 		except Exception as e:
-			y, x = get_center_coords(self.app, 5, 40)
-			self.app.msgBox = MessageBox(self.app.stdscr, y, x, 5, 40, "ERROR", "An error occurred while saving file\n(O)K")
-			while(True):
-				response = self.app.msgBox.show()
-				if(response == MSGBOX_OK): return
-				beep()
+			self.app.show_error("An error occurred while saving file")			
 
 	# --------------------------------------------------------------------------------------

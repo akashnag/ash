@@ -137,5 +137,11 @@ def get_center_coords(app, elem_height, elem_width):
 def beep():
 	curses.beep()
 
+def file_exists(file_list, filename):
+	for f in file_list:
+		if(f.filename == filename):
+			return True
+	return False
+
 # <----------------------- MAIN CODE --------------------------->
 read_file_associations()

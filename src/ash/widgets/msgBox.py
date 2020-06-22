@@ -38,6 +38,7 @@ class MessageBox(Window):
 			if(ch > -1): 
 				response = self.check_response(ch)
 				if(response > 0):
+					self.win.clear()
 					return self.check_response(ch)
 				else:
 					beep()

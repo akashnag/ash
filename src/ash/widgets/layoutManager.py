@@ -8,6 +8,7 @@
 from ash.widgets import *
 from ash.widgets.utils.formatting import *
 from ash.widgets.utils.utils import *
+from ash.widgets.editor import *
 
 # <------------------- constants -------------------->
 BORDER_HORIZONTAL		= "\u2500"		# _
@@ -77,7 +78,7 @@ class LayoutManager:
 
 	# check if terminal window has been resized, if so, readjust
 	def readjust(self, forced=False):
-		h, w = self.win.win.getmaxyx()
+		h, w = self.win.app.readjust()
 		if(not forced and h == self.win.height and w == self.win.width): return
 		
 		self.win.height, self.win.width = h, w
@@ -105,7 +106,10 @@ class LayoutManager:
 				self.__addstr(y, x, w)
 
 		for i in range(ec):
-			if(self.editor_exists(i)): self.win.editors[i].repaint()
+			if(self.editor_exists(i) and i != self.win.active_editor_index): 
+				self.win.editors[i].repaint()
+		
+		self.win.get_active_editor().repaint()
 		
 	# checks if given editor exists
 	def editor_exists(self, index):
@@ -219,10 +223,10 @@ class LayoutManager:
 
 		if(new_ec >= old_ec):
 			self.win.layout_type = layout_type
-			while(len(self.editors) > old_ec):
-				self.editors.pop(old_ec)
+			while(len(self.win.editors) > old_ec):
+				self.win.editors.pop(old_ec)
 			for i in range(old_ec, new_ec):
-				self.editors.append(None)
+				self.win.editors.append(None)
 		else:
 			for i in range(new_ec, old_ec):
 				if(self.editor_exists(new_ec)):
@@ -230,3 +234,30 @@ class LayoutManager:
 
 		self.readjust(True)
 		self.win.repaint()
+
+	# called from app_main() in response to Function key press
+	def invoke_activate_editor(self, index):
+		ec = EDITOR_COUNTS[self.win.layout_type]
+		aei = self.win.active_editor_index
+		
+		# layout does not support that editor
+		if(index >= ec):
+			self.win.app.show_error("Selected editor does not exist")
+			return
+		
+		# error
+		if(aei < 0):
+			self.win.app.show_error("Active editor missing")
+			return
+		
+		# if already active, return
+		if(aei == ec): return
+
+		if(self.win.editors[index] == None):
+			self.win.editors[index] = Editor(self.win)
+		
+		self.win.active_editor_index = index
+		self.readjust(True)
+		self.win.repaint()
+		self.win.editors[aei].blur()
+		self.win.editors[index].focus()

@@ -2,3 +2,4 @@ src/test.py
 src/ash/__pycache__
 src/ash/widgets/__pycache__
 src/ash/widgets/utils/__pycache__
+src/*.txt

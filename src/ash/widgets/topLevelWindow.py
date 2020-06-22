@@ -73,11 +73,11 @@ class TopLevelWindow(Window):
 	def update_status(self):
 		aed = self.get_active_editor()
 
-		language = "None"
+		language = ""
 		editor_state = "Inactive"
 		cursor_position = ""
 		loc_count = ""
-		file_size = "0 bytes"
+		file_size = ""
 
 		if(aed != None):
 			lines, sloc = aed.get_loc()
@@ -151,8 +151,49 @@ class TopLevelWindow(Window):
 		self.win.refresh()
 
 	# <----------------------------------- dialog boxes ----------------------------------->
+	def reload_in_all(self, filename):
+		aed = self.get_active_editor()
+		if(aed == None): return			# not possible, since this fn was called from the active-editor on Ctrl+S
+
+		reload_required = False
+		n = len(self.editors)
+		aei = self.active_editor_index
+
+		# check if reload is necessary
+		for i in range(n):
+			if(i == aei): continue
+			if(not self.layout_manager.editor_exists(i)): continue
+
+			ed = self.editors[i]
+			if(ed.has_been_allotted_file and ed.filename == filename):
+				reload_required = True
+				break
+
+		if(not reload_required): return
+		if(not self.app.ask_question("RELOAD", "Reload files in other editors?")): return
+
+		for i in range(n):
+			if(i == aei): continue
+			if(not self.layout_manager.editor_exists(i)): continue
+
+			ed = self.editors[i]
+			if(ed.has_been_allotted_file and ed.filename == filename):
+				ed.read_from_file()
+				ed.save_status = True
+				ed.repaint()
+
+	
 	def do_save_as(self, filename):
 		aed = self.get_active_editor()
 		if(aed == None): return
-
+		
+		# check if the filename is already in the active/recent files list
+		fe = file_exists(self.app.files, filename)
+		
+		# write to file
 		aed.allot_and_save_file(filename)
+
+		# if not, add it to the workspace
+		if(not fe):
+			file_data = aed.get_data()
+			self.app.files.append(file_data)

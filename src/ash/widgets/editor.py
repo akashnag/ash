@@ -221,6 +221,11 @@ class Editor(Widget):
 
 	# the primary draw routine for the editor
 	def repaint(self):
+		self.parent.layout_manager.readjust()
+
+		if(self.height <= 0 or self.width <= 0): return
+		if(self.curpos.x < 0 or self.curpos.y < 0 or self.line_start < 0 or self.line_end <= self.line_start or self.col_start < 0 or self.col_end <= self.col_start): return
+
 		curses.curs_set(self.is_in_focus)
 
 		curpos_row = self.determine_vertical_visibility()
@@ -244,7 +249,10 @@ class Editor(Widget):
 					self.parent.addstr(self.y + i - self.line_start, self.x + self.line_number_width + 1, vtext, self.text_theme)
 		
 		# reposition the cursor
-		self.parent.move(self.y + curpos_row, self.x + self.line_number_width + 1 + curpos_col)
+		try:
+			if(self.is_in_focus): self.parent.move(self.y + curpos_row, self.x + self.line_number_width + 1 + curpos_col)
+		except:
+			self.parent.addstr(0,0,str(self.y + curpos_row)+","+str(self.x + self.line_number_width + 1 + curpos_col),gc())
 		
 	# <---------------------------- Data and File I/O ----------------------------->
 

@@ -44,6 +44,7 @@ class AshEditorApp:
 	# recalculates screen dimensions
 	def readjust(self):
 		self.screen_height, self.screen_width = self.stdscr.getmaxyx()
+		return (self.screen_height, self.screen_width)
 
 	# returns the version of Ash
 	def get_app_version(self):
@@ -79,9 +80,7 @@ class AshEditorApp:
 		init_colors()
 		curses.raw()
 		
-		app_title = "Ash " + APP_VERSION
-		
-		self.main_window = TopLevelWindow(self, self.stdscr, app_title, self.main_key_handler)
+		self.main_window = TopLevelWindow(self, self.stdscr, "Ash " + APP_VERSION, self.main_key_handler)
 		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 15, 28, 11, 23 ]))
 		
 		if(self.app_mode != APP_MODE_PROJECT):
@@ -121,35 +120,54 @@ class AshEditorApp:
 			else:
 				self.dialog_handler.invoke_file_open()
 		elif(is_func(ch)):
-			pass
-			# focus on editor
-			#aed = self.main_window.active_editor_index
-			#ned = get_func_key(ch) - 1
-			#if(ned == aed): return -1
-			#self.main_window.active_editor_index = ned
-			#if(not self.main_window.layout_manager.editor_exists(ned)):
-			#	if(self.app_mode == APP_MODE_BLANK):
-			#		self.main_window.editors[ned] = Editor(self.main_window)
-			#	elif(self.app_mode == APP_MODE_FILE):
-			#		fi = self.files[0] if ned >= len(self.files) else self.files[ned]
-			#		self.main_window.editors[ned] = Editor(self.main_window)
-			#		self.main_window.editors[ned].allot_and_open_file(fi)
-			#	else:
-			#		self.main_window.editors[ned] = Editor(self.main_window)
-			#		self.dialog_handler.invoke_project_file_open()
-
-			#self.main_window.editors[aed].blur()
-			#self.main_window.editors[ned].focus()
+			# F1 - F6 to select an active editor
+			ned = get_func_key(ch) - 1
+			self.main_window.layout_manager.invoke_activate_editor(ned)
+			return -1
 
 		return ch
 
-	def show_error(self, msg):
+	# displays an error message
+	def show_error(self, msg, error=True):
 		y, x = get_center_coords(self, 5, len(msg)+4)
-		self.msgBox = MessageBox(self.stdscr, y, x, 5, len(msg)+4, "ERROR", msg + "\n(O)K")
+		self.msgBox = MessageBox(self.stdscr, y, x, 5, len(msg)+4, ("ERROR" if error else "INFORMATION"), msg + "\n(O)K")
 		while(True):
 			response = self.msgBox.show()
-			if(response == MSGBOX_OK): return -1
+			if(response == MSGBOX_OK): 
+				self.main_window.repaint()
+				return -1
 			beep()
+
+	# displays a question
+	def ask_question(self, title, question, hasCancel=False):
+		y, x = get_center_coords(self, 5, len(question)+4)
+		self.msgBox = MessageBox(self.stdscr, y, x, 5, len(question)+4, title, question + "\n(Y)ES / (N)O" + (" / (C)ANCEL" if hasCancel else ""))
+		while(True):
+			response = self.msgBox.show()
+			if(response == MSGBOX_YES): 
+				self.main_window.repaint()
+				return True
+			elif(response == MSGBOX_NO): 
+				self.main_window.repaint()
+				return False
+			elif(hasCancel and response == MSGBOX_CANCEL):
+				self.main_window.repaint()
+				return None
+			beep()
+
+	# checks if buffer is up-to-date with file on disk
+	def is_file_already_loaded(self, filename):
+		n = len(self.files)
+		for i in range(n):
+			if(self.files[i].filename == filename):
+				if(not self.files[i].save_status):
+					return True			# do not reload from disk as buffer is updated
+				else:
+					return False		# can reload from disk
+
+		# assumes that file is already present in the list
+		# if file not present in list, do NOT call this function as returned value can be misinterpreted
+		return False
 
 	# <------------------------------ Dialog stubs ------------------------------------->
 

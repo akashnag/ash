@@ -363,9 +363,11 @@ class EditorKeyHandler:
 	def handle_save(self):
 		if(not self.ed.save_status):
 			if(self.ed.has_been_allotted_file):
-				self.ed.save_to_file()
+				self.ed.save_to_file()				
 			else:
-				self.ed.parent.app.invoke_file_save_as()			
+				self.ed.parent.app.invoke_file_save_as()
+		
+		if(self.ed.save_status): self.ed.parent.reload_in_all(self.ed.filename)
 
 	def handle_select_all(self):
 		nlen = len(self.ed.lines)

@@ -11,6 +11,45 @@ class DialogHandler:
 	def __init__(self, app):
 		self.app = app
 
+
+	# <----------------------------------- Close Editor/App --------------------------------->
+
+	def invoke_quit(self):
+		mw = self.app.main_window
+		
+		# ADD CODE
+		
+		mw.hide()
+
+	# <----------------------------------- File Open --------------------------------->
+
+	def invoke_project_file_open(self):
+		pass
+
+	def invoke_file_open(self):
+		self.app.readjust()
+		y, x = get_center_coords(self.app, 11, 40)
+		self.app.dlgFileOpen = ModalDialog(self.app.stdscr, y, x, 11, 40, "OPEN FILE", self.file_open_key_handler)
+		txtFileName = TextField(self.app.dlgFileOpen, 2, 2, 36, str(os.getcwd()) + "/")
+		lstActiveFiles = ListBox(self.app.dlgFileOpen, 4, 2, 36, 6)
+		for f in self.app.files:
+			lstActiveFiles.add_item(get_file_title(f.filename))
+		self.app.dlgFileOpen.add_widget("txtFileName", txtFileName)
+		self.app.dlgFileOpen.add_widget("lstActiveFiles", lstActiveFiles)
+		self.app.dlgFileOpen.show()		
+
+	def file_open_key_handler(self, ch):
+		if(is_ctrl(ch, "Q")):
+			self.app.dlgFileOpen.hide()
+			return -1
+		elif(is_newline(ch)):
+			self.app.dlgFileOpen.hide()
+			return -1
+		else:
+			return ch
+
+	# <----------------------------------------------------------------------------------->
+
 	# <----------------------------------- Switch Layout --------------------------------->
 
 	def invoke_switch_layout(self):

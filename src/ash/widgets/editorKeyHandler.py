@@ -335,7 +335,7 @@ class EditorKeyHandler:
 		elif(is_ctrl(ch, "S")):
 			self.handle_save()
 		elif(is_ctrl(ch, "O")):
-			self.ed.parent.invoke_file_open()
+			self.ed.parent.app.dialog_handler.invoke_file_open()
 		elif(is_ctrl(ch, "N")):
 			self.ed.parent.invoke_file_new()
 		elif(is_ctrl(ch, "F")):

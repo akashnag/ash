@@ -18,6 +18,7 @@ class ListBox(Widget):
 		self.items = list()
 		self.theme = gc(COLOR_FORMFIELD)
 		self.focus_theme = gc(COLOR_FORMFIELD_FOCUSSED)
+		self.sel_blur_theme = gc(COLOR_FORMFIELD_SELECTED_BLURRED)
 		self.sel_index = -1
 		self.is_in_focus = False
 		self.repaint()
@@ -81,7 +82,7 @@ class ListBox(Widget):
 				if(self.is_in_focus):
 					self.parent.addstr(self.y + i - start, self.x, text, self.focus_theme)
 				else:
-					self.parent.addstr(self.y + i - start, self.x, text, curses.A_REVERSE | self.theme)
+					self.parent.addstr(self.y + i - start, self.x, text, self.sel_blur_theme)
 			else:				
 				self.parent.addstr(self.y + i - start, self.x, text, self.theme)
 	
@@ -106,6 +107,7 @@ class ListBox(Widget):
 	# append an item to the list
 	def add_item(self, item):
 		self.items.append(item)
+		if(self.sel_index < 0): self.sel_index = 0
 
 	# remove an item from the list
 	def remove_item(self, index):

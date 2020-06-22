@@ -88,6 +88,12 @@ class Editor(Widget):
 
 		self.repaint()
 
+	# checks to see if editor can be closed without user confirmation
+	def can_quit(self):
+		if(self.save_status): return True
+		if(not self.has_been_allotted_file and len(self.__str__()) == 0): return True
+		return False
+
 	# when focus received
 	def focus(self):
 		self.is_in_focus = True

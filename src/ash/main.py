@@ -101,28 +101,27 @@ class AshEditorApp:
 		#	beep()
 		
 		if(is_ctrl(ch, "Q")): 
-			# for diagnostic purposes (since Ctrl+C is disabled)
-			self.main_window.hide()
+			# quits the active editor or the app
+			self.dialog_handler.invoke_quit()
 		elif(is_ctrl(ch, "L")):
 			# adjust layout
 			self.dialog_handler.invoke_switch_layout()
-		elif(is_ctrl(ch, "O")):
-			# open file
-			aed = self.main_window.active_editor_index
-			if(aed < 0):
-				return self.show_error("No editor selected")
-			elif(self.main_window.editors[aed].save_status == False):
-				if(self.main_window.editors[aed].has_been_allotted_file or len(str(self.main_window.editors[aed])) > 0):
-					return self.show_error("Current file must be saved first")
-			
-			if(self.app_mode == APP_MODE_PROJECT):
-				self.dialog_handler.invoke_project_file_open()
-			else:
-				self.dialog_handler.invoke_file_open()
 		elif(is_func(ch)):
 			# F1 - F6 to select an active editor
-			ned = get_func_key(ch) - 1
-			self.main_window.layout_manager.invoke_activate_editor(ned)
+			fn = get_func_key(ch)
+			ned = fn - 1
+			
+			if(ned >=0 and ned <= 5):
+				self.main_window.layout_manager.invoke_activate_editor(ned)
+			elif(fn == 7):
+				pass
+			elif(fn == 8):
+				pass
+			elif(fn == 9):
+				pass
+			elif(fn == 12):
+				pass
+				
 			return -1
 
 		return ch

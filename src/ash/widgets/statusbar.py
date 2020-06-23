@@ -32,8 +32,17 @@ class StatusBar(Widget):
 		# but curses.window.addstr() throws error as cursor has
 		# no place to go
 		w = int(self.parent.get_width())-1
+		cumw = 0
 		for i in range(len(self.section_widths)):
-			str += pad_right_str(" " + self.sections[i] + " ", self.section_widths[i])
+			if(self.section_widths[i] <= 0):			# use all of the remaining space
+				remw = w - cumw
+				if(self.section_widths[i] == 0):		# 0 = align left
+					str += pad_right_str(" " + self.sections[i] + " ", remw)
+				else:									# negative = align right
+					str += pad_left_str(" " + self.sections[i] + " ", remw)
+			else:
+				str += pad_right_str(" " + self.sections[i] + " ", self.section_widths[i])
+				cumw += self.section_widths[i]
 
 		if(len(str) > w):
 			return str[0:w]

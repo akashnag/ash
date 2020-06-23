@@ -258,20 +258,13 @@ class LayoutManager:
 		
 		if(aei >= 0): 
 			# before switching, save recent changes to buffer
-			filedata = self.win.editors[aei].get_data()
-			filename = filedata.filename
-			if(filename != None):
-				bi = get_file_buffer_index(self.win.app.files, filename)
-				if(bi > -1): self.win.app.files[bi] = filedata
+			save_to_buffer(self.win.app.files, self.win.editors[aei])
 			
 			# remove focus
 			self.win.editors[aei].blur()
 
 		# load most recent changes from buffer
-		filename = self.win.editors[index].filename
-		if(filename != None):
-			bi = get_file_buffer_index(self.win.app.files, filename)
-			if(bi > -1): self.win.editors[index].set_data(self.win.app.files[bi])
-
+		load_from_buffer(self.win.app.files, self.win.editors[index])
+		
 		# put focus
 		self.win.editors[index].focus()

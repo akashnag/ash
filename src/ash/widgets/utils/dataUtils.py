@@ -73,6 +73,21 @@ def get_file_buffer_index(file_list, filename):
 		if(file_list[i].filename == filename): return i
 	return -1
 
+def save_to_buffer(files, ed):
+	if(files == None or ed == None): return
+	filedata = ed.get_data()
+	filename = filedata.filename
+	if(filename != None):
+		bi = get_file_buffer_index(files, filename)
+		if(bi > -1): files[bi] = filedata
+
+def load_from_buffer(files, ed):
+	if(files == None or ed == None): return
+	filename = ed.filename
+	if(filename != None):
+		bi = get_file_buffer_index(files, filename)
+		if(bi > -1): ed.set_data(files[bi])
+
 
 # <----------------------- MAIN CODE --------------------------->
 read_file_associations()

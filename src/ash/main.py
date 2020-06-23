@@ -8,6 +8,7 @@ from ash import *
 from ash.dialogHandler import *
 
 APP_VERSION			= "v1.0"
+UNSAVED_BULLET		= "\u2022 "
 
 APP_MODE_FILE		= 1		# if ash is invoked with zero or more file names
 APP_MODE_PROJECT	= 2		# if ash is invoked with a single directory name
@@ -68,7 +69,7 @@ class AshEditorApp:
 		else:
 			app_title = "Untitled - " + app_title
 		
-		app_title = ("" if active_editor.save_status else "\u2022 ") + app_title
+		app_title = ("" if active_editor.save_status else UNSAVED_BULLET) + app_title
 		return app_title
 
 	# initialize the GUI
@@ -80,7 +81,7 @@ class AshEditorApp:
 		curses.raw()
 		
 		self.main_window = TopLevelWindow(self, self.stdscr, "Ash " + APP_VERSION, self.main_key_handler)
-		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 15, 28, 11, 23 ]))
+		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 20, 28, 11, -1 ]))
 		
 		if(self.app_mode != APP_MODE_PROJECT):
 			editor = Editor(self.main_window)
@@ -91,8 +92,13 @@ class AshEditorApp:
 			self.main_window.add_editor(editor)
 			self.main_window.layout_manager.readjust(True)
 		
-		self.main_window.show()		
-		
+		self.main_window.show()		# this call returns when main_window() is closed
+		self.__destroy()
+	
+	# called on app_exit
+	def __destroy(self):
+		pass
+
 	# primary key handler to receive all key combinations from TopLevelWindow
 	def main_key_handler(self, ch):
 		#if(self.show_error("You pressed: " + str(curses.keyname(ch)))):
@@ -130,8 +136,9 @@ class AshEditorApp:
 
 	# displays an error message
 	def show_error(self, msg, error=True):
-		y, x = get_center_coords(self, 5, len(msg)+4)
-		self.msgBox = MessageBox(self.stdscr, y, x, 5, len(msg)+4, ("ERROR" if error else "INFORMATION"), msg + "\n(O)K")
+		msg_lines, msg_len = get_message_dimensions(msg)
+		y, x = get_center_coords(self, msg_lines + 4, msg_len + 4)		
+		self.msgBox = MessageBox(self.stdscr, y, x, msg_lines + 4, msg_len + 4, ("ERROR" if error else "INFORMATION"), msg + "\n(O)K")
 		while(True):
 			response = self.msgBox.show()
 			if(response == MSGBOX_OK): 
@@ -141,8 +148,9 @@ class AshEditorApp:
 
 	# displays a question
 	def ask_question(self, title, question, hasCancel=False):
-		y, x = get_center_coords(self, 5, len(question)+4)
-		self.msgBox = MessageBox(self.stdscr, y, x, 5, len(question)+4, title, question + "\n(Y)ES / (N)O" + (" / (C)ANCEL" if hasCancel else ""))
+		msg_lines, msg_len = get_message_dimensions(question)
+		y, x = get_center_coords(self, msg_lines + 4, msg_len + 4)
+		self.msgBox = MessageBox(self.stdscr, y, x, msg_lines + 4, msg_len + 4, title, question + "\n(Y)ES / (N)O" + (" / (C)ANCEL" if hasCancel else ""))
 		while(True):
 			response = self.msgBox.show()
 			if(response == MSGBOX_YES): 

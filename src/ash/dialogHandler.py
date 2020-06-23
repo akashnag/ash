@@ -7,6 +7,8 @@
 
 from ash import *
 
+UNSAVED_BULLET		= "\u2022 "
+
 class DialogHandler:
 	def __init__(self, app):
 		self.app = app
@@ -98,11 +100,15 @@ class DialogHandler:
 				else:
 					# case 3(a)[ii]
 					response = self.app.ask_question("SAVE/DISCARD ALL", "One or more unsaved files exist, choose yes(save-all) / no(discard-all) / cancel(dont-quit)", True)
-					if(response == MSGBOX_YES):
+					if(response == None):
+						return
+					elif(response):
 						self.save_all_buffers()
 						mw.hide()
-					elif(response == MSGBOX_NO):
+						return
+					elif(not response):
 						mw.hide()
+						return
 		else:
 			if(aed.save_status):
 				# case 1
@@ -142,13 +148,16 @@ class DialogHandler:
 		pass
 
 	def invoke_file_open(self):
+		# save recent changes to buffer
+		save_to_buffer(self.app.files, self.app.main_window.get_active_editor())
+			
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 11, 40)
-		self.app.dlgFileOpen = ModalDialog(self.app.stdscr, y, x, 11, 40, "OPEN FILE", self.file_open_key_handler)
-		txtFileName = TextField(self.app.dlgFileOpen, 2, 2, 36, str(os.getcwd()) + "/")
-		lstActiveFiles = ListBox(self.app.dlgFileOpen, 4, 2, 36, 6)
+		y, x = get_center_coords(self.app, 11, 60)
+		self.app.dlgFileOpen = ModalDialog(self.app.stdscr, y, x, 11, 60, "OPEN FILE", self.file_open_key_handler)
+		txtFileName = TextField(self.app.dlgFileOpen, 2, 2, 56, str(os.getcwd()) + "/")
+		lstActiveFiles = ListBox(self.app.dlgFileOpen, 4, 2, 56, 6)
 		for f in self.app.files:
-			lstActiveFiles.add_item(get_file_title(f.filename))
+			lstActiveFiles.add_item(("   " if f.save_status else UNSAVED_BULLET) +  get_file_title(f.filename))
 		self.app.dlgFileOpen.add_widget("txtFileName", txtFileName)
 		self.app.dlgFileOpen.add_widget("lstActiveFiles", lstActiveFiles)
 		self.app.dlgFileOpen.show()		

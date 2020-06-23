@@ -114,3 +114,12 @@ def replace_tabs(text, tab_size):
 			rtext += c
 
 	return rtext
+
+def get_message_dimensions(msg):
+	mlines = msg.count("\n") + 1
+	data = msg.split("\n")
+	mlen = 0
+	for line in data:
+		if(len(line) > mlen):
+			mlen = len(line)
+	return (mlines, mlen)

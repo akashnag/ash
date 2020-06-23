@@ -221,8 +221,9 @@ class DialogHandler:
 		for i in range(len(layouts)):
 			if(self.app.main_window.layout_type == i):
 				lstLayouts.add_item("\u2713 " + layouts[i])
+				lstLayouts.sel_index = i
 			else:
-				lstLayouts.add_item(layouts[i])
+				lstLayouts.add_item("  " + layouts[i])
 
 		self.app.dlgSwitchLayout.add_widget("lstLayouts", lstLayouts)
 		self.app.dlgSwitchLayout.show()

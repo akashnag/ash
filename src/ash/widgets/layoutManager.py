@@ -223,7 +223,6 @@ class LayoutManager:
 		new_ec = EDITOR_COUNTS[layout_type]
 
 		if(new_ec >= old_ec):
-			self.win.layout_type = layout_type
 			while(len(self.win.editors) > old_ec):
 				self.win.editors.pop(old_ec)
 			for i in range(old_ec, new_ec):
@@ -233,6 +232,7 @@ class LayoutManager:
 				if(self.editor_exists(new_ec)):
 					self.win.remove_editor(new_ec)
 
+		self.win.layout_type = layout_type			
 		self.readjust(True)
 		self.win.repaint()
 

@@ -31,7 +31,7 @@ class StatusBar(Widget):
 		# subtraction of 1 should not be necessary
 		# but curses.window.addstr() throws error as cursor has
 		# no place to go
-		w = int(self.parent.get_width())-1
+		w = int(self.parent.get_width()) - 1
 		cumw = 0
 		for i in range(len(self.section_widths)):
 			if(self.section_widths[i] <= 0):			# use all of the remaining space

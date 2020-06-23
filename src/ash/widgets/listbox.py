@@ -49,6 +49,9 @@ class ListBox(Widget):
 		if(self.is_in_focus): curses.curs_set(False)
 		
 		count = len(self.items)
+		start = 0
+		end = min([self.row_count, count])
+
 		if(count <= self.row_count):
 			start = 0
 			end = count
@@ -56,21 +59,13 @@ class ListBox(Widget):
 			start = 0
 			end = self.row_count
 		else:
-			flank = self.row_count // 2
-			start = self.sel_index - flank
-			end = self.sel_index + flank
-
-			if(start < 0):
-				delta = abs(start)
-				start += delta
-				end += delta				
-			elif(end > count):
-				delta = end - count
-				start -= delta
-				end -= delta
-			elif(start == end and end < count):
-				end += 1
-
+			if(self.sel_index < start):
+				start = self.sel_index
+				end = min([start + self.row_count, count])
+			elif(self.sel_index >= end):
+				end = self.sel_index + 1
+				start = max([end - self.row_count, 0])
+			
 		for i in range(start, end):
 			n = 2 + len(str(self.items[i]))
 			if(n > self.width):

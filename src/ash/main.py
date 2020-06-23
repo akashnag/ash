@@ -81,7 +81,9 @@ class AshEditorApp:
 		curses.raw()
 		
 		self.main_window = TopLevelWindow(self, self.stdscr, "Ash " + APP_VERSION, self.main_key_handler)
-		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 20, 28, 11, -1 ]))
+		
+		# status-bar sections: status, file-type, sloc, file-size, encoding, unsaved-file-count, tab-size, cursor-position
+		self.main_window.add_status_bar(StatusBar(self.main_window, [ 12, 15, 17, 28, 11, 6, 4, -1 ]))
 		
 		if(self.app_mode != APP_MODE_PROJECT):
 			editor = Editor(self.main_window)

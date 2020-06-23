@@ -89,11 +89,14 @@ class TopLevelWindow(Window):
 	def update_status(self):
 		aed = self.get_active_editor()
 
+		tab_size = ""
 		language = ""
 		editor_state = "inactive"
 		cursor_position = ""
 		loc_count = ""
 		file_size = ""
+		unsaved_file_count = ""
+		encoding = ""
 
 		if(aed != None):
 			lines, sloc = aed.get_loc()
@@ -111,14 +114,21 @@ class TopLevelWindow(Window):
 				editor_state = "unsaved"
 				language = "unknown"
 
-			cursor_position = str(aed.get_cursor_position())
+			cursor_position = str(aed.get_cursor_position()) + aed.get_selection_length_as_string()
+			encoding = aed.encoding
+			tab_size = str(aed.tab_size)
+		
+		unsaved_file_count = str(get_number_of_unsaved_files(self.app.files) + get_number_of_unsaved_buffers(self)) + "*"
 		
 		self.status.set(0, editor_state)
 		self.status.set(1, language)
-		self.status.set(2, loc_count)
-		self.status.set(3, file_size)
-		self.status.set(4, cursor_position)
-
+		self.status.set(2, encoding)
+		self.status.set(3, loc_count)
+		self.status.set(4, file_size)		
+		self.status.set(5, unsaved_file_count)
+		self.status.set(6, tab_size)
+		self.status.set(7, cursor_position)
+		
 		if(aed != None):
 			self.set_title(self.app.get_app_title(aed))
 		else:
@@ -158,9 +168,9 @@ class TopLevelWindow(Window):
 		self.layout_manager.readjust()
 		self.win.clear()
 
-		self.win.addstr(0, 0, pad_center_str(self.title, self.width), curses.A_BOLD | gc(COLOR_TITLEBAR))
 		if(self.status != None): self.win.addstr(self.height-1, 0, str(self.status), gc(COLOR_STATUSBAR))
-
+		self.win.addstr(0, 0, pad_center_str(self.title, self.width), curses.A_BOLD | gc(COLOR_TITLEBAR))
+		
 		self.layout_manager.draw_layout_borders()
 		self.layout_manager.repaint_editors()
 		

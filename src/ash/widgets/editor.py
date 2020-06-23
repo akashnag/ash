@@ -45,6 +45,7 @@ class Editor(Widget):
 		self.selection_mode = False
 		self.sel_start = CursorPosition(0,0)
 		self.sel_end = CursorPosition(0,0)
+		self.encoding = "utf-8"
 
 		# set default tab size
 		self.tab_size = 4
@@ -164,27 +165,24 @@ class Editor(Widget):
 	# print selected text using selection-theme
 	def print_selection(self, line_index):
 		start, end = self.get_selection_endpoints()
+		
 		text = self.lines[line_index]
-		wstext = text.replace("\t", " " * self.tab_size)
+		wstext = replace_tabs(text, self.tab_size)
 		vtext = wstext[self.col_start:] if self.col_end > len(wstext) else wstext[self.col_start:self.col_end]
+		
+		vstartx = get_horizontal_cursor_position(text, start.x, self.tab_size)
+		vendx = get_horizontal_cursor_position(text, end.x, self.tab_size)
 
-		if(start.y == end.y):
-			vstartx = start.x + (text[0:start.x].count("\t") * (self.tab_size - 1))
-			vendx = end.x + (text[0:end.x].count("\t") * (self.tab_size - 1))
-						
+		if(start.y == end.y):						
 			# print in 3 parts: before start, between start & end, after end
 			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext[0:vstartx], self.text_theme)
 			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vstartx, vtext[vstartx:vendx], self.selection_theme)
 			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vendx, vtext[vendx:], self.text_theme)
 		elif(line_index == start.y):
-			vstartx = start.x + (text[0:start.x].count("\t") * (self.tab_size - 1))
-			
 			# print in 2 parts: before start, after start
 			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext[0:vstartx], self.text_theme)
 			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vstartx, vtext[vstartx:], self.selection_theme)
 		elif(line_index == end.y):
-			vendx = end.x + (text[0:end.x].count("\t") * (self.tab_size - 1))
-						
 			# print in 2 parts: before end, after end
 			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext[0:vendx], self.selection_theme)
 			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vendx, vtext[vendx:], self.text_theme)
@@ -261,6 +259,25 @@ class Editor(Widget):
 		
 	# <---------------------------- Data and File I/O ----------------------------->
 
+	# returns the selection length (for incorporating into status-bar)
+	def get_selection_length_as_string(self):
+		if(not self.selection_mode): return ""
+		
+		count = 0
+		start, end = self.get_selection_endpoints()
+
+		if(start.y != end.y):
+			for i in range(start.y + 1, end.y):
+				count += len(self.lines[i]) + 1
+
+			count += len(self.lines[start.y]) - start.x
+			count += end.x
+			count += 1
+		else:
+			count = end.x - start.x
+
+		return " {" + str(count) + "}"
+
 	# returns the string representation of the document
 	def __str__(self):
 		data = ""
@@ -268,10 +285,12 @@ class Editor(Widget):
 			data += self.newline + line
 		return data[len(self.newline):]
 
+	# returns a file-data object
 	def get_data(self):
-		file_data = FileData(self.filename, self.__str__(), self.curpos, self.save_status, self.selection_mode, self.sel_start, self.sel_end)
+		file_data = FileData(self.filename, self.__str__(), self.curpos, self.save_status, self.selection_mode, self.sel_start, self.sel_end, self.encoding, self.tab_size)
 		return file_data
 
+	# assigns a file-data object
 	def set_data(self, file_data):
 		text = file_data.buffer
 
@@ -282,6 +301,8 @@ class Editor(Widget):
 		self.filename = file_data.filename
 		self.has_been_allotted_file = file_data.has_been_allotted_file
 		self.save_status = file_data.save_status
+		self.encoding = file_data.encoding
+		self.tab_size = file_data.tab_size
 
 		self.lines.clear()
 

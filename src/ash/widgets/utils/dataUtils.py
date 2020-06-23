@@ -88,6 +88,19 @@ def load_from_buffer(files, ed):
 		bi = get_file_buffer_index(files, filename)
 		if(bi > -1): ed.set_data(files[bi])
 
+def get_number_of_unsaved_files(files_list):
+	count = 0
+	for f in files_list:
+		if(not f.save_status): count += 1
+	return count
+
+def get_number_of_unsaved_buffers(main_window):
+	n = len(main_window.editors)
+	count = 0
+	for i in range(n):
+		if(main_window.editors[i] != None and main_window.editors[i].filename == None and not main_window.editors[i].save_status):
+			count += 1
+	return count
 
 # <----------------------- MAIN CODE --------------------------->
 read_file_associations()

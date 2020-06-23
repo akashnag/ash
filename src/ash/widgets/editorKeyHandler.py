@@ -13,6 +13,34 @@ class EditorKeyHandler:
 	def __init__(self, ed):
 		self.ed = ed
 	
+	def handle_ctrl_and_func_keys(self, ch):
+		if(is_ctrl(ch, "A")):
+			self.handle_select_all()
+		elif(is_ctrl(ch, "C")):
+			self.handle_copy()
+		elif(is_ctrl(ch, "X")):
+			self.handle_cut()
+		elif(is_ctrl(ch, "V")):
+			self.handle_paste()
+		elif(is_ctrl(ch, "S")):
+			self.handle_save()
+		elif(is_ctrl(ch, "G")):
+			self.ed.parent.app.dialog_handler.invoke_go_to_line()
+		elif(is_ctrl(ch, "O")):
+			self.ed.parent.app.dialog_handler.invoke_file_open()
+		elif(is_ctrl(ch, "N")):
+			self.ed.parent.app.dialog_handler.invoke_file_new()
+		elif(is_ctrl(ch, "F")):
+			self.ed.parent.app.dialog_handler.invoke_find()
+		elif(is_ctrl(ch, "H")):
+			self.ed.parent.app.dialog_handler.invoke_find_and_replace()
+		elif(is_ctrl(ch, "P")):
+			self.ed.parent.app.dialog_handler.invoke_file_print()
+		elif(is_ctrl(ch, "Z")):
+			self.handle_undo()
+		elif(is_ctrl(ch, "Y")):
+			self.handle_redo()
+
 	# handle the 4 arrow keys
 	def handle_arrow_keys(self, ch):
 		row = self.ed.curpos.y
@@ -322,34 +350,6 @@ class EditorKeyHandler:
 			else:
 				self.ed.curpos.y += h-1
 			self.ed.curpos.x = 0
-
-	def handle_ctrl_and_func_keys(self, ch):
-		if(is_ctrl(ch, "A")):
-			self.handle_select_all()
-		elif(is_ctrl(ch, "C")):
-			self.handle_copy()
-		elif(is_ctrl(ch, "X")):
-			self.handle_cut()
-		elif(is_ctrl(ch, "V")):
-			self.handle_paste()
-		elif(is_ctrl(ch, "S")):
-			self.handle_save()
-		elif(is_ctrl(ch, "G")):
-			self.ed.parent.app.dialog_handler.invoke_go_to_line()
-		elif(is_ctrl(ch, "O")):
-			self.ed.parent.app.dialog_handler.invoke_file_open()
-		elif(is_ctrl(ch, "N")):
-			self.ed.parent.app.dialog_handler.invoke_file_new()
-		elif(is_ctrl(ch, "F")):
-			self.ed.parent.app.dialog_handler.invoke_find()
-		elif(is_ctrl(ch, "H")):
-			self.ed.parent.app.dialog_handler.invoke_find_and_replace()
-		elif(is_ctrl(ch, "P")):
-			self.ed.parent.app.dialog_handler.invoke_file_print()
-		elif(is_ctrl(ch, "Z")):
-			self.handle_undo()
-		elif(is_ctrl(ch, "Y")):
-			self.handle_redo()
 		
 	def handle_undo(self):
 		pass

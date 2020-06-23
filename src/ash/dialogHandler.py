@@ -30,7 +30,7 @@ class DialogHandler:
 			if(len(line) == 0):
 				beep()
 				return ch
-				
+
 			pos = line.find(".")
 			if(pos > -1):
 				row = int(line[0:pos]) - 1
@@ -67,7 +67,9 @@ class DialogHandler:
 		#		(a) if no file allotted: ask to be saved first, before closing
 		#		(b)	if file allotted: close editor (maintain buffer)
 		# 3. No active editor: check if other editors exist:
-		# 		(a) No other editors exist: quit application
+		# 		(a) No other editors exist: check if unsaved files exist
+		# 			(i) no unsaved files exist: quit application
+		#			(ii) unsaved files exist: ask user (Yes: save-all, No: discard-all, Cancel: dont-quit)
 		# 		(b) Other editors exist: inform user that other editors exist
 
 		if(aed == None):
@@ -84,7 +86,23 @@ class DialogHandler:
 				self.app.show_error("Close all windows to quit application or use Ctrl+@ to force-quit")
 			else:
 				# case 3(a)
-				mw.hide()
+				all_saved = True
+				for f in self.app.files:
+					if(not f.save_status):
+						all_saved = False
+						break
+
+				if(all_saved):
+					# case 3(a)[i]
+					mw.hide()
+				else:
+					# case 3(a)[ii]
+					response = self.app.ask_question("SAVE/DISCARD ALL", "One or more unsaved files exist, choose yes(save-all) / no(discard-all) / cancel(dont-quit)", True)
+					if(response == MSGBOX_YES):
+						self.save_all_buffers()
+						mw.hide()
+					elif(response == MSGBOX_NO):
+						mw.hide()
 		else:
 			if(aed.save_status):
 				# case 1
@@ -95,15 +113,18 @@ class DialogHandler:
 				mw.close_active_editor()
 			else:
 				if(not aed.has_been_allotted_file):
-					# case 2(a)
-					if(self.app.ask_question("DISCARD CHANGES", "Do you want to save this file (Yes) or discard changes (No)?")):
-						self.invoke_file_save_as()
-						if(aed.save_status): 
-							# no need to add this filedata to list of active files as
-							# invoke_file_save_as() already does it
-							mw.close_active_editor()
-					else:
+					if(aed.can_quit()):
 						mw.close_active_editor()
+					else:
+						# case 2(a)
+						if(self.app.ask_question("DISCARD CHANGES", "Do you want to save this file (Yes) or discard changes (No)?")):
+							self.invoke_file_save_as()
+							if(aed.save_status): 
+								# no need to add this filedata to list of active files as
+								# invoke_file_save_as() already does it
+								mw.close_active_editor()
+						else:
+							mw.close_active_editor()
 				else:
 					# case 2(b) [same as case 1]
 					filename = aed.filename
@@ -111,6 +132,9 @@ class DialogHandler:
 					filedata = aed.get_data()
 					self.app.files[buffer_index] = filedata
 					mw.close_active_editor()
+
+	def save_all_buffers(self):
+		pass
 
 	# <----------------------------------- File Open --------------------------------->
 
@@ -130,14 +154,42 @@ class DialogHandler:
 		self.app.dlgFileOpen.show()		
 
 	def file_open_key_handler(self, ch):
+		txtFileName = self.app.dlgFileOpen.get_widget("txtFileName")
+		lstActiveFiles = self.app.dlgFileOpen.get_widget("lstActiveFiles")
+		sel_index = lstActiveFiles.get_sel_index()
+		mw = self.app.main_window
+		aed = mw.get_active_editor()
+
 		if(is_ctrl(ch, "Q")):
 			self.app.dlgFileOpen.hide()
 			return -1
 		elif(is_newline(ch)):
 			self.app.dlgFileOpen.hide()
+			if(lstActiveFiles.is_in_focus and sel_index > -1): txtFileName.set_text(self.app.files[sel_index].filename)
+			filename = str(txtFileName)
+
+			if(not aed.can_quit()):
+				if(aed.has_been_allotted_file):
+					# save data into buffer and load new file
+					filedata = aed.get_data()
+					current_filename = filedata.filename
+					bi = get_file_buffer_index(self.app.files, current_filename)
+					self.app.files[bi] = filedata
+				else:
+					self.app.show_error("You must save current changes before loading new file")
+					return -1
+			
+			if(not file_exists_in_buffer(self.app.files, filename)):
+				self.app.files.append(FileData(filename))
+
+			bi = get_file_buffer_index(self.app.files, filename)
+			aed.set_data(self.app.files[bi])
+			
 			return -1
-		else:
-			return ch
+		elif(is_tab(ch) or ch == curses.KEY_BTAB):
+			if(sel_index > -1): txtFileName.set_text(self.app.files[sel_index].filename)			
+		
+		return ch
 
 	# <----------------------------------------------------------------------------------->
 

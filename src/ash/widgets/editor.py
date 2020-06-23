@@ -310,6 +310,15 @@ class Editor(Widget):
 		self.has_been_allotted_file = True
 		if(os.path.isfile(self.filename)): self.read_from_file()
 		self.save_status = True
+
+		self.selection_mode = False
+		self.curpos.x = 0
+		self.curpos.y = 0
+		self.col_start = 0
+		self.col_end = self.width
+		self.line_start = 0
+		self.line_end = self.height
+
 		self.parent.update_status()
 
 	# saves data to a file, overwrites it if it exists

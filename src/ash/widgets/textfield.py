@@ -28,6 +28,11 @@ class TextField(Widget):
 
 		self.focus()
 	
+	def set_text(self, text):
+		self.text = text
+		self.curpos = len(text)
+		self.repaint()
+	
 	# when focus received
 	def focus(self):
 		self.is_in_focus = True
@@ -89,7 +94,7 @@ class TextField(Widget):
 
 	# draws the textfield
 	def repaint(self):
-		if(self.is_in_focus): curses.curs_set(True)
+		curses.curs_set(self.is_in_focus)
 		paint_theme = self.theme
 		if(self.is_in_focus and self.focus_theme != None): paint_theme = self.focus_theme
 		

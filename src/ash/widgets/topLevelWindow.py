@@ -137,8 +137,8 @@ class TopLevelWindow(Window):
 			ch = self.win.getch()
 			if(ch == -1): continue
 			
-			# send keypresses to main handler first
-			if(self.handler_func != None):
+			# send Ctrl/Fn keypresses to main handler first
+			if(self.handler_func != None and is_ctrl_or_func(ch)):
 				ch = self.handler_func(ch)
 				if(self.win == None): return
 
@@ -204,7 +204,7 @@ class TopLevelWindow(Window):
 		if(aed == None): return
 		
 		# check if the filename is already in the active/recent files list
-		fe = file_exists(self.app.files, filename)
+		fe = file_exists_in_buffer(self.app.files, filename)
 		
 		# write to file
 		aed.allot_and_save_file(filename)

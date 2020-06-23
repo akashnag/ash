@@ -6,10 +6,6 @@
 # This module handles all utility functions
 
 from ash.widgets.utils import *
-import copy
-
-# <--------------------- global variables ----------------------->
-file_assoc = dict()
 
 # <---------------------- key bindings --------------------------->
 
@@ -76,22 +72,6 @@ def is_ctrl_arrow(ch, arrow = None):
 
 # <------------------------- other functions ---------------------->
 
-def read_file_associations():
-	global file_assoc
-	
-	f = open("config/languages.conf", "rt")
-	assoc = f.read().splitlines()
-	f.close()
-
-	file_assoc = dict()
-	for a in assoc:
-		x = a.split(":=")
-		file_assoc[x[0].strip()] = x[1].strip()
-
-def get_file_type(filename):
-	pos = filename.rfind(".")
-	ext = filename[pos+1:].strip().lower()
-	return file_assoc.get(ext)	
 
 # check if selection-start is before selection-end or vice-versa
 # i.e. check if selection is forwards from the cursor, or backwards
@@ -100,55 +80,12 @@ def is_start_before_end(start, end):
 	if(start.y < end.y): return True
 	return False
 
-def get_file_title(filename):
-	if(filename == None): return "Untitled"
-	pos = filename.rfind("/")
-	if(pos == -1):
-		return filename
-	else:
-		return filename[pos+1:]
-
-def get_file_size(filename):
-	bytes = os.stat(filename).st_size
-	if(bytes < 1000):
-		return str(bytes) + " bytes"
-	else:
-		kb = bytes / 1024
-		if(kb >= 1000):
-			mb = kb / 1024
-			if(mb >= 1000):
-				gb = mb / 1024
-				if(gb >= 1000):
-					tb = gb / 1024
-					if(tb >= 1000):
-						pb = tb / 1024
-						return str(round(pb,2)) + " PB"
-					else:
-						return str(round(tb,2)) + " KB"
-				else:
-					return str(round(gb,2)) + " GB"
-			else:
-				return str(round(mb,2)) + " MB"
-		else:
-			return str(round(kb,2)) + " KB"
 
 def get_center_coords(app, elem_height, elem_width):
 	return ((app.screen_height - elem_height) // 2, (app.screen_width - elem_width) // 2)
 
 def beep():
 	curses.beep()
-
-def file_exists(file_list, filename):
-	for f in file_list:
-		if(f.filename == filename):
-			return True
-	return False
-
-def get_file_buffer_index(file_list, filename):
-	n = len(file_list)
-	for i in range(n):
-		if(file_list[i].filename == filename): return i
-	return -1
 
 def get_horizontal_cursor_position(text, curpos, tab_size):
 	ptext = text[0:curpos]
@@ -177,5 +114,3 @@ def replace_tabs(text, tab_size):
 			rtext += c
 
 	return rtext
-# <----------------------- MAIN CODE --------------------------->
-read_file_associations()

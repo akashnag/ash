@@ -79,6 +79,10 @@ class ModalDialog(Window):
 		
 		self.win.addstr(1, 2, self.title, curses.A_BOLD | self.theme)
 		
+		# active widget must be repainted last to correctly position cursor
+		aw = self.get_active_widget()
 		for w in self.widgets: 
-			w.repaint()
+			if(w != aw): w.repaint()
+
+		if(aw != None): aw.repaint()
 		self.win.refresh()

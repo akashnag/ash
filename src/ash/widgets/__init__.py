@@ -4,8 +4,11 @@
 # ---------------------------------------------------------------------------------------------
 
 import curses
+
 from ash.widgets.utils.formatting import *
 from ash.widgets.utils.utils import *
+from ash.widgets.utils.colors import *
+from ash.widgets.utils.dataUtils import *
 
 import copy
 import pyperclip as clipboard
@@ -31,6 +34,7 @@ class Widget:
 		self.type = type
 		self.focussable = focussable
 		self.handles_tab = handles_tab
+		self.is_in_focus = False
 
 	def does_handle_tab(self):
 		return self.handles_tab
@@ -42,10 +46,10 @@ class Widget:
 		return self.type
 
 	def focus(self):
-		pass
+		self.is_in_focus = True
 
 	def blur(self):
-		pass
+		self.is_in_focus = False
 
 	def perform_action(self, ch):
 		pass

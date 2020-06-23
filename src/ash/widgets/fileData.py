@@ -26,7 +26,7 @@ class FileData:
 		self.sel_start = (CursorPosition(0,0) if sel_start==None else copy.copy(sel_start))
 		self.sel_end = (CursorPosition(0,0) if sel_end==None else copy.copy(sel_end))
 		self.curpos = (CursorPosition(0,0) if curpos==None else copy.copy(curpos))
-		self.save_status = save_status
+		self.save_status = (False if filename == None else save_status)
 
 	# reloads the file from disk
 	def reload(self):

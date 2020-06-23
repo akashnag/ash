@@ -123,7 +123,9 @@ class DialogHandler:
 						mw.close_active_editor()
 					else:
 						# case 2(a)
-						if(self.app.ask_question("DISCARD CHANGES", "Do you want to save this file (Yes) or discard changes (No)?")):
+						response = self.app.ask_question("DISCARD CHANGES", "Do you want to save this file (Yes) or discard changes (No)?", True)
+						if(response == None): return
+						if(response):
 							self.invoke_file_save_as()
 							if(aed.save_status): 
 								# no need to add this filedata to list of active files as
@@ -248,10 +250,10 @@ class DialogHandler:
 
 	def invoke_file_save_as(self, filename=None):
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 4, 40)
-		self.app.dlgSaveAs = ModalDialog(self.app.stdscr, y, x, 4, 40, "SAVE AS", self.file_save_as_key_handler)
+		y, x = get_center_coords(self.app, 4, 60)
+		self.app.dlgSaveAs = ModalDialog(self.app.stdscr, y, x, 4, 60, "SAVE AS", self.file_save_as_key_handler)
 		if(filename == None): filename = str(os.getcwd()) + "/untitled.txt"
-		txtFileName = TextField(self.app.dlgSaveAs, 2, 2, 36, filename)
+		txtFileName = TextField(self.app.dlgSaveAs, 2, 2, 56, filename)
 		self.app.dlgSaveAs.add_widget("txtFileName", txtFileName)
 		self.app.dlgSaveAs.show()
 

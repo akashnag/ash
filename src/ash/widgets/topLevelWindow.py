@@ -90,7 +90,7 @@ class TopLevelWindow(Window):
 		aed = self.get_active_editor()
 
 		language = ""
-		editor_state = "Inactive"
+		editor_state = "inactive"
 		cursor_position = ""
 		loc_count = ""
 		file_size = ""
@@ -102,14 +102,14 @@ class TopLevelWindow(Window):
 			if(aed.has_been_allotted_file):
 				if(os.path.isfile(aed.filename)): file_size = aed.get_file_size()
 				language = get_file_type(aed.filename)
-				if(language == None): language = "Unknown"
+				if(language == None): language = "unknown"
 				if(aed.save_status):
-					editor_state = "Saved"
+					editor_state = "saved"
 				else:
-					editor_state = "Modified"
+					editor_state = "modified"
 			else:
-				editor_state = "Unsaved"
-				language = "Unknown"
+				editor_state = "unsaved"
+				language = "unknown"
 
 			cursor_position = str(aed.get_cursor_position())
 		

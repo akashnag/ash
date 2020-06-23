@@ -15,4 +15,5 @@ class CursorPosition:
 		self.x = x
 
 	def __str__(self):
-		return "Ln " + str(self.y+1) + ", Col " + str(self.x+1)
+		#return "Ln " + str(self.y+1) + ", Col " + str(self.x+1)
+		return "(" + str(self.y+1) + "," + str(self.x+1) + ")"

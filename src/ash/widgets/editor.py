@@ -340,16 +340,22 @@ class Editor(Widget):
 		
 		self.selection_mode = False
 		self.lines.clear()
-		lines = text.splitlines()
+		sep_lines = text.splitlines()
 
-		for line in lines:
+		for line in sep_lines:
 			self.lines.append(line)
 
+		if(len(self.lines)==0): self.lines.append("")
+		
 		self.curpos.y = 0
 		self.curpos.x = 0
 
-		self.save_status = False
+		self.save_status = True
 		self.parent.update_status()
+
+	# checks if no data
+	def is_empty(self):
+		return True if len(self.__str__())==0 else False
 
 	# <--------------------- stub functions ---------------------->
 

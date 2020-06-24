@@ -40,6 +40,8 @@ class EditorKeyHandler:
 			self.handle_undo()
 		elif(is_ctrl(ch, "Y")):
 			self.handle_redo()
+		elif(is_ctrl(ch, "T")):
+			self.ed.parent.app.dialog_handler.invoke_set_tab_size_and_encoding()
 
 	# handle the 4 arrow keys
 	def handle_arrow_keys(self, ch):
@@ -311,9 +313,28 @@ class EditorKeyHandler:
 	# handles printable characters in the charset
 	# TO DO: add support for Unicode
 	def handle_printable_character(self, ch):
-		if(self.ed.selection_mode): self.ed.delete_selected_text()
-		
 		sch = str(chr(ch))
+		
+		if(self.ed.selection_mode): 
+			del_text = self.ed.delete_selected_text()
+			if(sch == "(" or sch == "[" or sch == "{" or sch == "'" or sch == "\""):
+				# if parenthesis or quotes, put selected-text in between them
+				old_clipboard = clipboard.paste()
+				if(sch == "("):
+					del_text = "(" + del_text + ")"
+				elif(sch == "["):
+					del_text = "[" + del_text + "]"
+				elif(sch == "{"):
+					del_text = "{" + del_text + "}"
+				elif(sch == "'"):
+					del_text = "'" + del_text + "'"
+				elif(sch == "\""):
+					del_text = "\"" + del_text + "\""
+				clipboard.copy(del_text)
+				self.handle_paste()
+				clipboard.copy(old_clipboard)
+				return
+		
 		text = self.ed.lines[self.ed.curpos.y]
 		col = self.ed.curpos.x
 		left = text[0:col] if col > 0 else ""

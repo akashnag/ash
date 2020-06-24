@@ -34,7 +34,7 @@ class ModalDialog(Window):
 			
 			if(self.handler_func != None):
 				ch = self.handler_func(ch)
-				if(self.win == None): return
+				if(self.win == None or ch == -1): return
 
 			if(self.active_widget_index < 0 or not self.get_active_widget().does_handle_tab()):
 				if((is_tab(ch) or ch == curses.KEY_BTAB)):

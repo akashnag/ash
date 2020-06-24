@@ -7,4 +7,5 @@ import curses
 import subprocess
 import os
 import copy
+import codecs
 from datetime import datetime

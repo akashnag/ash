@@ -26,7 +26,7 @@ class FileData:
 		if(buffer == None and filename == None):
 			self.buffer = ""
 		elif(buffer == None and filename != None):
-			self.buffer = self.__read_from_file(filename)
+			self.buffer = self.__read_from_file(filename, encoding)
 		else:
 			self.buffer = copy.copy(buffer)
 
@@ -35,22 +35,18 @@ class FileData:
 	def reload(self):
 		if(not self.has_been_allotted_file): return
 
-		self.buffer = self.__read_from_file(self.filename)
+		self.buffer = self.__read_from_file(self.filename, self.encoding)
 		self.selection_mode = False
 		self.sel_start = CursorPosition(0,0)
 		self.sel_end = CursorPosition(0,0)
 		self.curpos = CursorPosition(0,0)
 		self.save_status = True
 
-	def __read_from_file(self, filename):
+	def __read_from_file(self, filename, encoding):
 		if(not os.path.isfile(filename)): 
 			self.save_status = False
 			return ""
-
-		textFile = open(filename, "rt")
-		data = textFile.read()
-		textFile.close()
-		return data
+		return read_file_from_disk(filename, encoding)
 
 	def is_filed(self):
 		return self.has_been_allotted_file

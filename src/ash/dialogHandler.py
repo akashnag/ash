@@ -7,7 +7,10 @@
 
 from ash import *
 
-UNSAVED_BULLET		= "\u2022 "
+UNSAVED_BULLET		= "\u2022"
+TICK_MARK			= "\u2713"
+
+SUPPORTED_ENCODINGS = [ "utf-8", "ascii", "utf-7", "utf-16", "utf-32", "latin-1" ]
 
 class DialogHandler:
 	def __init__(self, app):
@@ -31,15 +34,19 @@ class DialogHandler:
 			line = str(self.app.dlgGoTo.get_widget("txtLineNumber"))
 			if(len(line) == 0):
 				beep()
-				return ch
+				return -1
 
 			pos = line.find(".")
-			if(pos > -1):
-				row = int(line[0:pos]) - 1
-				col = int(line[pos+1:]) - 1
-			else:
-				row = int(line) - 1
-				col = 0
+			try:
+				if(pos > -1):
+					row = int(line[0:pos]) - 1
+					col = int(line[pos+1:]) - 1
+				else:
+					row = int(line) - 1
+					col = 0
+			except:
+				self.app.show_error("Invalid line number specified")
+				return -1
 			
 			aed = self.app.main_window.get_active_editor()
 			if(row < 0 or row >= len(aed.lines)):
@@ -144,6 +151,59 @@ class DialogHandler:
 					self.app.files[buffer_index] = filedata
 					mw.close_active_editor()
 
+	# <--------------------------- Set Tab-Size and Encoding ------------------------------>
+
+	def invoke_set_tab_size_and_encoding(self):
+		aed = self.app.main_window.get_active_editor()
+		if(aed == None): return
+
+		self.app.readjust()
+		y, x = get_center_coords(self.app, 11, 30)
+		self.app.dlgTabSize = ModalDialog(self.app.stdscr, y, x, 11, 30, "TAB SIZE AND ENCODING", self.tab_size_and_encoding_key_handler)
+		current_tab_size = str(aed.tab_size)
+		txtTabSize = TextField(self.app.dlgTabSize, 2, 2, 26, current_tab_size, True)
+		lstEncodings = ListBox(self.app.dlgTabSize, 4, 2, 26, 6)
+		
+		for enc in SUPPORTED_ENCODINGS:
+			lstEncodings.add_item(("  " if aed.encoding != enc else TICK_MARK + " ") +  enc)
+		
+		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index(aed.encoding)
+		self.app.dlgTabSize.add_widget("txtTabSize", txtTabSize)
+		self.app.dlgTabSize.add_widget("lstEncodings", lstEncodings)
+		
+		self.app.dlgTabSize.show()
+
+	def tab_size_and_encoding_key_handler(self, ch):
+		aed = self.app.main_window.get_active_editor()
+
+		if(is_ctrl(ch, "Q")): 
+			self.app.dlgTabSize.hide()
+		elif(is_newline(ch)):
+			try:
+				tab_size = int(str(self.app.dlgTabSize.get_widget("txtTabSize")))
+			except:
+				self.app.show_error("TAB SIZE", "Incorrect tab size: should be in [1,9]")
+				return -1
+
+			encoding_index = self.app.dlgTabSize.get_widget("lstEncodings").sel_index
+			
+			self.app.dlgTabSize.hide()
+
+			if(tab_size < 1 or tab_size > 9):
+				self.app.show_error("TAB SIZE", "Incorrect tab size: should be in [1,9]")
+				return -1
+
+			aed.tab_size = tab_size
+			aed.encoding = SUPPORTED_ENCODINGS[encoding_index]
+
+			self.app.main_window.repaint()
+			aed.repaint()
+			return -1
+		
+		return ch
+
+	# <----------------------------------- File New --------------------------------->
+
 	def invoke_file_new(self):
 		mw = self.app.main_window
 		aed = mw.get_active_editor()
@@ -180,22 +240,37 @@ class DialogHandler:
 
 	def invoke_file_open(self):
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 11, 60)
-		self.app.dlgFileOpen = ModalDialog(self.app.stdscr, y, x, 11, 60, "OPEN FILE", self.file_open_key_handler)
+		y, x = get_center_coords(self.app, 13, 60)
+		self.app.dlgFileOpen = ModalDialog(self.app.stdscr, y, x, 13, 60, "OPEN FILE", self.file_open_key_handler)
 		txtFileName = TextField(self.app.dlgFileOpen, 2, 2, 56, str(os.getcwd()) + "/")
 		lstActiveFiles = ListBox(self.app.dlgFileOpen, 4, 2, 56, 6)
+		lstEncodings = ListBox(self.app.dlgFileOpen, 11, 2, 56, 1)
+
+		# add the list of active files
 		for f in self.app.files:
-			lstActiveFiles.add_item(("   " if f.save_status else UNSAVED_BULLET) +  get_file_title(f.filename))
+			lstActiveFiles.add_item(("  " if f.save_status else UNSAVED_BULLET) +  get_file_title(f.filename))
+		
+		# add the encodings
+		for enc in SUPPORTED_ENCODINGS:
+			lstEncodings.add_item(enc)
+		
+		# set default encoding to UTF-8
+		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index("utf-8")
+
 		self.app.dlgFileOpen.add_widget("txtFileName", txtFileName)
 		self.app.dlgFileOpen.add_widget("lstActiveFiles", lstActiveFiles)
-		self.app.dlgFileOpen.show()		
+		self.app.dlgFileOpen.add_widget("lstEncodings", lstEncodings)
+		
+		self.app.dlgFileOpen.show()
 
 	def file_open_key_handler(self, ch):
 		txtFileName = self.app.dlgFileOpen.get_widget("txtFileName")
 		lstActiveFiles = self.app.dlgFileOpen.get_widget("lstActiveFiles")
+		lstEncodings = self.app.dlgFileOpen.get_widget("lstEncodings")
 		sel_index = lstActiveFiles.get_sel_index()
 		mw = self.app.main_window
 		aed = mw.get_active_editor()
+		aedi = mw.active_editor_index
 
 		if(is_ctrl(ch, "Q")):
 			self.app.dlgFileOpen.hide()
@@ -203,18 +278,25 @@ class DialogHandler:
 		elif(is_newline(ch)):
 			if(lstActiveFiles.is_in_focus and sel_index > -1): txtFileName.set_text(self.app.files[sel_index].filename)
 			filename = str(txtFileName)
+			sel_encoding = str(lstEncodings)
 			self.app.dlgFileOpen.hide()
 			
 			if(not file_exists_in_buffer(self.app.files, filename)):
 				# new file is being opened
 				if(os.path.isfile(filename)):
-					# file exists on disk
-					self.app.files.append(FileData(filename))
+					# file exists on disk, so add it to buffer
+					try:
+						file_data = FileData(filename, encoding = sel_encoding)
+						self.app.files.append(file_data)
+					except:
+						self.app.show_error("The selected encoding does not match file encoding")
+						return -1
 				else:
-					# file does not exist
+					# file does not exist: show error
 					self.app.show_error("The selected file does not exist")
 					return -1
 
+			new_editor = False
 			if(aed == None or (not aed.can_quit() and not aed.has_been_allotted_file)):
 				# no active-editor OR it is an unsaved-buffer
 				# so: look for a different editor to place the new file
@@ -227,9 +309,27 @@ class DialogHandler:
 				# different editor found, make it the active editor
 				mw.layout_manager.invoke_activate_editor(ffedi)
 				aed = mw.get_active_editor()
-			elif(not aed.can_quit() and aed.has_been_allotted_file):
-				save_to_buffer(self.app.files, aed)
-					
+				aedi = ffedi
+				new_editor = True
+			
+			if(not new_editor and aed.has_been_allotted_file):
+				# if active editor has a file: find a new editor
+				ffedi = get_first_free_editor_index(mw, aedi)
+
+				if(ffedi == -1):
+					# no other editor also exists
+					if(self.app.ask_question("REPLACE ACTIVE EDITOR", "No free editors available: replace active editor?")):
+						# yes: replace the active-editor, save any changes
+						save_to_buffer(self.app.files, aed)
+					else:
+						# cancel open operation
+						return -1
+				else:
+					mw.layout_manager.invoke_activate_editor(ffedi)
+					aed = mw.get_active_editor()
+					aedi = ffedi
+					new_editor = True
+
 			bi = get_file_buffer_index(self.app.files, filename)
 			aed.set_data(self.app.files[bi])
 			aed.repaint()
@@ -258,7 +358,7 @@ class DialogHandler:
 
 		for i in range(len(layouts)):
 			if(self.app.main_window.layout_type == i):
-				lstLayouts.add_item("\u2713 " + layouts[i])
+				lstLayouts.add_item(TICK_MARK + " " + layouts[i])
 				lstLayouts.sel_index = i
 			else:
 				lstLayouts.add_item("  " + layouts[i])

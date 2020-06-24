@@ -92,10 +92,7 @@ def load_from_buffer(files, ed):
 
 def write_all_buffers_to_disk(files):
 	for f in files:
-		data = f.buffer
-		textFile = open(f.filename, "wt")
-		textFile.write(data)
-		textFile.close()
+		write_file_to_disk(f.filename, f.encoding, f.buffer)
 		f.save_status = True
 
 def write_buffer_to_disk(files, filename):
@@ -103,21 +100,28 @@ def write_buffer_to_disk(files, filename):
 	if(bi == -1):
 		raise Exception("ERROR in write_buffer_to_disk()")
 	else:
-		data = files[bi].buffer
-		textFile = open(filename, "wt")
-		textFile.write(data)
-		textFile.close()
+		write_file_to_disk(filename, files[bi].encoding, files[bi].buffer)
 		files[bi].save_status = True
+
+def write_file_to_disk(filename, encoding, data):
+	textFile = codecs.open(filename, "w", encoding)
+	textFile.write(data)
+	textFile.close()
+
+# can throw exception if correct encoding not selected
+def read_file_from_disk(filename, encoding):
+	textFile = codecs.open(filename, "r", encoding)
+	text = textFile.read()
+	textFile.close()
+	return text
+	
 
 def load_buffer_from_disk(files, filename):
 	bi = get_file_buffer_index(files, filename)
 	if(bi == -1):
 		raise Exception("ERROR in load_buffer_from_disk()")
 	else:
-		textFile = open(filename, "rt")
-		text = textFile.read()
-		textFile.close()
-
+		text = read_file_from_disk(filename, files[bi].encoding)
 		files[bi].buffer = text
 		files[bi].save_status = True
 		return text
@@ -137,15 +141,16 @@ def get_number_of_unsaved_buffers(main_window):
 			count += 1
 	return count
 
-def get_first_free_editor_index(main_window):
+# returns the index of the first free editor except 'barring'
+def get_first_free_editor_index(main_window, barring = -1):
 	n = len(main_window.editors)
 	for i in range(n):
-		if(main_window.editors[i] == None): return i
+		if(i != barring and main_window.editors[i] == None): return i
 	
 	# no free editor, so check if any editor exists with no-file and no-data
 	for i in range(n):
 		ed = main_window.editors[i]
-		if(ed != None and not ed.has_been_allotted_file and len(ed.__str__()) == 0): return i
+		if(ed != None and i!=barring and not ed.has_been_allotted_file and len(ed.__str__()) == 0): return i
 	
 	return -1
 

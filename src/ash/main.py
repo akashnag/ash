@@ -18,7 +18,13 @@ class AshEditorApp:
 		self.args = args
 		self.argc = len(args)
 		self.dialog_handler = DialogHandler(self)
-				
+
+		self.ignore_screen_size = False
+		if(self.argc > 1 and self.args[1] == "--ignore-screen-size"):
+			self.ignore_screen_size = True
+			self.args.pop(1)
+			self.argc -= 1
+		
 	def run(self):
 		self.files = list()
 		if(self.argc == 1):
@@ -39,7 +45,10 @@ class AshEditorApp:
 				self.files.append(FileData(filePath))
 		
 		# invoke the GUI initialization routine
-		curses.wrapper(self.app_main)
+		ret_code = curses.wrapper(self.app_main)
+		if(ret_code == -1):
+			print("Error: screen-size insufficient, required at least: 102 x 5")
+			print("To ignore screen limitations: restart with --ignore-screen-size as the first argument")
 
 	# recalculates screen dimensions
 	def readjust(self):
@@ -76,14 +85,19 @@ class AshEditorApp:
 	def app_main(self, stdscr):
 		self.stdscr = stdscr
 		self.readjust()
+
+		if(not self.ignore_screen_size and (self.screen_width < 102 or self.screen_height < 5)):
+			return -1
 		
 		init_colors()
 		curses.raw()
 		
 		self.main_window = TopLevelWindow(self, self.stdscr, "Ash " + APP_VERSION, self.main_key_handler)
 		
-		# status-bar sections: status, file-type, sloc, file-size, encoding, unsaved-file-count, tab-size, cursor-position
-		self.main_window.add_status_bar(StatusBar(self.main_window, [ 12, 15, 17, 28, 11, 6, 4, -1 ]))
+		# status-bar sections: total=101+1 (min)
+		# status (8), file-type (11), encoding(7), sloc (20), file-size (10), 
+		# unsaved-file-count (4), tab-size (1), cursor-position (6+1+6+3+8=24)
+		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 13, 9, 22, 12, 6, 3, -1 ]))
 		
 		if(self.app_mode != APP_MODE_PROJECT):
 			editor = Editor(self.main_window)
@@ -96,6 +110,7 @@ class AshEditorApp:
 		
 		self.main_window.show()		# this call returns when main_window() is closed
 		self.__destroy()
+		return 0
 	
 	# called on app_exit
 	def __destroy(self):

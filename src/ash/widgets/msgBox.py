@@ -72,7 +72,7 @@ class MessageBox(Window):
 			return MSGBOX_YES
 		elif(s == "n" or s == "N"):
 			return MSGBOX_NO
-		elif(s == "o" or s == "O"):
+		elif(s == "o" or s == "O" or is_newline(ch)):
 			return MSGBOX_OK
 		elif(s == "c" or s == "C"):
 			return MSGBOX_CANCEL

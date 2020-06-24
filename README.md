@@ -96,7 +96,7 @@ or, to open a project (directory):
 $ ash path/to/directory
 ```
 
-See the [key-bindings](#key-bindings) for help on how to navigate in ash.
+See the [key-bindings](KEYBINDINGS.md) for help on how to navigate in ash.
 
 ## Contributing
 

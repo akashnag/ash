@@ -330,6 +330,8 @@ class EditorKeyHandler:
 					del_text = "'" + del_text + "'"
 				elif(sch == "\""):
 					del_text = "\"" + del_text + "\""
+				elif(sch == "\`"):
+					del_text = "\`" + del_text + "\`"
 				clipboard.copy(del_text)
 				self.handle_paste()
 				clipboard.copy(old_clipboard)

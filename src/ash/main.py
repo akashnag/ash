@@ -7,7 +7,7 @@ import glob
 from ash import *
 from ash.dialogHandler import *
 
-APP_VERSION			= "v1.0"
+APP_VERSION			= "0.1.0"
 UNSAVED_BULLET		= "\u2022 "
 
 APP_MODE_FILE		= 1		# if ash is invoked with zero or more file names
@@ -52,7 +52,7 @@ class AshEditorApp:
 
 	# returns the appropriate app title
 	def get_app_title(self, active_editor = None):
-		app_title = "Ash " + APP_VERSION
+		app_title = "ash-" + APP_VERSION
 
 		if(active_editor == None):
 			if(self.app_mode == APP_MODE_PROJECT):
@@ -107,15 +107,32 @@ class AshEditorApp:
 		#	self.main_window.repaint()
 		#	return -1
 		
+		# NOTE: whenever a key-combo is being handled here that may also be triggered
+		# in an active editor (e.g. Ctrl+O), always:
+		#	(i) add a check in the condition to ensure no active editors exist
+		#	(ii) and, return -1 to prevent it being handled again if a new active editor
+		#		 is created in the process of the handling
+
 		if(is_ctrl(ch, "@")): 
 			# force quits the app without saving
 			self.dialog_handler.invoke_forced_quit()
+			return -1
 		elif(is_ctrl(ch, "Q")): 
 			# quits the active editor or the app
 			self.dialog_handler.invoke_quit()
+			return -1
 		elif(is_ctrl(ch, "L")):
 			# adjust layout
 			self.dialog_handler.invoke_switch_layout()
+			return -1
+		elif(is_ctrl(ch, "N") and self.main_window.get_active_editor() == None):
+			# file-new
+			self.dialog_handler.invoke_file_new()
+			return -1
+		elif(is_ctrl(ch, "O") and self.main_window.get_active_editor() == None):
+			# file-open
+			self.dialog_handler.invoke_file_open()
+			return -1
 		elif(is_func(ch)):
 			# F1 - F6 to select an active editor
 			fn = get_func_key(ch)

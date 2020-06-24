@@ -75,7 +75,7 @@ class DialogHandler:
 		# 		(b) Other editors exist: inform user that other editors exist
 
 		if(aed == None):
-			# case 3
+			# case 3: no active editor exists
 			n = len(mw.editors)
 			other_editors_exist = False
 			for i in range(n):
@@ -84,10 +84,10 @@ class DialogHandler:
 					break
 			
 			if(other_editors_exist):
-				# case 3(b)
+				# case 3(b): other editors exist
 				self.app.show_error("Close all windows to quit application or use Ctrl+@ to force-quit")
 			else:
-				# case 3(a)
+				# case 3(a): no other editors exist
 				all_saved = True
 				for f in self.app.files:
 					if(not f.save_status):
@@ -95,15 +95,15 @@ class DialogHandler:
 						break
 
 				if(all_saved):
-					# case 3(a)[i]
+					# case 3(a)[i]: all buffers saved: quit app
 					mw.hide()
 				else:
-					# case 3(a)[ii]
+					# case 3(a)[ii]: some buffers are unsaved: confirm with user
 					response = self.app.ask_question("SAVE/DISCARD ALL", "One or more unsaved files exist, choose yes(save-all) / no(discard-all) / cancel(dont-quit)", True)
 					if(response == None):
 						return
 					elif(response):
-						self.save_all_buffers()
+						write_all_buffers_to_disk(self.app.files)
 						mw.hide()
 						return
 					elif(not response):
@@ -111,48 +111,74 @@ class DialogHandler:
 						return
 		else:
 			if(aed.save_status):
-				# case 1
-				filename = aed.filename
-				buffer_index = get_file_buffer_index(self.app.files, filename)
-				filedata = aed.get_data()
-				self.app.files[buffer_index] = filedata
+				# case 1: active editor is saved
+				save_to_buffer(self.app.files, aed)
 				mw.close_active_editor()
 			else:
+				# case 2: active editor has unsaved changes
 				if(not aed.has_been_allotted_file):
+					# active editor does not have any allotted file
 					if(aed.can_quit()):
+						# still if can close (i.e. editor is blank: no data), then close editor
 						mw.close_active_editor()
 					else:
-						# case 2(a)
+						# case 2(a): has unsaved changes: confirm with user
 						response = self.app.ask_question("DISCARD CHANGES", "Do you want to save this file (Yes) or discard changes (No)?", True)
 						if(response == None): return
 						if(response):
+							# user wants to save before closing: so show file-save-as dialogbox
 							self.invoke_file_save_as()
 							if(aed.save_status): 
 								# no need to add this filedata to list of active files as
 								# invoke_file_save_as() already does it
 								mw.close_active_editor()
 						else:
+							# user wants to discard changes
 							mw.close_active_editor()
 				else:
-					# case 2(b) [same as case 1]
+					# case 2(b) [same as case 1]: active editor has been allotted file
+					# so: save the contents into mapped buffer and close editor
 					filename = aed.filename
 					buffer_index = get_file_buffer_index(self.app.files, filename)
 					filedata = aed.get_data()
 					self.app.files[buffer_index] = filedata
 					mw.close_active_editor()
 
-	def save_all_buffers(self):
-		pass
+	def invoke_file_new(self):
+		mw = self.app.main_window
+		aed = mw.get_active_editor()
+		aedi = mw.active_editor_index
 
+		if(aed == None or (not aed.can_quit() and not aed.has_been_allotted_file)):
+			# no active-editor exists OR it is an unsaved buffer
+			# so: look for a different editor to place the new file
+			ffedi = get_first_free_editor_index(mw)
+			if(ffedi == -1):
+				# no other editor also exists
+				self.app.show_error("No free editors available: switch layout or close an editor")
+				return -1
+
+			# different editor found, make it the active editor
+			mw.layout_manager.invoke_activate_editor(ffedi)
+			aed = mw.get_active_editor()
+		else:
+			# active editor has allotted-file and can be quit
+			
+			# so: save recent changes to buffer
+			save_to_buffer(self.app.files, aed)
+
+			# close and reopen
+			mw.editors[aedi] = None
+			mw.layout_manager.invoke_activate_editor(aedi)
+
+		mw.repaint()
+		
 	# <----------------------------------- File Open --------------------------------->
 
 	def invoke_project_file_open(self):
 		pass
 
 	def invoke_file_open(self):
-		# save recent changes to buffer
-		save_to_buffer(self.app.files, self.app.main_window.get_active_editor())
-			
 		self.app.readjust()
 		y, x = get_center_coords(self.app, 11, 60)
 		self.app.dlgFileOpen = ModalDialog(self.app.stdscr, y, x, 11, 60, "OPEN FILE", self.file_open_key_handler)
@@ -175,26 +201,38 @@ class DialogHandler:
 			self.app.dlgFileOpen.hide()
 			return -1
 		elif(is_newline(ch)):
-			self.app.dlgFileOpen.hide()
 			if(lstActiveFiles.is_in_focus and sel_index > -1): txtFileName.set_text(self.app.files[sel_index].filename)
 			filename = str(txtFileName)
-
-			if(not aed.can_quit()):
-				if(aed.has_been_allotted_file):
-					# save data into buffer and load new file
-					filedata = aed.get_data()
-					current_filename = filedata.filename
-					bi = get_file_buffer_index(self.app.files, current_filename)
-					self.app.files[bi] = filedata
-				else:
-					self.app.show_error("You must save current changes before loading new file")
-					return -1
+			self.app.dlgFileOpen.hide()
 			
 			if(not file_exists_in_buffer(self.app.files, filename)):
-				self.app.files.append(FileData(filename))
+				# new file is being opened
+				if(os.path.isfile(filename)):
+					# file exists on disk
+					self.app.files.append(FileData(filename))
+				else:
+					# file does not exist
+					self.app.show_error("The selected file does not exist")
+					return -1
 
+			if(aed == None or (not aed.can_quit() and not aed.has_been_allotted_file)):
+				# no active-editor OR it is an unsaved-buffer
+				# so: look for a different editor to place the new file
+				ffedi = get_first_free_editor_index(mw)
+				if(ffedi == -1):
+					# no other editor also exists
+					self.app.show_error("No free editors available: switch layout or close an editor")
+					return -1
+
+				# different editor found, make it the active editor
+				mw.layout_manager.invoke_activate_editor(ffedi)
+				aed = mw.get_active_editor()
+			elif(not aed.can_quit() and aed.has_been_allotted_file):
+				save_to_buffer(self.app.files, aed)
+					
 			bi = get_file_buffer_index(self.app.files, filename)
 			aed.set_data(self.app.files[bi])
+			aed.repaint()
 			
 			return -1
 		elif(is_tab(ch) or ch == curses.KEY_BTAB):
@@ -231,11 +269,14 @@ class DialogHandler:
 	def switch_layout_key_handler(self, ch):
 		if(is_ctrl(ch, "Q")):
 			self.app.dlgSwitchLayout.hide()
+			self.app.main_window.repaint()
+			return -1
 		elif(is_newline(ch)):
 			new_layout = self.app.dlgSwitchLayout.get_widget("lstLayouts").get_sel_index()
 			self.app.dlgSwitchLayout.hide()
+			self.app.main_window.repaint()
 
-			if(new_layout == self.app.main_window.layout_type):
+			if(new_layout == self.app.main_window.layout_type):				
 				return -1
 			elif(self.app.main_window.layout_manager.can_change_layout(new_layout)):
 				self.app.main_window.layout_manager.set_layout(new_layout)

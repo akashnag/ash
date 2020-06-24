@@ -360,7 +360,7 @@ class EditorKeyHandler:
 	def handle_save(self):
 		if(not self.ed.save_status):
 			if(self.ed.has_been_allotted_file):
-				self.ed.save_to_file()				
+				self.ed.save_to_file()
 			else:
 				self.ed.parent.app.invoke_file_save_as()
 		

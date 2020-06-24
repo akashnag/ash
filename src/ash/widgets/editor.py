@@ -325,37 +325,19 @@ class Editor(Widget):
 			self.has_been_allotted_file = False
 			raise
 
-	# allots a file and reads from it
-	def allot_and_open_file(self, filename):
-		self.filename = filename
-		self.has_been_allotted_file = True
-		if(os.path.isfile(self.filename)): self.read_from_file()
-		self.save_status = True
-
-		self.selection_mode = False
-		self.curpos.x = 0
-		self.curpos.y = 0
-		self.col_start = 0
-		self.col_end = self.width
-		self.line_start = 0
-		self.line_end = self.height
-
-		self.parent.update_status()
-
-	# saves data to a file, overwrites it if it exists
+	# save to file
 	def save_to_file(self):
-		data = self.__str__()
-		textFile = open(self.filename, "wt")
-		textFile.write(data)
-		textFile.close()
-		self.save_status = True		
-
+		# save to buffer
+		save_to_buffer(self.parent.app.files, self)
+		# write buffer to disk
+		write_buffer_to_disk(self.parent.app.files, self.filename)
+		# update status
+		self.save_status = True
+	
 	# saves data to a file, overwrites it if it exists
 	def read_from_file(self):
-		textFile = open(self.filename, "rt")
-		text = textFile.read()
-		textFile.close()
-
+		text = load_buffer_from_disk(self.parent.app.files, self.filename)
+		
 		self.selection_mode = False
 		self.lines.clear()
 		lines = text.splitlines()

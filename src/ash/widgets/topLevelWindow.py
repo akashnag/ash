@@ -76,9 +76,23 @@ class TopLevelWindow(Window):
 
 	# closes the active editor
 	def close_active_editor(self):
-		if(self.active_editor_index >= 0):
-			self.editors[self.active_editor_index] = None
-			self.repaint()
+		# no active editor: return: nothing to do
+		if(self.active_editor_index < 0): return
+
+		# close active editor
+		self.editors[self.active_editor_index] = None
+		self.active_editor_index = -1
+
+		# switch to a different editor (if available)
+		n = len(self.editors)
+		for i in range(n):
+			if(self.editors[i] != None):
+				self.layout_manager.invoke_activate_editor(i)
+				break
+
+		# repaint
+		self.repaint()
+		if(self.active_editor_index < 0): curses.curs_set(False)
 
 	# closes a given editor
 	def close_editor(self, index):
@@ -214,12 +228,11 @@ class TopLevelWindow(Window):
 		if(aed == None): return
 		
 		# check if the filename is already in the active/recent files list
-		fe = file_exists_in_buffer(self.app.files, filename)
-		
+		# if not, add it to the workspace
+		if(not file_exists_in_buffer(self.app.files, filename)):
+			# just add the filename, allot_and_save_file() will take care of putting
+			# the latest data into buffer
+			self.app.files.append(FileData(filename))
+
 		# write to file
 		aed.allot_and_save_file(filename)
-
-		# if not, add it to the workspace
-		if(not fe):
-			file_data = aed.get_data()
-			self.app.files.append(file_data)

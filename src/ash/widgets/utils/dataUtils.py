@@ -3,8 +3,7 @@
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
-# This module handles all miscellaneous global 
-# file and buffer operations
+# This module handles all miscellaneous global file and buffer I/O operations
 
 from ash.widgets.utils import *
 
@@ -79,7 +78,10 @@ def save_to_buffer(files, ed):
 	filename = filedata.filename
 	if(filename != None):
 		bi = get_file_buffer_index(files, filename)
-		if(bi > -1): files[bi] = filedata
+		if(bi > -1): 
+			files[bi] = filedata
+		else:
+			raise Exception("ERROR in save_to_buffer()")
 
 def load_from_buffer(files, ed):
 	if(files == None or ed == None): return
@@ -87,6 +89,39 @@ def load_from_buffer(files, ed):
 	if(filename != None):
 		bi = get_file_buffer_index(files, filename)
 		if(bi > -1): ed.set_data(files[bi])
+
+def write_all_buffers_to_disk(files):
+	for f in files:
+		data = f.buffer
+		textFile = open(f.filename, "wt")
+		textFile.write(data)
+		textFile.close()
+		f.save_status = True
+
+def write_buffer_to_disk(files, filename):
+	bi = get_file_buffer_index(files, filename)
+	if(bi == -1):
+		raise Exception("ERROR in write_buffer_to_disk()")
+	else:
+		data = files[bi].buffer
+		textFile = open(filename, "wt")
+		textFile.write(data)
+		textFile.close()
+		files[bi].save_status = True
+
+def load_buffer_from_disk(files, filename):
+	bi = get_file_buffer_index(files, filename)
+	if(bi == -1):
+		raise Exception("ERROR in load_buffer_from_disk()")
+	else:
+		textFile = open(filename, "rt")
+		text = textFile.read()
+		textFile.close()
+
+		files[bi].buffer = text
+		files[bi].save_status = True
+		return text
+
 
 def get_number_of_unsaved_files(files_list):
 	count = 0
@@ -101,6 +136,18 @@ def get_number_of_unsaved_buffers(main_window):
 		if(main_window.editors[i] != None and main_window.editors[i].filename == None and not main_window.editors[i].save_status):
 			count += 1
 	return count
+
+def get_first_free_editor_index(main_window):
+	n = len(main_window.editors)
+	for i in range(n):
+		if(main_window.editors[i] == None): return i
+	
+	# no free editor, so check if any editor exists with no-file and no-data
+	for i in range(n):
+		ed = main_window.editors[i]
+		if(ed != None and not ed.has_been_allotted_file and len(ed.__str__()) == 0): return i
+	
+	return -1
 
 # <----------------------- MAIN CODE --------------------------->
 read_file_associations()

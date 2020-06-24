@@ -1,5 +1,6 @@
-src/test.py
+bin/test.py
+src/__pycache__
 src/ash/__pycache__
 src/ash/widgets/__pycache__
 src/ash/widgets/utils/__pycache__
-src/*.txt
+*.txt

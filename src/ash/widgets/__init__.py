@@ -9,13 +9,24 @@ from ash.widgets.utils.formatting import *
 from ash.widgets.utils.utils import *
 from ash.widgets.utils.colors import *
 from ash.widgets.utils.dataUtils import *
+from ash.widgets.utils.fileData import *
+from ash.widgets.utils.editHistory import *
+
+clipboard = None
 
 import copy
-import pyperclip as clipboard
 import sys
 import os
 import pathlib
 import select
+
+# Check if xsel/pyperclip is present, then use it, else use internal-clipboard
+try:
+	import pyperclip as clipboard
+	clipboard.paste()
+except:
+	from ash.widgets.utils.internalClipboard import InternalClipboard as clipboard
+
 
 # define the widget type constants
 WIDGET_TYPE_LABEL			= 1

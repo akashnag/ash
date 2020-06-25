@@ -5,6 +5,7 @@
 
 # This module implements the FileData abstraction
 
+from ash.widgets.utils import *
 from ash.widgets import *
 from ash.widgets.utils.utils import *
 from ash.widgets.utils.formatting import *

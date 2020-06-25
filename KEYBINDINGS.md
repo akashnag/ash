@@ -30,9 +30,13 @@ These key combinations work only if an editor is currently active.
 
 <kbd>Home</kbd> <kbd>End</kbd> &nbsp;&nbsp;Moves the cursor to the beginning/end of the current line
 
+<kbd>Ctrl</kbd> + <kbd>Home</kbd> <kbd>End</kbd> &nbsp;&nbsp;Moves the cursor to the beginning/end of the current document
+
 <kbd>Shift</kbd> + <kbd>Home</kbd> <kbd>End</kbd> &nbsp;&nbsp;Selects text up to the beginning/end of the current line
 
 <kbd>Shift</kbd> + <kbd>&#8592;</kbd> <kbd>&#8593;</kbd> <kbd>&#8594;</kbd> <kbd>&#8595;</kbd> &nbsp;&nbsp;Selects text one character at a time
+
+<kbd>Shift</kbd> + <kbd>PgUp</kbd> <kbd>PgDown</kbd> &nbsp;&nbsp;Selects one screenful at a time
 
 <kbd>Ctrl</kbd> + <kbd>A</kbd> &nbsp;&nbsp;Select all
 
@@ -52,15 +56,13 @@ These key combinations work only if an editor is currently active.
 
 <kbd>Ctrl</kbd> + <kbd>G</kbd> &nbsp;&nbsp;Go to a given line/column
 
-### Not yet implemented
-
-The following key bindings have not yet been implemented but will be in the final release.
-
-<kbd>Shift</kbd> + <kbd>PgUp</kbd> <kbd>PgDown</kbd> &nbsp;&nbsp;Selects one screenful at a time
-
 <kbd>Ctrl</kbd> + <kbd>Z</kbd> &nbsp;&nbsp;Undo
 
 <kbd>Ctrl</kbd> + <kbd>Y</kbd> &nbsp;&nbsp;Redo
+
+### Not yet implemented
+
+The following key bindings have not yet been implemented but will be in the final release.
 
 <kbd>Ctrl</kbd> + <kbd>F</kbd> &nbsp;&nbsp;Find
 

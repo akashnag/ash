@@ -72,7 +72,7 @@ def get_file_buffer_index(file_list, filename):
 		if(file_list[i].filename == filename): return i
 	return -1
 
-def save_to_buffer(files, ed):
+def save_to_buffer(files, ed, mark_as_saved = False):
 	if(files == None or ed == None): return
 	filedata = ed.get_data()
 	filename = filedata.filename
@@ -80,6 +80,7 @@ def save_to_buffer(files, ed):
 		bi = get_file_buffer_index(files, filename)
 		if(bi > -1): 
 			files[bi] = filedata
+			if(mark_as_saved): files[bi].save_status = True
 		else:
 			raise Exception("ERROR in save_to_buffer()")
 

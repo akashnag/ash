@@ -332,7 +332,7 @@ class DialogHandler:
 
 			bi = get_file_buffer_index(self.app.files, filename)
 			aed.set_data(self.app.files[bi])
-			aed.repaint()
+			mw.repaint()
 			
 			return -1
 		elif(is_tab(ch) or ch == curses.KEY_BTAB):

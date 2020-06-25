@@ -80,6 +80,7 @@ class EditorUtility:
 		self.ed.sel_start.x += 1
 		self.ed.sel_end.x += 1
 		self.ed.save_status = False
+		return True
 
 	# decrease indent of selected lines
 	def shift_selection_left(self):
@@ -100,6 +101,9 @@ class EditorUtility:
 			self.ed.sel_start.x -= 1
 			self.ed.sel_end.x -= 1
 			self.ed.save_status = False
+			return True
+		else:
+			return False
 
 	# returns the block of leading whitespaces on a given line 
 	def get_leading_whitespaces(self, line_index):

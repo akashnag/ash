@@ -4,7 +4,7 @@
 
 **ash** is a simple and clean terminal-based text editor for Linux, that aims to be easy to use with modern key-bindings. It is fully capable of handling multiple files simultaneously and hopes to provide a wide array of features when it is released.
 
-Here is a picture of **ash** editing this README file:
+Here is a picture of **ash** editing this README file (syntax highlighting is not yet implemented):
 
 ![Screenshot](./assets/ash-default.png)
 
@@ -15,11 +15,11 @@ Here is a picture of **ash** editing this README file:
 - [Design Goals](#design-goals)
 - [Installation](#installation)
   - [Prebuilt binaries](#prebuilt-binaries)
-  - [Linux clipboard support](#linux-clipboard-support)
-  - [Colors and syntax highlighting](#colors-and-syntax-highlighting)
-  [Usage](#usage)
-- [Documentation and Help](#documentation-and-help)
+  - [Clipboard support](#clipboard-support)
+  - [Colors](#colors)
+  - [Usage](#usage)
 - [Contributing](#contributing)
+- [License](#license)
 
 - - -
 
@@ -28,13 +28,13 @@ Here is a picture of **ash** editing this README file:
 The following is a list of design goals for ash; some of which have already been implemented, while some are yet to be:
 
 - Easy to use.
+- Clean interface.
 - No dependencies.
 - Common keybindings.
 - Support for wide variety of splits.
-- Simple autocompletion.
+- Autocompletion.
 - Syntax highlighting.
 - Color scheme support.
-- Copy and paste with the system clipboard.
 - Macros.
 - Common editor features such as undo/redo, line numbers, Unicode support, soft wrapping, …
 - Auto-backup.
@@ -44,6 +44,18 @@ The following is a list of design goals for ash; some of which have already been
 ## Installation
 
 As **ash** is still in development, there are no prebuilt binaries available for download. However, if you have python 3.8 installed on your system, you are ready to go and download **ash**. For Linux users, follow the following steps to get **ash** on your system:
+
+#### Prerequisites
+
+You need certain packages and Python 3 itself to download and run the developmental build:
+
+```bash
+$ sudo apt install git
+$ sudo apt install xclip
+$ sudo apt install python3
+```
+
+#### Downloading and setting up ash
 
 ```bash
 $ cd ~
@@ -66,11 +78,7 @@ Since **ash** is still under development, prebuilt binaries are not yet availabl
 
 ### Clipboard support
 
-On Linux, clipboard support requires:
-
-- On X11, the `xclip` or `xsel` commands (for Ubuntu: `sudo apt install xclip`)
-
-If you do not have these installed on your system, **ash** will use an internal clipboard for clipboard operations, but the data will not be available in external applications.
+On Linux, clipboard support requires the `xclip` command. If you do not have this installed on your system, **ash** will use an internal clipboard for clipboard operations, but the data will not be available in external applications.
 
 ### Colors
 

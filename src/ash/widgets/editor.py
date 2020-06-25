@@ -9,10 +9,6 @@ from ash.widgets import *
 from ash.widgets.cursorPosition import *
 from ash.widgets.editorKeyHandler import *
 from ash.widgets.editorUtility import *
-from ash.widgets.fileData import *
-from ash.widgets.utils.formatting import *
-from ash.widgets.utils.utils import *
-
 
 # This is the text editor class
 class Editor(Widget):
@@ -68,6 +64,7 @@ class Editor(Widget):
 		self.col_end = 0
 		self.line_start = -1
 		self.line_end = -1
+		self.history = None
 	
 	# resize editor
 	def resize(self, y, x, height, width, forced=False):
@@ -133,33 +130,42 @@ class Editor(Widget):
 			self.repaint()
 			return None
 		
+		undoable_action = False
+
 		if(ch == curses.KEY_BACKSPACE):
-			self.keyHandler.handle_backspace_key(ch)
+			undoable_action = self.keyHandler.handle_backspace_key(ch)
 		elif(ch == curses.KEY_DC):
-			self.keyHandler.handle_delete_key(ch)
+			undoable_action = self.keyHandler.handle_delete_key(ch)
 		elif(ch in [ curses.KEY_HOME, curses.KEY_END ]):
 			self.keyHandler.handle_home_end_keys(ch)
 		elif(ch in [ curses.KEY_SHOME, curses.KEY_SEND ]):
 			self.keyHandler.handle_shift_home_end_keys(ch)
+		elif(is_keyname(ch, "HOM5") or is_keyname(ch, "END5")):
+			self.keyHandler.handle_ctrl_home_end_keys(ch)
 		elif(ch in [ curses.KEY_LEFT, curses.KEY_RIGHT, curses.KEY_UP, curses.KEY_DOWN ]):
 			self.keyHandler.handle_arrow_keys(ch)
 		elif(ch in [ curses.KEY_PPAGE, curses.KEY_NPAGE ]):
 			self.keyHandler.handle_page_navigation_keys(ch)
+		elif(ch in [ curses.KEY_SPREVIOUS, curses.KEY_SNEXT ]):
+			self.keyHandler.handle_shift_page_navigation_keys(ch)
 		elif(ch in [ curses.KEY_SLEFT, curses.KEY_SRIGHT, curses.KEY_SR, curses.KEY_SF ]):
 			self.keyHandler.handle_shift_arrow_keys(ch)
 		elif(is_ctrl_arrow(ch, "LEFT") or is_ctrl_arrow(ch, "RIGHT")):
 			self.keyHandler.handle_ctrl_arrow_keys(ch)
 		elif(is_tab(ch) or ch == curses.KEY_BTAB):
-			self.keyHandler.handle_tab_keys(ch)
+			undoable_action = self.keyHandler.handle_tab_keys(ch)
 		elif(is_newline(ch)):
-			self.keyHandler.handle_newline(ch)
+			undoable_action = self.keyHandler.handle_newline(ch)
 		elif(str(chr(ch)) in self.charset):
-			self.keyHandler.handle_printable_character(ch)
+			undoable_action = self.keyHandler.handle_printable_character(ch)
 		elif(is_ctrl_or_func(ch)):
-			self.keyHandler.handle_ctrl_and_func_keys(ch)
+			undoable_action = self.keyHandler.handle_ctrl_and_func_keys(ch)
 		else:
 			beep()
 		
+		if(undoable_action):
+			self.history.add_change(self.__str__(), self.curpos)
+
 		self.repaint()
 
 	# print selected text using selection-theme
@@ -304,14 +310,20 @@ class Editor(Widget):
 		self.encoding = file_data.encoding
 		self.tab_size = file_data.tab_size
 
-		self.lines.clear()
+		self.render_data_to_lines(text)		
 
+	def render_data_to_lines(self, text, initialize_history = True):
+		# parse lines
+		self.lines.clear()
 		if(len(text) == 0):
 			self.lines.append("")
 		else:
 			lines = text.splitlines()
 			for line in lines:
 				self.lines.append(line)
+
+		# initialize history
+		if(initialize_history): self.history = EditHistory(text, CursorPosition(0,0))
 
 	# allots a file and writes to it
 	def allot_and_save_file(self, filename):
@@ -328,7 +340,7 @@ class Editor(Widget):
 	# save to file
 	def save_to_file(self):
 		# save to buffer
-		save_to_buffer(self.parent.app.files, self)
+		save_to_buffer(self.parent.app.files, self, True)
 		# write buffer to disk
 		write_buffer_to_disk(self.parent.app.files, self.filename)
 		# update status
@@ -339,14 +351,7 @@ class Editor(Widget):
 		text = load_buffer_from_disk(self.parent.app.files, self.filename)
 		
 		self.selection_mode = False
-		self.lines.clear()
-		sep_lines = text.splitlines()
-
-		for line in sep_lines:
-			self.lines.append(line)
-
-		if(len(self.lines)==0): self.lines.append("")
-		
+		self.render_data_to_lines(text)
 		self.curpos.y = 0
 		self.curpos.x = 0
 
@@ -369,11 +374,11 @@ class Editor(Widget):
 
 	# increase indent of selected lines
 	def shift_selection_right(self):
-		self.utility.shift_selection_right()
+		return self.utility.shift_selection_right()
 
 	# decrease indent of selected lines
 	def shift_selection_left(self):
-		self.utility.shift_selection_left()	
+		return self.utility.shift_selection_left()	
 	
 	# returns the block of leading whitespaces on a given line 
 	def get_leading_whitespaces(self, line_index):

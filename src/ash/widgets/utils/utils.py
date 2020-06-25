@@ -70,6 +70,13 @@ def is_ctrl_arrow(ch, arrow = None):
 		else:
 			return False
 
+def is_keyname(ch, name):
+	sch = str(curses.keyname(ch))
+	if(sch == "b'k" + name + "'"):
+		return True
+	else:
+		return False
+
 # <------------------------- other functions ---------------------->
 
 

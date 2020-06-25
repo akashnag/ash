@@ -162,7 +162,7 @@ class TopLevelWindow(Window):
 			if(ch == -1): continue
 			
 			# send Ctrl/Fn keypresses to main handler first
-			if(self.handler_func != None and is_ctrl_or_func(ch)):
+			if(self.handler_func != None):# and is_ctrl_or_func(ch)):
 				ch = self.handler_func(ch)
 				if(self.win == None): return
 

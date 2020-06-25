@@ -1,9 +1,17 @@
-#!/bin/bash
-
 # ---------------------------------------------------------------------------------------------
 #  Copyright (c) Akash Nag. All rights reserved.
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
-cd ../src
-python3 ash.py $@
+# This module implements the internal clipboard if pyperclip/xsel is unavailable
+
+class InternalClipboard:
+	clipboard_buffer = ""
+
+	@classmethod
+	def copy(cls, data):
+		cls.clipboard_buffer = data
+
+	@classmethod
+	def paste(cls):
+		return cls.clipboard_buffer

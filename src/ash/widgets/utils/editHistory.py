@@ -88,7 +88,7 @@ class EditHistory:
 		else:
 			self.present = self.present.link
 			self.depth_from_top += 1
-			return self.present.data
+			return copy.copy(self.present.data)
 
 	def redo(self):
 		if(self.depth_from_top == 0):
@@ -96,4 +96,4 @@ class EditHistory:
 		else:
 			self.present = self.present.parent
 			self.depth_from_top -= 1
-			return self.present.data
+			return copy.copy(self.present.data)

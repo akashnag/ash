@@ -13,6 +13,7 @@ from ash.widgets.window import *
 from ash.widgets.checkbox import *
 from ash.widgets.combo import *
 from ash.widgets.editor import *
+from ash.widgets.findReplaceDialog import *
 from ash.widgets.label import *
 from ash.widgets.listbox import *
 from ash.widgets.modalDialog import *

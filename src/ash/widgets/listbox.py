@@ -8,23 +8,26 @@
 from ash.widgets import *
 
 class ListBox(Widget):
-	def __init__(self, parent, y, x, width, row_count):
+	def __init__(self, parent, y, x, width, row_count, placeholder_text = None):
 		super(ListBox, self).__init__(WIDGET_TYPE_LISTBOX)
 		self.parent = parent
 		self.y = y
 		self.x = x
 		self.width = width
 		self.row_count = row_count
+		self.placeholder_text = placeholder_text
 		self.items = list()
 		self.theme = gc(COLOR_FORMFIELD)
 		self.focus_theme = gc(COLOR_FORMFIELD_FOCUSSED)
 		self.sel_blur_theme = gc(COLOR_FORMFIELD_SELECTED_BLURRED)
 		self.sel_index = -1
 		self.is_in_focus = False
+		self.focussable = False
 		self.repaint()
 
 	# when focus received
 	def focus(self):
+		if(not self.focussable): return
 		self.is_in_focus = True
 		self.repaint()
 
@@ -80,6 +83,8 @@ class ListBox(Widget):
 					self.parent.addstr(self.y + i - start, self.x, text, self.sel_blur_theme)
 			else:				
 				self.parent.addstr(self.y + i - start, self.x, text, self.theme)
+
+		if(count == 0): self.parent.addstr(self.y + (self.row_count // 2), self.x, pad_center_str(("" if self.placeholder_text == None else self.placeholder_text) , self.width), gc(COLOR_DISABLED))
 	
 	# handle key presses
 	def perform_action(self, ch):
@@ -103,11 +108,16 @@ class ListBox(Widget):
 	def add_item(self, item):
 		self.items.append(item)
 		if(self.sel_index < 0): self.sel_index = 0
+		self.focussable = True
 
 	# remove an item from the list
 	def remove_item(self, index):
 		self.items.pop(index)
-		if(self.sel_index == index): self.sel_index = -1
+		if(len(self.items) == 0):
+			self.sel_index = -1
+			self.focussable = False
+		else:
+			self.sel_index = 0
 
 	# insert an item in the middle of the list
 	def insert_item(self, index, item):

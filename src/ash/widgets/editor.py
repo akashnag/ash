@@ -130,6 +130,8 @@ class Editor(Widget):
 			self.repaint()
 			return None
 		
+		if(self.history == None): self.history = EditHistory(self.__str__(), self.curpos)
+		
 		undoable_action = False
 
 		if(ch == curses.KEY_BACKSPACE):
@@ -310,7 +312,7 @@ class Editor(Widget):
 		self.encoding = file_data.encoding
 		self.tab_size = file_data.tab_size
 
-		self.render_data_to_lines(text)		
+		self.render_data_to_lines(text)
 
 	def render_data_to_lines(self, text, initialize_history = True):
 		# parse lines
@@ -321,6 +323,7 @@ class Editor(Widget):
 			lines = text.splitlines()
 			for line in lines:
 				self.lines.append(line)
+			if(text.endswith("\n")): self.lines.append("")
 
 		# initialize history
 		if(initialize_history): self.history = EditHistory(text, CursorPosition(0,0))

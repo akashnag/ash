@@ -31,7 +31,7 @@ class EditorKeyHandler:
 		elif(is_ctrl(ch, "N")):
 			self.ed.parent.app.dialog_handler.invoke_file_new()
 		elif(is_ctrl(ch, "F")):
-			self.ed.parent.app.dialog_handler.invoke_find()
+			self.ed.parent.app.dialog_handler.invoke_find()			
 		elif(is_ctrl(ch, "H")):
 			self.ed.parent.app.dialog_handler.invoke_find_and_replace()
 		elif(is_ctrl(ch, "P")):
@@ -428,7 +428,7 @@ class EditorKeyHandler:
 			beep()
 		else:
 			self.ed.render_data_to_lines(hdata.data, False)
-			self.curpos = copy.copy(hdata.curpos)
+			self.ed.curpos = copy.copy(hdata.curpos)			
 
 	def handle_redo(self):
 		hdata = self.ed.history.redo()
@@ -436,7 +436,7 @@ class EditorKeyHandler:
 			beep()
 		else:
 			self.ed.render_data_to_lines(hdata.data, False)
-			self.curpos = copy.copy(hdata.curpos)
+			self.ed.curpos = copy.copy(hdata.curpos)
 
 	def handle_save(self):
 		if(not self.ed.save_status):

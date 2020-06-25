@@ -16,14 +16,34 @@ class DialogHandler:
 	def __init__(self, app):
 		self.app = app
 
+	# <----------------------------------- Find and Replace --------------------------------->
+
+	def invoke_find(self):
+		mw = self.app.main_window
+		ed = mw.get_active_editor()
+		self.app.readjust()
+		y, x = get_center_coords(self.app, 5, 30)
+		self.app.dlgFind = FindReplaceDialog(mw, y, x, ed)
+		self.app.dlgFind.show()
+		mw.repaint()
+
+	def invoke_find_and_replace(self):
+		mw = self.app.main_window
+		ed = mw.get_active_editor()
+		self.app.readjust()
+		y, x = get_center_coords(self.app, 7, 30)
+		self.app.dlgReplace = FindReplaceDialog(mw, y, x, ed, True)
+		self.app.dlgReplace.show()
+		mw.repaint()
+
 	# <----------------------------------- Go to Line --------------------------------->
 
 	def invoke_go_to_line(self):
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 4, 14)
-		self.app.dlgGoTo = ModalDialog(self.app.stdscr, y, x, 4, 14, "GO TO LINE", self.go_to_key_handler)
+		y, x = get_center_coords(self.app, 5, 14)
+		self.app.dlgGoTo = ModalDialog(self.app.main_window, y, x, 5, 14, "GO TO LINE", self.go_to_key_handler)
 		currentLine = str(self.app.main_window.get_active_editor().curpos.y + 1)
-		txtLineNumber = TextField(self.app.dlgGoTo, 2, 2, 10, currentLine, True)
+		txtLineNumber = TextField(self.app.dlgGoTo, 3, 2, 10, currentLine, True)
 		self.app.dlgGoTo.add_widget("txtLineNumber", txtLineNumber)
 		self.app.dlgGoTo.show()
 
@@ -158,11 +178,11 @@ class DialogHandler:
 		if(aed == None): return
 
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 11, 30)
-		self.app.dlgTabSize = ModalDialog(self.app.stdscr, y, x, 11, 30, "TAB SIZE AND ENCODING", self.tab_size_and_encoding_key_handler)
+		y, x = get_center_coords(self.app, 12, 30)
+		self.app.dlgTabSize = ModalDialog(self.app.main_window, y, x, 12, 30, "TAB SIZE AND ENCODING", self.tab_size_and_encoding_key_handler)
 		current_tab_size = str(aed.tab_size)
-		txtTabSize = TextField(self.app.dlgTabSize, 2, 2, 26, current_tab_size, True)
-		lstEncodings = ListBox(self.app.dlgTabSize, 4, 2, 26, 6)
+		txtTabSize = TextField(self.app.dlgTabSize, 3, 2, 26, current_tab_size, True)
+		lstEncodings = ListBox(self.app.dlgTabSize, 5, 2, 26, 6)
 		
 		for enc in SUPPORTED_ENCODINGS:
 			lstEncodings.add_item(("  " if aed.encoding != enc else TICK_MARK + " ") +  enc)
@@ -240,11 +260,11 @@ class DialogHandler:
 
 	def invoke_file_open(self):
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 13, 60)
-		self.app.dlgFileOpen = ModalDialog(self.app.stdscr, y, x, 13, 60, "OPEN FILE", self.file_open_key_handler)
-		txtFileName = TextField(self.app.dlgFileOpen, 2, 2, 56, str(os.getcwd()) + "/")
-		lstActiveFiles = ListBox(self.app.dlgFileOpen, 4, 2, 56, 6)
-		lstEncodings = ListBox(self.app.dlgFileOpen, 11, 2, 56, 1)
+		y, x = get_center_coords(self.app, 14, 60)
+		self.app.dlgFileOpen = ModalDialog(self.app.main_window, y, x, 14, 60, "OPEN FILE", self.file_open_key_handler)
+		txtFileName = TextField(self.app.dlgFileOpen, 3, 2, 56, str(os.getcwd()) + "/")
+		lstActiveFiles = ListBox(self.app.dlgFileOpen, 5, 2, 56, 6, "(No active files)")
+		lstEncodings = ListBox(self.app.dlgFileOpen, 12, 2, 56, 1)
 
 		# add the list of active files
 		for f in self.app.files:
@@ -346,10 +366,10 @@ class DialogHandler:
 
 	def invoke_switch_layout(self):
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 8, 40)
-		self.app.dlgSwitchLayout = ModalDialog(self.app.stdscr, y, x, 8, 40, "SWITCH LAYOUT", self.switch_layout_key_handler)
+		y, x = get_center_coords(self.app, 9, 40)
+		self.app.dlgSwitchLayout = ModalDialog(self.app.main_window, y, x, 9, 40, "SWITCH LAYOUT", self.switch_layout_key_handler)
 		
-		lstLayouts = ListBox(self.app.dlgSwitchLayout, 2, 2, 36, 5)
+		lstLayouts = ListBox(self.app.dlgSwitchLayout, 3, 2, 36, 5)
 		layouts = 	[ 
 					"Single", "Horizontal-2", "Horizontal-3", "Horizontal-4",
 					"Vertical-2", "2x2", "2x3", "1-Left, 2-Right", "2-Left, 1-Right",
@@ -392,10 +412,10 @@ class DialogHandler:
 
 	def invoke_file_save_as(self, filename=None):
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 4, 60)
-		self.app.dlgSaveAs = ModalDialog(self.app.stdscr, y, x, 4, 60, "SAVE AS", self.file_save_as_key_handler)
+		y, x = get_center_coords(self.app, 5, 60)
+		self.app.dlgSaveAs = ModalDialog(self.app.main_window, y, x, 5, 60, "SAVE AS", self.file_save_as_key_handler)
 		if(filename == None): filename = str(os.getcwd()) + "/untitled.txt"
-		txtFileName = TextField(self.app.dlgSaveAs, 2, 2, 56, filename)
+		txtFileName = TextField(self.app.dlgSaveAs, 3, 2, 56, filename)
 		self.app.dlgSaveAs.add_widget("txtFileName", txtFileName)
 		self.app.dlgSaveAs.show()
 

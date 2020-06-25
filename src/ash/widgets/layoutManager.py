@@ -10,15 +10,6 @@ from ash.widgets.utils.formatting import *
 from ash.widgets.utils.utils import *
 from ash.widgets.editor import *
 
-# <------------------- constants -------------------->
-BORDER_HORIZONTAL		= "\u2500"		# _
-BORDER_VERTICAL			= "\u2502"		# |
-BORDER_CROSSROADS		= "\u253C"		# +
-BORDER_SPLIT_RIGHT		= "\u251C"		# |-
-BORDER_SPLIT_LEFT		= "\u2524"		# -|
-BORDER_SPLIT_TOP		= "\u2534"		# _|_
-BORDER_SPLIT_BOTTOM		= "\u252C"		# T
-
 # note: layout values must begin at 0
 LAYOUT_SINGLE 			= 0
 LAYOUT_HORIZONTAL_2		= 1
@@ -130,7 +121,7 @@ class LayoutManager:
 		return (y, x, w)
 		
 	def __addstr(self, y, x, w):
-		self.win.win.addstr(y, x, pad_center_str("No files selected", w), gc(COLOR_LIGHTGRAY_ON_DARKGRAY))
+		self.win.win.addstr(y, x, pad_center_str("No files selected", w), gc(COLOR_DISABLED))
 
 	def get_dimensions(self, layout_type):
 		if(self.win.layout_type == LAYOUT_SINGLE): 

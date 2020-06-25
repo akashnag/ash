@@ -7,15 +7,22 @@
 
 from ash.widgets import *
 from ash.widgets.window import *
+from ash.widgets.textfield import *
 from ash.widgets.utils.utils import *
 
-class ModalDialog(Window):
-	def __init__(self, parent, y, x, height, width, title, handler_func):
-		super().__init__(y, x, height, width, title)
+class FindReplaceDialog(Window):
+	def __init__(self, parent, y, x, ed, replace = False):
+		super().__init__(y, x, (7 if replace else 5), 30, ("FIND AND REPLACE" if replace else "FIND"))
+		self.ed = ed
 		self.parent = parent
 		self.theme = gc(COLOR_BORDER)
-		self.handler_func = handler_func
 		self.win = None
+		self.text = str(self.ed)
+
+		init_text = ""
+		if(ed.selection_mode): init_text = ed.get_selected_text().replace("\n", "")
+		self.add_widget("txtFind", TextField(self, 3, 2, 26, init_text))
+		if(replace): self.add_widget("txtReplace", TextField(self, 5, 2, 26))
 
 	# show the window and start the event-loop
 	def show(self):
@@ -32,10 +39,6 @@ class ModalDialog(Window):
 			ch = self.win.getch()
 			if(ch == -1): continue
 			
-			if(self.handler_func != None):
-				ch = self.handler_func(ch)
-				if(self.win == None or ch == -1): return
-
 			if(self.active_widget_index < 0 or not self.get_active_widget().does_handle_tab()):
 				if((is_tab(ch) or ch == curses.KEY_BTAB)):
 					old_index = self.active_widget_index
@@ -63,11 +66,42 @@ class ModalDialog(Window):
 					self.parent.repaint()
 					ch = -1
 			
-			if(ch > -1 and self.active_widget_index > -1):
+			if(ch == -1): continue
+
+			search_text = str(self.get_widget("txtFind"))
+			replace_text = str(self.get_widget("txtReplace"))
+
+			if(is_ctrl(ch, "Q")):
+				self.hide()
+				self.parent.repaint()
+				return
+			elif(is_newline(ch)):						# F6: next
+				self.handle_find_next_match(search_text)
+			elif(is_func(ch, 7)):						# F7: previous
+				self.handle_find_previous_match(search_text)
+			elif(is_func(ch, 8)):						# F8: replace
+				self.handle_replace(search_text, replace_text)
+			elif(is_func(ch, 32)):						# Ctrl+F8: replace all			
+				self.handle_replace_all(search_text, replace_text)
+			elif(self.active_widget_index > -1):
 				self.get_active_widget().perform_action(ch)
 
 			self.repaint()
 		
+	def handle_find_next_match(self, search_text):
+		#lin_curpos = self.ed.get_linear_curpos()
+		#find_pos = self.text.find(search_text, lin_curpos)
+		pass
+
+	def handle_find_previous_match(self):
+		pass
+
+	def handle_replace(self):
+		pass
+
+	def handle_replace_all(self):
+		pass
+
 	# draw the window
 	def repaint(self):
 		if(self.win == None): return

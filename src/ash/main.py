@@ -137,6 +137,8 @@ class AshEditorApp:
 			# quits the active editor or the app
 			self.dialog_handler.invoke_quit()
 			return -1
+		elif(ch == curses.KEY_RESIZE):
+			self.main_window.repaint()
 		elif(is_ctrl(ch, "L")):
 			# adjust layout
 			self.dialog_handler.invoke_switch_layout()

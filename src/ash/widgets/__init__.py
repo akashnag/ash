@@ -27,8 +27,16 @@ try:
 except:
 	from ash.widgets.utils.internalClipboard import InternalClipboard as clipboard
 
+# <------------------- border constants -------------------->
+BORDER_HORIZONTAL		= "\u2500"		# _
+BORDER_VERTICAL			= "\u2502"		# |
+BORDER_CROSSROADS		= "\u253C"		# +
+BORDER_SPLIT_RIGHT		= "\u251C"		# |-
+BORDER_SPLIT_LEFT		= "\u2524"		# -|
+BORDER_SPLIT_TOP		= "\u2534"		# _|_
+BORDER_SPLIT_BOTTOM		= "\u252C"		# T
 
-# define the widget type constants
+# <------------------- widget types ------------------------->
 WIDGET_TYPE_LABEL			= 1
 WIDGET_TYPE_MULTILINE_LABEL	= 2
 WIDGET_TYPE_TEXTFIELD 		= 3

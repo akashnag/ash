@@ -2,7 +2,7 @@
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/akashnag/ash/blob/master/LICENSE.md) ![Downloads](https://img.shields.io/github/downloads/akashnag/ash/total)
 
-**ash** is a simple and clean terminal-based text editor for Linux, that aims to be easy to use with modern key-bindings. It is fully capable of handling multiple files simultaneously and hopes to provide a wide array of features when it is released.
+**ash** is a simple and clean terminal-based text editor for Linux and macOS, that aims to be easy to use with modern key-bindings. It is fully capable of handling multiple files simultaneously and hopes to provide a wide array of features when it is released.
 
 Here is a picture of **ash** editing this README file (syntax highlighting is not yet implemented):
 
@@ -25,17 +25,18 @@ Here is a picture of **ash** editing this README file (syntax highlighting is no
 
 ## Design Goals
 
-The following is a list of design goals for ash; some of which have already been implemented, while some are yet to be:
+The following is a list of design goals for **ash**; some of which have already been implemented, while some are yet to be:
 
 - Easy to use.
 - Clean interface.
 - No dependencies.
 - Common keybindings.
 - Support for wide variety of splits.
-- Autocompletion.
+- Autocompletion/Suggestions.
 - Syntax highlighting.
 - Color scheme support.
-- Macros.
+- Macros and command-palette.
+- Integrated terminal.
 - Common editor features such as undo/redo, line numbers, Unicode support, soft wrapping, …
 - Auto-backup.
 - Encryption.
@@ -43,7 +44,7 @@ The following is a list of design goals for ash; some of which have already been
 
 ## Installation
 
-As **ash** is still in development, there are no prebuilt binaries available for download. However, if you have python 3.8 installed on your system, you are ready to go and download **ash**. For Linux users, follow the following steps to get **ash** on your system:
+As **ash** is still in development, there are no prebuilt binaries available for download. However, if you have python 3.8 installed on your system, you can download and run a developmental build for **ash**. For Linux users, follow the following steps to get **ash** on your system:
 
 #### Prerequisites
 
@@ -64,7 +65,7 @@ $ cd ash/bin
 $ sudo chmod +x ash
 ```
 
-Then add `ash/bin` to your path by editing your `.bashrc` file:
+To be able to launch **ash** from anywhere, you need to add `~/ash/bin` to your path by editing your `.bashrc` file:
 
 ```bash
 $ sudo nano ~/.bashrc
@@ -86,7 +87,7 @@ If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM
 
 ## Usage
 
-Once you have downloaded the **ash** source code, and set it up as detailed above, you are ready to use it:
+Once you have downloaded the **ash** source code, and set it up as detailed above, you are ready to use it (Note: it may run a bit slow for the first time):
 
 ```bash
 $ ash path/to/file.txt

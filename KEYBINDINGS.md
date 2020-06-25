@@ -10,13 +10,19 @@ These key combinations can be used even if no editor is currently active.
 
 <kbd>Ctrl</kbd> + <kbd>@</kbd> &nbsp;&nbsp;Force-quits the application
 
+<kbd>Tab</kbd> &nbsp;&nbsp;Moves focus to the next widget in the active dialog-box (if any)
+
+<kbd>Shift</kbd> + <kbd>Tab</kbd> &nbsp;&nbsp;Moves focus to the previous widget in the active dialog-box
+
+<kbd>Ctrl</kbd> + <kbd>&#8592;</kbd> <kbd>&#8593;</kbd> <kbd>&#8594;</kbd> <kbd>&#8595;</kbd> &nbsp;&nbsp;Moves the active dialog-box (if any) around the screen
+
 <kbd>Ctrl</kbd> + <kbd>L</kbd> &nbsp;&nbsp;Changes the layout of splits
 
 <kbd>Ctrl</kbd> + <kbd>N</kbd> &nbsp;&nbsp;Opens a new buffer
 
 <kbd>Ctrl</kbd> + <kbd>O</kbd> &nbsp;&nbsp;Open a file
 
-<kbd>F1</kbd> - <kbd>F6</kbd> &nbsp;&nbsp;&nbsp;&nbsp;Activates the corresponding editor
+<kbd>F1</kbd> - <kbd>F6</kbd> &nbsp;&nbsp;&nbsp;&nbsp;Activates the corresponding editor (if exists in the current layout)
 
 ### Editor commands
 
@@ -31,6 +37,10 @@ These key combinations work only if an editor is currently active.
 <kbd>Home</kbd> <kbd>End</kbd> &nbsp;&nbsp;Moves the cursor to the beginning/end of the current line
 
 <kbd>Ctrl</kbd> + <kbd>Home</kbd> <kbd>End</kbd> &nbsp;&nbsp;Moves the cursor to the beginning/end of the current document
+
+<kbd>Tab</kbd> &nbsp;&nbsp;When some text is selected, it increases the indent of the selection
+
+<kbd>Shift</kbd> + <kbd>Tab</kbd> &nbsp;&nbsp;When some text is selected, it decreases the indent of the selection if possible
 
 <kbd>Shift</kbd> + <kbd>Home</kbd> <kbd>End</kbd> &nbsp;&nbsp;Selects text up to the beginning/end of the current line
 

@@ -39,6 +39,7 @@ The following is a list of design goals for **ash**; some of which have already 
 - Integrated terminal.
 - Common editor features such as undo/redo, line numbers, Unicode support, soft wrapping, …
 - Auto-backup.
+- Git integration.
 - Encryption.
 - File transfer over TCP/UDP.
 

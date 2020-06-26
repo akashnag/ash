@@ -121,7 +121,7 @@ class LayoutManager:
 		return (y, x, w)
 		
 	def __addstr(self, y, x, w):
-		self.win.win.addstr(y, x, pad_center_str("No files selected", w), gc(COLOR_DISABLED))
+		self.win.win.addstr(y, x, "No files selected".center(w), gc(COLOR_DISABLED))
 
 	def get_dimensions(self, layout_type):
 		if(self.win.layout_type == LAYOUT_SINGLE): 

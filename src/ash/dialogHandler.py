@@ -171,43 +171,51 @@ class DialogHandler:
 					self.app.files[buffer_index] = filedata
 					mw.close_active_editor()
 
-	# <--------------------------- Set Tab-Size and Encoding ------------------------------>
+	# <--------------------------- Set Preferences ------------------------------>
 
-	def invoke_set_tab_size_and_encoding(self):
+	def invoke_set_preferences(self):
 		aed = self.app.main_window.get_active_editor()
 		if(aed == None): return
 
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 12, 30)
-		self.app.dlgTabSize = ModalDialog(self.app.main_window, y, x, 12, 30, "TAB SIZE AND ENCODING", self.tab_size_and_encoding_key_handler)
+		y, x = get_center_coords(self.app, 15, 30)
+		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 15, 30, "PREFERENCES", self.preferences_key_handler)
 		current_tab_size = str(aed.tab_size)
-		txtTabSize = TextField(self.app.dlgTabSize, 3, 2, 26, current_tab_size, True)
-		lstEncodings = ListBox(self.app.dlgTabSize, 5, 2, 26, 6)
+		txtTabSize = TextField(self.app.dlgPreferences, 3, 2, 26, current_tab_size, True)
+		lstEncodings = ListBox(self.app.dlgPreferences, 5, 2, 26, 6)
+		chkShowLineNumbers = CheckBox(self.app.dlgPreferences, 12, 2, "Show line numbers")
+		chkWordWrap = CheckBox(self.app.dlgPreferences, 13, 2, "Word Wrap")
 		
 		for enc in SUPPORTED_ENCODINGS:
 			lstEncodings.add_item(("  " if aed.encoding != enc else TICK_MARK + " ") +  enc)
 		
+		chkShowLineNumbers.set_value(aed.show_line_numbers)
+		chkWordWrap.set_value(aed.word_wrap)
 		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index(aed.encoding)
-		self.app.dlgTabSize.add_widget("txtTabSize", txtTabSize)
-		self.app.dlgTabSize.add_widget("lstEncodings", lstEncodings)
 		
-		self.app.dlgTabSize.show()
+		self.app.dlgPreferences.add_widget("txtTabSize", txtTabSize)
+		self.app.dlgPreferences.add_widget("lstEncodings", lstEncodings)
+		self.app.dlgPreferences.add_widget("chkShowLineNumbers", chkShowLineNumbers)
+		self.app.dlgPreferences.add_widget("chkWordWrap", chkWordWrap)
+		
+		self.app.dlgPreferences.show()
 
-	def tab_size_and_encoding_key_handler(self, ch):
+	def preferences_key_handler(self, ch):
 		aed = self.app.main_window.get_active_editor()
 
 		if(is_ctrl(ch, "Q")): 
-			self.app.dlgTabSize.hide()
+			self.app.dlgPreferences.hide()
 		elif(is_newline(ch)):
 			try:
-				tab_size = int(str(self.app.dlgTabSize.get_widget("txtTabSize")))
+				tab_size = int(str(self.app.dlgPreferences.get_widget("txtTabSize")))
 			except:
 				self.app.show_error("TAB SIZE", "Incorrect tab size: should be in [1,9]")
 				return -1
 
-			encoding_index = self.app.dlgTabSize.get_widget("lstEncodings").sel_index
-			
-			self.app.dlgTabSize.hide()
+			encoding_index = self.app.dlgPreferences.get_widget("lstEncodings").sel_index
+			show_line_numbers = self.app.dlgPreferences.get_widget("chkShowLineNumbers").isChecked()
+
+			self.app.dlgPreferences.hide()
 
 			if(tab_size < 1 or tab_size > 9):
 				self.app.show_error("TAB SIZE", "Incorrect tab size: should be in [1,9]")
@@ -215,6 +223,7 @@ class DialogHandler:
 
 			aed.tab_size = tab_size
 			aed.encoding = SUPPORTED_ENCODINGS[encoding_index]
+			aed.toggle_line_numbers(show_line_numbers)
 
 			self.app.main_window.repaint()
 			aed.repaint()

@@ -6,7 +6,10 @@
 # This is the entry point of the application
 
 import sys
+import os
+
 from ash.main import *
 
-app = AshEditorApp(sys.argv)
+ash_dir = os.path.dirname(os.path.realpath(__file__))
+app = AshEditorApp(ash_dir, sys.argv)
 app.run()

@@ -37,11 +37,11 @@ class StatusBar(Widget):
 			if(self.section_widths[i] <= 0):			# use all of the remaining space
 				remw = w - cumw
 				if(self.section_widths[i] == 0):		# 0 = align left
-					str += pad_right_str(" " + self.sections[i] + " ", remw)
+					str += (" " + self.sections[i] + " ").ljust(remw)
 				else:									# negative = align right
-					str += pad_left_str(" " + self.sections[i] + " ", remw)
+					str += (" " + self.sections[i] + " ").rjust(remw)
 			else:
-				str += pad_right_str(" " + self.sections[i] + " ", self.section_widths[i])
+				str += (" " + self.sections[i] + " ").ljust(self.section_widths[i])
 				cumw += self.section_widths[i]
 
 		if(len(str) > w):

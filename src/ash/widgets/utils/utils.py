@@ -106,22 +106,6 @@ def get_horizontal_cursor_position(text, curpos, tab_size):
 
 	return x
 
-def replace_tabs(text, tab_size):
-	ptext = copy.copy(text)
-	rtext = ""
-	x = 0
-	
-	for c in ptext:
-		if(c == "\t"):
-			delta = (tab_size - (x % tab_size))
-			x += delta
-			rtext += (" " * delta)
-		else:
-			x += 1
-			rtext += c
-
-	return rtext
-
 def get_message_dimensions(msg):
 	mlines = msg.count("\n") + 1
 	data = msg.split("\n")
@@ -130,3 +114,10 @@ def get_message_dimensions(msg):
 		if(len(line) > mlen):
 			mlen = len(line)
 	return (mlines, mlen)
+
+def get_relative_file_title(project_dir, filename):
+	pos = project_dir.rfind("/")
+	if(pos == 0):
+		return filename[pos:]
+	else:
+		return filename[pos+1:]

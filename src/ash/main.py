@@ -15,7 +15,8 @@ APP_MODE_FILE		= 1		# if ash is invoked with zero or more file names
 APP_MODE_PROJECT	= 2		# if ash is invoked with a single directory name
 
 class AshEditorApp:
-	def __init__(self, args):
+	def __init__(self, ash_dir, args):
+		self.ash_dir = ash_dir
 		self.args = args
 		self.argc = len(args)
 		self.dialog_handler = DialogHandler(self)
@@ -25,6 +26,8 @@ class AshEditorApp:
 			self.ignore_screen_size = True
 			self.args.pop(1)
 			self.argc -= 1
+
+		read_file_associations(self)
 		
 	def run(self):
 		self.files = list()
@@ -60,26 +63,29 @@ class AshEditorApp:
 	def get_app_version(self):
 		return APP_VERSION
 
+	# returns the name of the application
+	def get_app_name(self):
+		return "ash-" + APP_VERSION
+
 	# returns the appropriate app title
 	def get_app_title(self, active_editor = None):
-		app_title = "ash-" + APP_VERSION
+		app_title = ""
 
 		if(active_editor == None):
 			if(self.app_mode == APP_MODE_PROJECT):
-				app_title = "[" + get_file_title(self.project_dir) + "] - " + app_title
+				app_title = "[" + get_file_title(self.project_dir) + "]"
 				return app_title
 			else:
 				return app_title
 
 		if(self.app_mode == APP_MODE_FILE):
-			app_title = get_file_title(active_editor.filename) + " - " + app_title
+			app_title = get_file_title(active_editor.filename)
 		elif(self.app_mode == APP_MODE_PROJECT):
-			app_title = "[" + get_file_title(self.project_dir) + "] - " + app_title
-			app_title = get_file_title(active_editor.filename) + " - " + app_title
+			app_title = get_relative_file_title(self.project_dir, active_editor.filename)
 		else:
-			app_title = "Untitled - " + app_title
+			app_title = "untitled"
 		
-		app_title = ("" if active_editor.save_status else UNSAVED_BULLET) + app_title
+		app_title += ("" if active_editor.save_status else " [+]")
 		return app_title
 
 	# initialize the GUI
@@ -96,9 +102,9 @@ class AshEditorApp:
 		self.main_window = TopLevelWindow(self, self.stdscr, "Ash " + APP_VERSION, self.main_key_handler)
 		
 		# status-bar sections: total=101+1 (min)
-		# status (8), file-type (11), encoding(7), sloc (20), file-size (10), 
-		# unsaved-file-count (4), tab-size (1), cursor-position (6+1+6+3+8=24)
-		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 13, 9, 22, 12, 6, 3, -1 ]))
+		# *status (8), *file-type (11), encoding(7), sloc (20), file-size (10), 
+		# *unsaved-file-count (4), *tab-size (1), cursor-position (6+1+6+3+8=24)
+		self.main_window.add_status_bar(StatusBar(self.main_window, [ 33, 9, 22, 12, -1 ]))
 		
 		if(self.app_mode != APP_MODE_PROJECT):
 			editor = Editor(self.main_window)

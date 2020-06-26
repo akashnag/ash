@@ -10,6 +10,8 @@ from ash.widgets.cursorPosition import *
 from ash.widgets.editorKeyHandler import *
 from ash.widgets.editorUtility import *
 
+PREFERRED_LINE_NUMBER_WIDTH = 6
+
 # This is the text editor class
 class Editor(Widget):
 	def __init__(self, parent):
@@ -22,7 +24,9 @@ class Editor(Widget):
 		self.utility = EditorUtility(self)
 		self.keyHandler = EditorKeyHandler(self)
 				
-		self.line_number_width = 6
+		self.line_number_width = PREFERRED_LINE_NUMBER_WIDTH
+		self.show_line_numbers = True
+		self.word_wrap = False
 						
 		# set up the text and cursor data structures
 		self.lines = [ "" ]
@@ -175,7 +179,7 @@ class Editor(Widget):
 		start, end = self.get_selection_endpoints()
 		
 		text = self.lines[line_index]
-		wstext = replace_tabs(text, self.tab_size)
+		wstext = text.expandtabs(self.tab_size)
 		vtext = wstext[self.col_start:] if self.col_end > len(wstext) else wstext[self.col_start:self.col_end]
 		
 		vstartx = get_horizontal_cursor_position(text, start.x, self.tab_size)
@@ -246,10 +250,10 @@ class Editor(Widget):
 			if(i >= nlines): break
 
 			# print line number
-			self.parent.addstr(self.y + i - self.line_start, self.x, pad_left_str(str(i+1), self.line_number_width), self.highlighted_line_number_theme if self.curpos.y == i else self.line_number_theme)
+			if(self.show_line_numbers): self.parent.addstr(self.y + i - self.line_start, self.x, str(i+1).rjust(self.line_number_width), self.highlighted_line_number_theme if self.curpos.y == i else self.line_number_theme)
 			
 			# print the text
-			text = replace_tabs(self.lines[i], self.tab_size)
+			text = self.lines[i].expandtabs(self.tab_size)
 
 			if(self.col_start < len(text)):
 				vtext = text[self.col_start:] if self.col_end > len(text) else text[self.col_start:self.col_end]
@@ -288,10 +292,7 @@ class Editor(Widget):
 
 	# returns the string representation of the document
 	def __str__(self):
-		data = ""
-		for line in self.lines:
-			data += self.newline + line
-		return data[len(self.newline):]
+		return self.newline.join(self.lines)
 
 	# returns a file-data object
 	def get_data(self):
@@ -365,6 +366,19 @@ class Editor(Widget):
 	def is_empty(self):
 		return True if len(self.__str__())==0 else False
 
+	# turns on/off line numbers
+	def toggle_line_numbers(self, show_numbers):
+		self.show_line_numbers = show_numbers
+		if(self.show_line_numbers):
+			self.line_number_width = PREFERRED_LINE_NUMBER_WIDTH
+		else:
+			self.line_number_width = 0
+		self.repaint()
+
+	# turns on/off soft-wrap
+	def toggle_word_wrap(self, wrap):
+		pass		# add code
+
 	# <--------------------- stub functions ---------------------->
 
 	# delete the selected text
@@ -394,14 +408,6 @@ class Editor(Widget):
 	# returns the selection endpoints in the correct order
 	def get_selection_endpoints(self):
 		return self.utility.get_selection_endpoints()
-
-	# implements search
-	def find(self, str):
-		self.utility.find(str)
-
-	# replaces the first occurrence (after last find/replace operation)
-	def find_and_replace(self, strf, strr):
-		self.utility.replace(strf, strr)
 
 	# count lines and SLOC
 	def get_loc(self):

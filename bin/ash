@@ -5,5 +5,4 @@
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
-cd ../src
-python3 ash.py $@
+python3 ../src/ash.py $@

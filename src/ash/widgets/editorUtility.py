@@ -157,9 +157,15 @@ class EditorUtility:
 			return "0 bytes"
 
 	# implements search
-	def find(self, str):
+	def find_next(self, str):
+		pass
+
+	def find_previous(self, str):
 		pass
 
 	# replaces the first occurrence (after last find/replace operation)
-	def find_and_replace(self, strf, strr):
+	def replace(self, strf, strr):
+		pass
+
+	def replace_all(self, strf, strr):
 		pass

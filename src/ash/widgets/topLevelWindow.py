@@ -23,7 +23,8 @@ class TopLevelWindow(Window):
 		self.editors = list()
 		self.active_editor_index = -1
 		self.layout_type = LAYOUT_SINGLE
-			
+		self.app_name = self.app.get_app_name()
+	
 	# adds an editor to the workspace
 	def add_editor(self, ed):
 		if(len(self.editors) == 6): return
@@ -134,14 +135,23 @@ class TopLevelWindow(Window):
 		
 		unsaved_file_count = str(get_number_of_unsaved_files(self.app.files) + get_number_of_unsaved_buffers(self)) + "*"
 		
-		self.status.set(0, editor_state)
-		self.status.set(1, language)
-		self.status.set(2, encoding)
-		self.status.set(3, loc_count)
-		self.status.set(4, file_size)		
-		self.status.set(5, unsaved_file_count)
-		self.status.set(6, tab_size)
-		self.status.set(7, cursor_position)
+		#self.status.set(0, editor_state)
+		#self.status.set(1, language)
+		#self.status.set(2, encoding)
+		#self.status.set(3, loc_count)
+		#self.status.set(4, file_size)		
+		#self.status.set(5, unsaved_file_count)
+		#self.status.set(6, tab_size)
+		#self.status.set(7, cursor_position)
+		
+		self.status.set(0, "")
+		self.status.set(1, encoding)
+		self.status.set(2, loc_count)
+		self.status.set(3, file_size)		
+		self.status.set(4, cursor_position)
+
+		# save in object to retrieve in repaint()
+		self.unsaved_file_count = unsaved_file_count
 		
 		if(aed != None):
 			self.set_title(self.app.get_app_title(aed))
@@ -183,8 +193,12 @@ class TopLevelWindow(Window):
 		self.win.clear()
 
 		if(self.status != None): self.win.addstr(self.height-1, 0, str(self.status), gc(COLOR_STATUSBAR))
-		self.win.addstr(0, 0, pad_center_str(self.title, self.width), curses.A_BOLD | gc(COLOR_TITLEBAR))
 		
+		title_text = self.app_name + " - {" + str(self.unsaved_file_count) + "}"
+		self.win.addstr(0, 0, title_text.center(self.width), curses.A_BOLD | gc(COLOR_TITLEBAR))
+		
+		self.win.addstr(self.height-1, 0, " " + self.title + " ", curses.A_BOLD | gc(COLOR_STATUSBAR))
+				
 		self.layout_manager.draw_layout_borders()
 		self.layout_manager.repaint_editors()
 		

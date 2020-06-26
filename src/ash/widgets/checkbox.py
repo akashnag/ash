@@ -8,13 +8,13 @@
 from ash.widgets import *
 
 class CheckBox(Widget):
-	def __init__(self, parent, y, x, text, theme, focus_theme = None):
+	def __init__(self, parent, y, x, text):
 		super(CheckBox, self).__init__(WIDGET_TYPE_CHECKBOX)
 		self.parent = parent
 		self.y = y
 		self.x = x
-		self.theme = theme
-		self.focus_theme = focus_theme
+		self.theme = gc(COLOR_FORMFIELD)
+		self.focus_theme = gc(COLOR_FORMFIELD_FOCUSSED)
 		self.text = text
 		self.is_in_focus = False
 		self.checked = False
@@ -60,3 +60,6 @@ class CheckBox(Widget):
 	# returns the string representation: checkbox text
 	def __str__(self):
 		return self.text
+
+	def set_value(self, checked = True):
+		self.checked = checked

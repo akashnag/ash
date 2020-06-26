@@ -84,7 +84,7 @@ class ListBox(Widget):
 			else:				
 				self.parent.addstr(self.y + i - start, self.x, text, self.theme)
 
-		if(count == 0): self.parent.addstr(self.y + (self.row_count // 2), self.x, pad_center_str(("" if self.placeholder_text == None else self.placeholder_text) , self.width), gc(COLOR_DISABLED))
+		if(count == 0): self.parent.addstr(self.y + (self.row_count // 2), self.x, ("" if self.placeholder_text == None else self.placeholder_text).center(self.width), gc(COLOR_DISABLED))
 	
 	# handle key presses
 	def perform_action(self, ch):

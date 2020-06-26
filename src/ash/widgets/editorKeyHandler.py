@@ -34,14 +34,14 @@ class EditorKeyHandler:
 			self.ed.parent.app.dialog_handler.invoke_find()			
 		elif(is_ctrl(ch, "H")):
 			self.ed.parent.app.dialog_handler.invoke_find_and_replace()
-		elif(is_ctrl(ch, "P")):
+		elif(is_ctrl(ch, "T")):
 			self.ed.parent.app.dialog_handler.invoke_file_print()
 		elif(is_ctrl(ch, "Z")):
 			self.handle_undo()
 		elif(is_ctrl(ch, "Y")):
 			self.handle_redo()
-		elif(is_ctrl(ch, "T")):
-			self.ed.parent.app.dialog_handler.invoke_set_tab_size_and_encoding()
+		elif(is_ctrl(ch, "P")):
+			self.ed.parent.app.dialog_handler.invoke_set_preferences()
 
 	# handle the 4 arrow keys
 	def handle_arrow_keys(self, ch):

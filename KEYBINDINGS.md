@@ -62,7 +62,7 @@ These key combinations work only if an editor is currently active.
 
 <kbd>Ctrl</kbd> + <kbd>S</kbd> &nbsp;&nbsp;Saves the current file
 
-<kbd>Ctrl</kbd> + <kbd>T</kbd> &nbsp;&nbsp;Changes the tab-size and file-encoding
+<kbd>Ctrl</kbd> + <kbd>P</kbd> &nbsp;&nbsp;Opens the preferences dialog-box
 
 <kbd>Ctrl</kbd> + <kbd>G</kbd> &nbsp;&nbsp;Go to a given line/column
 
@@ -70,21 +70,33 @@ These key combinations work only if an editor is currently active.
 
 <kbd>Ctrl</kbd> + <kbd>Y</kbd> &nbsp;&nbsp;Redo
 
-### Not yet implemented
-
-The following key bindings have not yet been implemented but will be in the final release.
-
 <kbd>Ctrl</kbd> + <kbd>F</kbd> &nbsp;&nbsp;Find
 
 <kbd>Ctrl</kbd> + <kbd>H</kbd> &nbsp;&nbsp;Replace
 
+### Not yet implemented
+
+The following key bindings have not yet been implemented but will be in the final release.
+
 <kbd>Ctrl</kbd> + <kbd>R</kbd> &nbsp;&nbsp;Open recent files list
 
-<kbd>Ctrl</kbd> + <kbd>P</kbd> &nbsp;&nbsp;Print
+<kbd>Ctrl</kbd> + <kbd>T</kbd> &nbsp;&nbsp;Print
 
 <kbd>Ctrl</kbd> + <kbd>K</kbd> &nbsp;&nbsp;Send/Receive a file over TCP/UDP
 
 <kbd>Ctrl</kbd> + <kbd>E</kbd> &nbsp;&nbsp;Encrypt file
+
+### Commands for find and replace operations
+
+These commands work when the Find/Replace dialog box is active:
+
+<kbd>Enter</kbd> &nbsp;&nbsp;Find next match
+
+<kbd>F7</kbd> &nbsp;&nbsp;Find previous match
+
+<kbd>F8</kbd> &nbsp;&nbsp;Replace the current match
+
+<kbd>Ctrl</kbd> + <kbd>F8</kbd> &nbsp;&nbsp;Replace all matches
 
 ## Other features
 

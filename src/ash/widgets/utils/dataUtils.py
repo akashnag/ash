@@ -11,10 +11,10 @@ from ash.widgets.utils import *
 file_assoc = dict()
 
 # <--------------------- functions ------------------------------>
-def read_file_associations():
+def read_file_associations(app):
 	global file_assoc
 	
-	f = open("config/languages.conf", "rt")
+	f = open(app.ash_dir + "/config/languages.conf", "rt")
 	assoc = f.read().splitlines()
 	f.close()
 
@@ -138,8 +138,17 @@ def get_number_of_unsaved_buffers(main_window):
 	n = len(main_window.editors)
 	count = 0
 	for i in range(n):
-		if(main_window.editors[i] != None and main_window.editors[i].filename == None and not main_window.editors[i].save_status):
-			count += 1
+		if(main_window.editors[i] != None and not main_window.editors[i].save_status):
+			if(main_window.editors[i].filename == None):
+				count += 1
+			else:
+				bi = get_file_buffer_index(main_window.app.files, main_window.editors[i].filename)
+				if(bi == -1):
+					count += 1
+				elif(main_window.app.files[bi].save_status):
+					# save status = true means it was not counted in get_number_of_unsaved_files()
+					count += 1
+
 	return count
 
 # returns the index of the first free editor except 'barring'
@@ -154,6 +163,3 @@ def get_first_free_editor_index(main_window, barring = -1):
 		if(ed != None and i!=barring and not ed.has_been_allotted_file and len(ed.__str__()) == 0): return i
 	
 	return -1
-
-# <----------------------- MAIN CODE --------------------------->
-read_file_associations()

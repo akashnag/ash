@@ -98,6 +98,8 @@ class EditorKeyHandler:
 		self.ed.curpos.y = min([self.ed.curpos.y, len(self.ed.lines)-1])
 		self.ed.curpos.y = max(0, self.ed.curpos.y)
 
+		log("Inside arrow-key-handler: " + self.ed.curpos.real_str())
+
 	
 	# handles Ctrl+Arrow key combinations
 	# behaviour: move to the next/previous separator position

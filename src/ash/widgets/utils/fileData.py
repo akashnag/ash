@@ -9,7 +9,7 @@ from ash.widgets.utils import *
 from ash.widgets import *
 from ash.widgets.utils.utils import *
 from ash.widgets.utils.formatting import *
-from ash.widgets.cursorPosition import *
+from ash.widgets.utils.cursorPosition import *
 
 class FileData:
 	def __init__(self, filename=None, buffer=None, curpos=None, save_status=True, selection_mode=False, sel_start=None, sel_end=None, encoding="utf-8", tab_size = 4):

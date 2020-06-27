@@ -8,8 +8,8 @@ import glob
 from ash import *
 from ash.dialogHandler import *
 
-APP_VERSION			= "0.1.0"
-UNSAVED_BULLET		= "\u2022 "
+APP_VERSION			= "0.1.0-dev"
+UNSAVED_BULLET		= "\u2022"
 
 APP_MODE_FILE		= 1		# if ash is invoked with zero or more file names
 APP_MODE_PROJECT	= 2		# if ash is invoked with a single directory name
@@ -22,11 +22,12 @@ class AshEditorApp:
 		self.dialog_handler = DialogHandler(self)
 
 		self.ignore_screen_size = False
-		if(self.argc > 1 and self.args[1] == "--ignore-screen-size"):
+		if(self.argc > 1 and self.args[1] == "--i"):
 			self.ignore_screen_size = True
 			self.args.pop(1)
 			self.argc -= 1
 
+		log_init()
 		read_file_associations(self)
 		
 	def run(self):
@@ -51,8 +52,8 @@ class AshEditorApp:
 		# invoke the GUI initialization routine
 		ret_code = curses.wrapper(self.app_main)
 		if(ret_code == -1):
-			print("Error: screen-size insufficient, required at least: 102 x 5")
-			print("To ignore screen limitations: restart with --ignore-screen-size as the first argument")
+			print("Error: screen-size insufficient, required at least: 102 x 20")
+			print("To ignore screen limitations: restart with --i as the first argument")
 
 	# recalculates screen dimensions
 	def readjust(self):
@@ -85,7 +86,7 @@ class AshEditorApp:
 		else:
 			app_title = "untitled"
 		
-		app_title += ("" if active_editor.save_status else " [+]")
+		app_title = ("  " if active_editor.save_status else UNSAVED_BULLET + " ") + app_title
 		return app_title
 
 	# initialize the GUI
@@ -93,7 +94,7 @@ class AshEditorApp:
 		self.stdscr = stdscr
 		self.readjust()
 
-		if(not self.ignore_screen_size and (self.screen_width < 102 or self.screen_height < 5)):
+		if(not self.ignore_screen_size and (self.screen_width < 102 or self.screen_height < 20)):
 			return -1
 		
 		init_colors()
@@ -104,7 +105,7 @@ class AshEditorApp:
 		# status-bar sections: total=101+1 (min)
 		# *status (8), *file-type (11), encoding(7), sloc (20), file-size (10), 
 		# *unsaved-file-count (4), *tab-size (1), cursor-position (6+1+6+3+8=24)
-		self.main_window.add_status_bar(StatusBar(self.main_window, [ 33, 9, 22, 12, -1 ]))
+		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 13, 9, 22, 12, 6, 3, -1 ]))
 		
 		if(self.app_mode != APP_MODE_PROJECT):
 			editor = Editor(self.main_window)
@@ -179,9 +180,7 @@ class AshEditorApp:
 
 	# displays an error message
 	def show_error(self, msg, error=True):
-		msg_lines, msg_len = get_message_dimensions(msg)
-		y, x = get_center_coords(self, msg_lines + 4, msg_len + 4)		
-		self.msgBox = MessageBox(self.stdscr, y, x, msg_lines + 4, msg_len + 4, ("ERROR" if error else "INFORMATION"), msg + "\n(O)K")
+		self.msgBox = MessageBox(self, ("ERROR" if error else "INFORMATION"), msg)
 		while(True):
 			response = self.msgBox.show()
 			if(response == MSGBOX_OK): 
@@ -191,9 +190,7 @@ class AshEditorApp:
 
 	# displays a question
 	def ask_question(self, title, question, hasCancel=False):
-		msg_lines, msg_len = get_message_dimensions(question)
-		y, x = get_center_coords(self, msg_lines + 4, msg_len + 4)
-		self.msgBox = MessageBox(self.stdscr, y, x, msg_lines + 4, msg_len + 4, title, question + "\n(Y)ES / (N)O" + (" / (C)ANCEL" if hasCancel else ""))
+		self.msgBox = MessageBox(self, title, question, (MSGBOX_TYPE_YES_NO_CANCEL if hasCancel else MSGBOX_TYPE_YES_NO))
 		while(True):
 			response = self.msgBox.show()
 			if(response == MSGBOX_YES): 

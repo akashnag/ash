@@ -37,18 +37,21 @@ class ModalDialog(Window):
 				if(self.win == None or ch == -1): return
 
 			if(self.active_widget_index < 0 or not self.get_active_widget().does_handle_tab()):
-				if((is_tab(ch) or ch == curses.KEY_BTAB)):
+				if((is_tab(ch) or ch == curses.KEY_BTAB or ch == curses.KEY_UP or ch == curses.KEY_DOWN)):
 					old_index = self.active_widget_index
-					if(is_tab(ch)):
+					if(is_tab(ch) or (ch == curses.KEY_DOWN and self.widgets[self.active_widget_index].type == WIDGET_TYPE_CHECKBOX)):
 						self.active_widget_index = self.get_next_focussable_widget_index()
-					elif(ch == curses.KEY_BTAB):
+					elif(ch == curses.KEY_BTAB  or (ch == curses.KEY_UP and self.widgets[self.active_widget_index].type == WIDGET_TYPE_CHECKBOX)):
 						self.active_widget_index = self.get_previous_focussable_widget_index()
 					
 					if(old_index != self.active_widget_index):
 						if(old_index > -1): self.widgets[old_index].blur()
 						if(self.active_widget_index > -1): self.widgets[self.active_widget_index].focus()
 
-					ch = -1
+					if(ch == curses.KEY_UP or ch == curses.KEY_DOWN):
+						if(self.widgets[old_index].type == WIDGET_TYPE_CHECKBOX): ch = -1
+					else:
+						ch = -1
 				elif(is_ctrl_arrow(ch)):
 					if(is_ctrl_arrow(ch, "UP")):
 						if(self.y > 1): self.y -= 1

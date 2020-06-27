@@ -178,25 +178,28 @@ class DialogHandler:
 		if(aed == None): return
 
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 15, 30)
-		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 15, 30, "PREFERENCES", self.preferences_key_handler)
+		y, x = get_center_coords(self.app, 16, 30)
+		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 16, 30, "PREFERENCES", self.preferences_key_handler)
 		current_tab_size = str(aed.tab_size)
 		txtTabSize = TextField(self.app.dlgPreferences, 3, 2, 26, current_tab_size, True)
 		lstEncodings = ListBox(self.app.dlgPreferences, 5, 2, 26, 6)
 		chkShowLineNumbers = CheckBox(self.app.dlgPreferences, 12, 2, "Show line numbers")
 		chkWordWrap = CheckBox(self.app.dlgPreferences, 13, 2, "Word Wrap")
+		chkHardWrap = CheckBox(self.app.dlgPreferences, 14, 2, "Hard Wrap")
 		
 		for enc in SUPPORTED_ENCODINGS:
 			lstEncodings.add_item(("  " if aed.encoding != enc else TICK_MARK + " ") +  enc)
 		
 		chkShowLineNumbers.set_value(aed.show_line_numbers)
 		chkWordWrap.set_value(aed.word_wrap)
+		chkHardWrap.set_value(aed.hard_wrap)
 		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index(aed.encoding)
 		
 		self.app.dlgPreferences.add_widget("txtTabSize", txtTabSize)
 		self.app.dlgPreferences.add_widget("lstEncodings", lstEncodings)
 		self.app.dlgPreferences.add_widget("chkShowLineNumbers", chkShowLineNumbers)
 		self.app.dlgPreferences.add_widget("chkWordWrap", chkWordWrap)
+		self.app.dlgPreferences.add_widget("chkHardWrap", chkHardWrap)
 		
 		self.app.dlgPreferences.show()
 
@@ -214,6 +217,8 @@ class DialogHandler:
 
 			encoding_index = self.app.dlgPreferences.get_widget("lstEncodings").sel_index
 			show_line_numbers = self.app.dlgPreferences.get_widget("chkShowLineNumbers").isChecked()
+			word_wrap = self.app.dlgPreferences.get_widget("chkWordWrap").isChecked()
+			hard_wrap = self.app.dlgPreferences.get_widget("chkHardWrap").isChecked()
 
 			self.app.dlgPreferences.hide()
 
@@ -224,6 +229,7 @@ class DialogHandler:
 			aed.tab_size = tab_size
 			aed.encoding = SUPPORTED_ENCODINGS[encoding_index]
 			aed.toggle_line_numbers(show_line_numbers)
+			aed.set_wrap(word_wrap, hard_wrap)
 
 			self.app.main_window.repaint()
 			aed.repaint()

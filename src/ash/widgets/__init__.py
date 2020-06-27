@@ -11,6 +11,7 @@ from ash.widgets.utils.colors import *
 from ash.widgets.utils.dataUtils import *
 from ash.widgets.utils.fileData import *
 from ash.widgets.utils.editHistory import *
+from ash.widgets.utils.cursorPosition import *
 
 clipboard = None
 

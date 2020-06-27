@@ -6,7 +6,6 @@
 # This module implements the text-editor widget
 
 from ash.widgets import *
-from ash.widgets.cursorPosition import *
 from ash.widgets.editorKeyHandler import *
 from ash.widgets.editorUtility import *
 
@@ -49,6 +48,10 @@ class Editor(Widget):
 
 		# set default tab size
 		self.tab_size = 4
+
+		# set wrap options
+		self.word_wrap = False
+		self.hard_wrap = False
 		
 		# set up default color themes
 		self.set_theme()
@@ -70,6 +73,29 @@ class Editor(Widget):
 		self.line_end = -1
 		self.history = None
 	
+	def set_wrap(self, word_wrap, hard_wrap):
+		self.word_wrap = word_wrap
+		self.hard_wrap = hard_wrap
+		self.selection_mode = False
+		self.col_start = 0
+		self.col_end = self.width
+		self.line_start = 0
+		self.line_end = self.height
+		self.curpos.x = 0
+		self.curpos.y = 0
+		self.repaint()
+
+	def wrap_all(self):
+		self.sub_lines = list()
+		self.cum_sub_line_lengths = list()
+		total = 0
+		for line in self.lines:
+			wline = wrapped(line, self.width, self.word_wrap, self.hard_wrap)
+			self.sub_lines.extend(wline)
+			self.cum_sub_line_lengths.append(total)
+			total += len(wline)
+		self.cum_sub_line_lengths.append(total)
+
 	# resize editor
 	def resize(self, y, x, height, width, forced=False):
 		if(not forced and height == self.height and width == self.full_width): return
@@ -174,11 +200,35 @@ class Editor(Widget):
 
 		self.repaint()
 
+
+	# <---------------------------- Repaint Operations ----------------------------->
+
+		# checks if line_index is within the text that was selected
+	def is_in_selection_rendered(self, line_index):
+		if(self.selection_mode):
+			if(is_start_before_end(self.rendered_sel_start, self.rendered_sel_end)):
+				return(True if (line_index >= self.rendered_sel_start.y and line_index <= self.rendered_sel_end.y) else False)
+			else:
+				return(True if (line_index >= self.rendered_sel_end.y and line_index <= self.rendered_sel_start.y) else False)
+		else:
+			return False
+
+	# returns the selection endpoints in the correct order
+	def get_selection_endpoints_rendered(self):
+		forward_sel = is_start_before_end(self.rendered_sel_start, self.rendered_sel_end)
+		if(forward_sel):
+			start = copy.copy(self.rendered_sel_start)
+			end = copy.copy(self.rendered_sel_end)
+		else:
+			start = copy.copy(self.rendered_sel_end)
+			end = copy.copy(self.rendered_sel_start)
+		return (start, end)
+
 	# print selected text using selection-theme
 	def print_selection(self, line_index):
-		start, end = self.get_selection_endpoints()
+		start, end = self.get_selection_endpoints_rendered()
 		
-		text = self.lines[line_index]
+		text = self.rendered_lines[line_index]
 		wstext = text.expandtabs(self.tab_size)
 		vtext = wstext[self.col_start:] if self.col_end > len(wstext) else wstext[self.col_start:self.col_end]
 		
@@ -203,19 +253,19 @@ class Editor(Widget):
 
 	# returns the vertical portion of the editor to be displayed
 	def determine_vertical_visibility(self):
-		if(self.curpos.y < self.line_start):
-			delta = abs(self.line_start - self.curpos.y)
+		if(self.rendered_curpos.y < self.line_start):
+			delta = abs(self.line_start - self.rendered_curpos.y)
 			self.line_start -= delta
 			self.line_end -= delta
-		elif(self.curpos.y >= self.line_end):
-			delta = abs(self.curpos.y - self.line_end)
+		elif(self.rendered_curpos.y >= self.line_end):
+			delta = abs(self.rendered_curpos.y - self.line_end)
 			self.line_end += delta + 1
 			self.line_start += delta + 1
-		return(self.curpos.y - self.line_start)
+		return(self.rendered_curpos.y - self.line_start)
 
 	# returns the horizontal portion of the editor to be displayed
 	def determine_horizontal_visibility(self):
-		curpos_col = get_horizontal_cursor_position(self.lines[self.curpos.y], self.curpos.x, self.tab_size)
+		curpos_col = get_horizontal_cursor_position(self.rendered_lines[self.rendered_curpos.y], self.rendered_curpos.x, self.tab_size)
 		
 		if(curpos_col < self.col_start):
 			delta = abs(self.col_start - curpos_col)
@@ -227,7 +277,7 @@ class Editor(Widget):
 			self.col_start += delta + 1
 		
 		# the following ensures when deleting characters, atleast 1 character back is visible
-		if(self.col_start > 0 and self.col_start == len(self.lines[self.curpos.y])):
+		if(self.col_start > 0 and self.col_start == len(self.rendered_lines[self.rendered_curpos.y])):
 			self.col_start -= 1
 			self.col_end -= 1
 
@@ -242,23 +292,51 @@ class Editor(Widget):
 
 		curses.curs_set(self.is_in_focus)
 
+		if(self.word_wrap):
+			self.wrap_all()
+			self.rendered_lines = self.sub_lines
+			self.rendered_curpos = get_rendered_pos(self.lines, self.width, self.hard_wrap, self.curpos, self.cum_sub_line_lengths)
+
+			if(self.selection_mode):
+				self.rendered_sel_start = get_rendered_pos(self.lines, self.width, self.hard_wrap, self.sel_start, self.cum_sub_line_lengths)
+				self.rendered_sel_end = get_rendered_pos(self.lines, self.width, self.hard_wrap, self.sel_end, self.cum_sub_line_lengths)
+		else:
+			self.rendered_lines = self.lines
+			self.rendered_curpos = self.curpos
+			self.rendered_sel_start = self.sel_start
+			self.rendered_sel_end = self.sel_end
+
 		curpos_row = self.determine_vertical_visibility()
 		curpos_col = self.determine_horizontal_visibility()
-		nlines = len(self.lines)
-
+		nlines = len(self.rendered_lines)
+		
+		last_line_number_printed = 0
 		for i in range(self.line_start, self.line_end):
 			if(i >= nlines): break
 
 			# print line number
-			if(self.show_line_numbers): self.parent.addstr(self.y + i - self.line_start, self.x, str(i+1).rjust(self.line_number_width), self.highlighted_line_number_theme if self.curpos.y == i else self.line_number_theme)
+			if(self.show_line_numbers):
+				if(self.word_wrap):
+					line_number = translate_line_number(i, self.cum_sub_line_lengths) 
+					if(len(line_number) > 0): last_line_number_printed = int(line_number)
+					
+					if(should_highlight(self.rendered_curpos.y, i, self.cum_sub_line_lengths, last_line_number_printed)):
+						line_theme = self.highlighted_line_number_theme
+					else:
+						line_theme = self.line_number_theme
+				else:
+					line_number = str(i + 1)				
+					line_theme = self.highlighted_line_number_theme if self.rendered_curpos.y == i else self.line_number_theme
+				
+				self.parent.addstr(self.y + i - self.line_start, self.x, line_number.rjust(self.line_number_width), line_theme)
 			
 			# print the text
-			text = self.lines[i].expandtabs(self.tab_size)
+			text = self.rendered_lines[i].expandtabs(self.tab_size)
 
 			if(self.col_start < len(text)):
 				vtext = text[self.col_start:] if self.col_end > len(text) else text[self.col_start:self.col_end]
 				
-				if(self.is_in_selection(i)):
+				if(self.is_in_selection_rendered(i)):
 					self.print_selection(i)
 				else:
 					self.parent.addstr(self.y + i - self.line_start, self.x + self.line_number_width + 1, vtext, self.text_theme)
@@ -269,6 +347,8 @@ class Editor(Widget):
 		except:
 			self.parent.addstr(0,0,str(self.y + curpos_row)+","+str(self.x + self.line_number_width + 1 + curpos_col),gc())
 		
+	# <-------------------------------------------------------------------------------------->
+
 	# <---------------------------- Data and File I/O ----------------------------->
 
 	# returns the selection length (for incorporating into status-bar)

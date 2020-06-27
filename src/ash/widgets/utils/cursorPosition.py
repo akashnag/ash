@@ -5,7 +5,7 @@
 
 # This module implements the CursorPosition abstraction
 
-from ash.widgets import *
+from ash.widgets.utils import *
 from ash.widgets.utils.utils import *
 from ash.widgets.utils.formatting import *
 
@@ -15,5 +15,7 @@ class CursorPosition:
 		self.x = x
 
 	def __str__(self):
-		#return "Ln " + str(self.y+1) + ", Col " + str(self.x+1)
 		return "(" + str(self.y+1) + "," + str(self.x+1) + ")"
+	
+	def real_str(self):
+		return "(" + str(self.y) + "," + str(self.x) + ")"

@@ -14,13 +14,32 @@ MSGBOX_CANCEL	= 2
 MSGBOX_YES		= 3
 MSGBOX_NO		= 4
 
+MSGBOX_TYPE_OK				= 0
+MSGBOX_TYPE_OK_CANCEL		= 1
+MSGBOX_TYPE_YES_NO			= 2
+MSGBOX_TYPE_YES_NO_CANCEL	= 3
+
 class MessageBox(Window):
-	def __init__(self, parent, y, x, height, width, title, message):
-		super().__init__(y, x, height, width, title)
-		self.parent = parent
+	def __init__(self, parent, title, message, type = MSGBOX_TYPE_OK):
+		msg_lines, msg_len = get_message_dimensions(message)
+		msg_len = max([msg_len, len(title), len("Y(ES) | N(O) | (C)ANCEL")])
+		y, x = get_center_coords(parent, msg_lines + 5, msg_len + 4)
+
+		super().__init__(y, x, msg_lines + 5, msg_len + 4, title)
+		self.type = type
+		self.parent = parent.stdscr
 		self.theme = gc(COLOR_MSGBOX)
 		self.message = message
 		self.win = None
+
+		if(self.type == MSGBOX_TYPE_OK):
+			self.message += "\n" + "(O)K".center(self.width-3)
+		elif(self.type == MSGBOX_TYPE_OK_CANCEL):
+			self.message += "\n" + "(O)K | (C)ANCEL".center(self.width-3)
+		elif(self.type == MSGBOX_TYPE_YES_NO):
+			self.message += "\n" + "(Y)ES | (N)O".center(self.width-3)
+		elif(self.type == MSGBOX_TYPE_YES_NO_CANCEL):
+			self.message += "\n" + "(Y)ES | (N)O | (C)ANCEL".center(self.width-3)
 
 	# show the window and start the event-loop
 	def show(self):
@@ -50,16 +69,20 @@ class MessageBox(Window):
 		self.win.clear()
 		self.win.attron(self.theme)
 		self.win.border()
+		self.win.addstr(2, 0, BORDER_SPLIT_RIGHT, self.theme)
+		self.win.addstr(2, self.width-1, BORDER_SPLIT_LEFT, self.theme)
 		
 		for h in range(1, self.height-1):
 			self.win.addstr(h, 1, " " * (self.width-2), self.theme)
 
+		self.win.addstr(2, 1, BORDER_HORIZONTAL * (self.width-2), self.theme)
 		self.win.addstr(1, 2, self.title, curses.A_BOLD | self.theme)
 		
 		lines = self.message.splitlines()
-		i = 2
-		for line in lines:
-			self.win.addstr(i, 2, line, self.theme)
+		i = 3
+		n = len(lines)
+		for k in range(n):
+			self.win.addstr(i, 2, lines[k], (self.theme if k < n-1 else curses.A_BOLD | self.theme))
 			i += 1
 
 		self.win.attroff(self.theme)		
@@ -67,14 +90,14 @@ class MessageBox(Window):
 
 	# check the response
 	def check_response(self, ch):
-		s = str(chr(ch))
-		if(s == "y" or s == "Y"):
+		s = str(chr(ch)).lower()
+		if(s == "y" and (self.type == MSGBOX_TYPE_YES_NO or self.type == MSGBOX_TYPE_YES_NO_CANCEL)):
 			return MSGBOX_YES
-		elif(s == "n" or s == "N"):
+		elif(s == "n" and (self.type == MSGBOX_TYPE_YES_NO or self.type == MSGBOX_TYPE_YES_NO_CANCEL)):
 			return MSGBOX_NO
-		elif(s == "o" or s == "O" or is_newline(ch)):
+		elif((s == "o" or is_newline(ch)) and (self.type == MSGBOX_TYPE_OK or self.type == MSGBOX_TYPE_OK_CANCEL)):
 			return MSGBOX_OK
-		elif(s == "c" or s == "C"):
+		elif(s == "c" and (self.type == MSGBOX_TYPE_OK or self.type == MSGBOX_TYPE_OK_CANCEL)):
 			return MSGBOX_CANCEL
 		else:
 			return -1

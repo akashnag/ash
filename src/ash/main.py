@@ -3,10 +3,24 @@
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
-import glob
+# This is main app class
 
 from ash import *
-from ash.dialogHandler import *
+
+from ash.core.bufferManager import *
+from ash.core.logger import *
+from ash.core.fileData import *
+from ash.core.utils import *
+from ash.core.dataUtils import *
+
+from ash.formatting.colors import *
+from ash.formatting.formatting import *
+
+from ash.gui.topLevelWindow import *
+from ash.gui.editor import *
+from ash.gui.statusbar import *
+from ash.gui.msgBox import *
+from ash.gui.dialogHandler import *
 
 APP_VERSION			= "0.1.0-dev"
 UNSAVED_BULLET		= "\u2022"
@@ -31,7 +45,9 @@ class AshEditorApp:
 		read_file_associations(self)
 		
 	def run(self):
+		self.buffer_manager = BufferManager()
 		self.files = list()
+		
 		if(self.argc == 1):
 			self.app_mode = APP_MODE_FILE
 		elif(self.argc == 2 and os.path.isdir(self.args[1])):

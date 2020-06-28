@@ -3,9 +3,13 @@
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
-import curses
-import os
-import pathlib
-import sys
-import copy
-import glob
+# This module handles all logging functions
+
+def log_init():
+	logFile = open("log.txt", "wt")
+	logFile.close()
+
+def log(data):
+	logFile = open("log.txt", "at")
+	logFile.write(str(data) + "\n")
+	logFile.close()

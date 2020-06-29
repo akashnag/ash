@@ -47,15 +47,15 @@ class EditorKeyHandler:
 	def handle_arrow_keys(self, ch):
 		row = self.ed.curpos.y
 		col = self.ed.curpos.x
-		clen = len(self.ed.lines[row])
-		nlen = len(self.ed.lines)
+		clen = len(self.ed.buffer.lines[row])
+		nlen = len(self.ed.buffer.lines)
 		
 		if(ch == curses.KEY_LEFT):
 			if(row == 0 and col == 0):
 				beep()
 			elif(col == 0):
 				self.ed.curpos.y -= 1
-				self.ed.curpos.x = len(self.ed.lines[row-1])
+				self.ed.curpos.x = len(self.ed.buffer.lines[row-1])
 			else:
 				# move cursor back only if selection-mode is inactive
 				if(not self.ed.selection_mode): self.ed.curpos.x -= 1
@@ -77,25 +77,25 @@ class EditorKeyHandler:
 			if(row == nlen-1):
 				beep()
 			else:
-				if(self.ed.curpos.x > len(self.ed.lines[row+1])):
+				if(self.ed.curpos.x > len(self.ed.buffer.lines[row+1])):
 					# cannot preserve column, so move to end
-					self.ed.curpos.x = len(self.ed.lines[row+1])
+					self.ed.curpos.x = len(self.ed.buffer.lines[row+1])
 				self.ed.curpos.y += 1
 		elif(ch == curses.KEY_UP):
 			if(row == 0):
 				beep()
 			else:
-				if(self.ed.curpos.x > len(self.ed.lines[row-1])):
+				if(self.ed.curpos.x > len(self.ed.buffer.lines[row-1])):
 					# cannot preserve column, so move to end
-					self.ed.curpos.x = len(self.ed.lines[row-1])
+					self.ed.curpos.x = len(self.ed.buffer.lines[row-1])
 				self.ed.curpos.y -= 1
 
 		self.ed.selection_mode = False		# turn off selection mode
 
 		# ensure cursor position does not exceed editor/document limits
-		self.ed.curpos.x = min([self.ed.curpos.x, len(self.ed.lines[self.ed.curpos.y])])
+		self.ed.curpos.x = min([self.ed.curpos.x, len(self.ed.buffer.lines[self.ed.curpos.y])])
 		self.ed.curpos.x = max(0, self.ed.curpos.x)
-		self.ed.curpos.y = min([self.ed.curpos.y, len(self.ed.lines)-1])
+		self.ed.curpos.y = min([self.ed.curpos.y, len(self.ed.buffer.lines)-1])
 		self.ed.curpos.y = max(0, self.ed.curpos.y)
 
 	
@@ -107,18 +107,18 @@ class EditorKeyHandler:
 				beep()
 			else:
 				for i in range(self.ed.curpos.x-1, -1, -1):
-					c = self.ed.lines[self.ed.curpos.y][i]
+					c = self.ed.buffer.lines[self.ed.curpos.y][i]
 					if(c in self.ed.separators):
 						self.ed.curpos.x = i						
 						return
 				self.ed.curpos.x = 0
 		elif(is_ctrl_arrow(ch, "RIGHT")):
-			nlen = len(self.ed.lines[self.ed.curpos.y])
+			nlen = len(self.ed.buffer.lines[self.ed.curpos.y])
 			if(self.ed.curpos.x == nlen):
 				beep()
 			else:
 				for i in range(self.ed.curpos.x+1, nlen):
-					c = self.ed.lines[self.ed.curpos.y][i]
+					c = self.ed.buffer.lines[self.ed.curpos.y][i]
 					if(c in self.ed.separators):
 						self.ed.curpos.x = i					
 						return
@@ -129,8 +129,8 @@ class EditorKeyHandler:
 	def handle_shift_arrow_keys(self, ch):
 		row = self.ed.curpos.y
 		col = self.ed.curpos.x
-		nlen = len(self.ed.lines)
-		clen = len(self.ed.lines[row])
+		nlen = len(self.ed.buffer.lines)
+		clen = len(self.ed.buffer.lines[row])
 
 		if(not self.ed.selection_mode):
 			self.ed.selection_mode = True
@@ -141,7 +141,7 @@ class EditorKeyHandler:
 				beep()
 			elif(col == 0):
 				self.ed.curpos.y -= 1
-				self.ed.curpos.x = len(self.ed.lines[row-1])
+				self.ed.curpos.x = len(self.ed.buffer.lines[row-1])
 			else:
 				self.ed.curpos.x -= 1
 		elif(ch == curses.KEY_SRIGHT):
@@ -156,23 +156,23 @@ class EditorKeyHandler:
 			if(row == nlen-1):
 				beep()
 			else:
-				if(self.ed.curpos.x > len(self.ed.lines[row+1])):
+				if(self.ed.curpos.x > len(self.ed.buffer.lines[row+1])):
 					# cannot preserve column
-					self.ed.curpos.x = len(self.ed.lines[row+1])
+					self.ed.curpos.x = len(self.ed.buffer.lines[row+1])
 				self.ed.curpos.y += 1
 		elif(ch == curses.KEY_SR):
 			if(row == 0):
 				beep()
 			else:
-				if(self.ed.curpos.x > len(self.ed.lines[row-1])):
+				if(self.ed.curpos.x > len(self.ed.buffer.lines[row-1])):
 					# cannot preserve column
-					self.ed.curpos.x = len(self.ed.lines[row-1])
+					self.ed.curpos.x = len(self.ed.buffer.lines[row-1])
 				self.ed.curpos.y -= 1
 
 		# ensure cursor does not exceed bounds
-		self.ed.curpos.x = min([self.ed.curpos.x, len(self.ed.lines[self.ed.curpos.y])])
+		self.ed.curpos.x = min([self.ed.curpos.x, len(self.ed.buffer.lines[self.ed.curpos.y])])
 		self.ed.curpos.x = max(0, self.ed.curpos.x)
-		self.ed.curpos.y = min([self.ed.curpos.y, len(self.ed.lines)-1])
+		self.ed.curpos.y = min([self.ed.curpos.y, len(self.ed.buffer.lines)-1])
 		self.ed.curpos.y = max(0, self.ed.curpos.y)
 		self.ed.sel_end = copy.copy(self.ed.curpos)
 
@@ -183,22 +183,22 @@ class EditorKeyHandler:
 			self.ed.delete_selected_text()
 			return True
 		
-		text = self.ed.lines[self.ed.curpos.y]
+		text = self.ed.buffer.lines[self.ed.curpos.y]
 		clen = len(text)
 		col = self.ed.curpos.x
 
-		if(self.ed.curpos.y == len(self.ed.lines)-1 and col == clen):
+		if(self.ed.curpos.y == len(self.ed.buffer.lines)-1 and col == clen):
 			beep()
 			return False
 		
 		if(col == clen):
-			ntext = self.ed.lines[self.ed.curpos.y + 1]
-			self.ed.lines.pop(self.ed.curpos.y + 1)
-			self.ed.lines[self.ed.curpos.y] += ntext
+			ntext = self.ed.buffer.lines[self.ed.curpos.y + 1]
+			self.ed.buffer.lines.pop(self.ed.curpos.y + 1)
+			self.ed.buffer.lines[self.ed.curpos.y] += ntext
 		else:
 			left = text[0:col] if col > 0 else ""
 			right = text[col+1:] if col < len(text)-1 else ""
-			self.ed.lines[self.ed.curpos.y] = left + right
+			self.ed.buffer.lines[self.ed.curpos.y] = left + right
 		
 		self.ed.save_status = False
 		return True
@@ -211,7 +211,7 @@ class EditorKeyHandler:
 			self.ed.save_status = False			
 			return True		
 
-		text = self.ed.lines[self.ed.curpos.y]
+		text = self.ed.buffer.lines[self.ed.curpos.y]
 		col = self.ed.curpos.x
 
 		if(col == 0 and self.ed.curpos.y == 0):
@@ -219,15 +219,15 @@ class EditorKeyHandler:
 			return False
 
 		if(col == 0):
-			self.ed.lines.pop(self.ed.curpos.y)
-			temp = len(self.ed.lines[self.ed.curpos.y-1])
-			self.ed.lines[self.ed.curpos.y - 1] += text
+			self.ed.buffer.lines.pop(self.ed.curpos.y)
+			temp = len(self.ed.buffer.lines[self.ed.curpos.y-1])
+			self.ed.buffer.lines[self.ed.curpos.y - 1] += text
 			self.ed.curpos.x = temp
 			self.ed.curpos.y -= 1
 		else:
 			left = text[0:col-1] if col > 1 else ""
 			right = text[col:] if col < len(text) else ""
-			self.ed.lines[self.ed.curpos.y] = left + right
+			self.ed.buffer.lines[self.ed.curpos.y] = left + right
 			self.ed.curpos.x -= 1		
 		
 		self.ed.save_status = False
@@ -244,7 +244,7 @@ class EditorKeyHandler:
 			else:
 				self.ed.curpos.x = 0
 		elif(ch == curses.KEY_END):
-			self.ed.curpos.x = len(self.ed.lines[self.ed.curpos.y])
+			self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
 
 	# handles Shift+Home and Shift+End keys
 	def handle_shift_home_end_keys(self, ch):
@@ -255,7 +255,7 @@ class EditorKeyHandler:
 		if(ch == curses.KEY_SHOME):
 			self.ed.curpos.x = 0
 		elif(ch == curses.KEY_SEND):
-			self.ed.curpos.x = len(self.ed.lines[self.ed.curpos.y])
+			self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
 				
 		self.ed.sel_end = copy.copy(self.ed.curpos)
 
@@ -269,12 +269,12 @@ class EditorKeyHandler:
 				return self.ed.shift_selection_left()
 
 		col = self.ed.curpos.x
-		text = self.ed.lines[self.ed.curpos.y]
+		text = self.ed.buffer.lines[self.ed.curpos.y]
 
 		if(is_tab(ch)):
 			left = text[0:col] if col > 0 else ""
 			right = text[col:] if len(text) > 0 else ""
-			self.ed.lines[self.ed.curpos.y] = left + "\t" + right
+			self.ed.buffer.lines[self.ed.curpos.y] = left + "\t" + right
 			self.ed.curpos.x += 1
 		elif(ch == curses.KEY_BTAB):
 			if(col == 0):
@@ -283,7 +283,7 @@ class EditorKeyHandler:
 			elif(col == len(self.ed.get_leading_whitespaces(self.ed.curpos.y))):
 				left = text[0:col-1] if col > 1 else ""
 				right = text[col:] if col < len(text) else ""
-				self.ed.lines[self.ed.curpos.y] = left + right
+				self.ed.buffer.lines[self.ed.curpos.y] = left + right
 				self.ed.curpos.x -= 1
 			else:
 				beep()
@@ -296,18 +296,18 @@ class EditorKeyHandler:
 	def handle_newline(self, ch):
 		if(self.ed.selection_mode): self.ed.delete_selected_text()
 
-		text = self.ed.lines[self.ed.curpos.y]
+		text = self.ed.buffer.lines[self.ed.curpos.y]
 		col = self.ed.curpos.x
 		left = text[0:col] if col > 0 else ""
 		right = text[col:] if len(text) > 0 else ""
 		whitespaces = self.ed.get_leading_whitespaces(self.ed.curpos.y)
 		right = whitespaces + right
-		self.ed.lines[self.ed.curpos.y] = left
+		self.ed.buffer.lines[self.ed.curpos.y] = left
 
-		if(len(self.ed.lines) == self.ed.curpos.y + 1):
-			self.ed.lines.append(right)
+		if(len(self.ed.buffer.lines) == self.ed.curpos.y + 1):
+			self.ed.buffer.lines.append(right)
 		else:
-			self.ed.lines.insert(self.ed.curpos.y + 1, right)
+			self.ed.buffer.lines.insert(self.ed.curpos.y + 1, right)
 		
 		self.ed.curpos.y += 1
 		self.ed.curpos.x = len(whitespaces)
@@ -335,11 +335,11 @@ class EditorKeyHandler:
 				clipboard.copy(old_clipboard)
 				return True
 
-		text = self.ed.lines[self.ed.curpos.y]
+		text = self.ed.buffer.lines[self.ed.curpos.y]
 		col = self.ed.curpos.x
 		left = text[0:col] if col > 0 else ""
 		right = text[col:] if len(text) > 0 else ""
-		self.ed.lines[self.ed.curpos.y] = left + sch + right
+		self.ed.buffer.lines[self.ed.curpos.y] = left + sch + right
 		self.ed.curpos.x += 1
 		self.ed.save_status = False
 
@@ -348,7 +348,7 @@ class EditorKeyHandler:
 	# handles the PGUP and PGDOWN keys
 	def handle_page_navigation_keys(self, ch):
 		h = self.ed.height
-		nlen = len(self.ed.lines)
+		nlen = len(self.ed.buffer.lines)
 		if(ch == curses.KEY_PPAGE):			# pg-up
 			if(self.ed.curpos.y == 0):
 				if(self.ed.curpos.x == 0):
@@ -363,10 +363,10 @@ class EditorKeyHandler:
 			self.ed.curpos.x = 0
 		elif(ch == curses.KEY_NPAGE):		# pg-down
 			if(self.ed.curpos.y == nlen-1):
-				if(self.ed.curpos.x == len(self.ed.lines[nlen-1])):
+				if(self.ed.curpos.x == len(self.ed.buffer.lines[nlen-1])):
 					beep()
 				else:
-					self.ed.curpos.x = len(self.ed.lines[nlen-1])
+					self.ed.curpos.x = len(self.ed.buffer.lines[nlen-1])
 					return
 			elif(nlen - self.ed.curpos.y <= h):
 				self.ed.curpos.y = nlen-1
@@ -382,8 +382,8 @@ class EditorKeyHandler:
 			self.ed.curpos.y = 0
 			self.ed.curpos.x = 0
 		elif(is_keyname(ch, "END5")):	# Ctrl+End
-			self.ed.curpos.y = len(self.ed.lines)-1
-			self.ed.curpos.x = len(self.ed.lines[self.ed.curpos.y])
+			self.ed.curpos.y = len(self.ed.buffer.lines)-1
+			self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
 	
 	# handles the Shift + PGUP / PGDOWN keys
 	def handle_shift_page_navigation_keys(self, ch):
@@ -392,7 +392,7 @@ class EditorKeyHandler:
 			self.ed.sel_start = copy.copy(self.ed.curpos)
 		
 		h = self.ed.height
-		nlen = len(self.ed.lines)
+		nlen = len(self.ed.buffer.lines)
 		if(ch == curses.KEY_SPREVIOUS):			# Shift + pg-up
 			if(self.ed.curpos.y == 0):
 				if(self.ed.curpos.x == 0):
@@ -409,10 +409,10 @@ class EditorKeyHandler:
 			self.ed.sel_end = copy.copy(self.ed.curpos)
 		elif(ch == curses.KEY_SNEXT):		# Shift + pg-down
 			if(self.ed.curpos.y == nlen-1):
-				if(self.ed.curpos.x == len(self.ed.lines[nlen-1])):
+				if(self.ed.curpos.x == len(self.ed.buffer.lines[nlen-1])):
 					beep()
 				else:
-					self.ed.curpos.x = len(self.ed.lines[nlen-1])
+					self.ed.curpos.x = len(self.ed.buffer.lines[nlen-1])
 					self.ed.sel_end = copy.copy(self.ed.curpos)
 					return
 			elif(nlen - self.ed.curpos.y <= h):
@@ -423,15 +423,15 @@ class EditorKeyHandler:
 			self.ed.sel_end = copy.copy(self.ed.curpos)
 		
 	def handle_undo(self):
-		hdata = self.ed.history.undo()
+		hdata = self.ed.buffer.history.undo()
 		if(hdata == None):
 			beep()
 		else:
 			self.ed.render_data_to_lines(hdata.data, False)
-			self.ed.curpos = copy.copy(hdata.curpos)			
+			self.ed.curpos = copy.copy(hdata.curpos)
 
 	def handle_redo(self):
-		hdata = self.ed.history.redo()
+		hdata = self.ed.buffer.history.redo()
 		if(hdata == None):
 			beep()
 		else:
@@ -443,17 +443,17 @@ class EditorKeyHandler:
 			if(self.ed.has_been_allotted_file):
 				self.ed.save_to_file()
 			else:
-				self.ed.parent.app.invoke_file_save_as()
+				self.ed.parent.app.dialog_handler.invoke_file_save_as()
 		
 		if(self.ed.save_status): self.ed.parent.reload_in_all(self.ed.filename)
 
 	def handle_select_all(self):
-		nlen = len(self.ed.lines)
+		nlen = len(self.ed.buffer.lines)
 		self.ed.selection_mode = True
 		self.ed.sel_start.y = 0
 		self.ed.sel_start.x = 0
 		self.ed.sel_end.y = nlen-1
-		self.ed.sel_end.x = len(self.ed.lines[nlen-1])
+		self.ed.sel_end.x = len(self.ed.buffer.lines[nlen-1])
 
 	def handle_copy(self):
 		if(not self.ed.selection_mode): return
@@ -472,23 +472,23 @@ class EditorKeyHandler:
 		
 		n = len(data)
 		row = self.ed.curpos.y
-		text = self.ed.lines[row]
+		text = self.ed.buffer.lines[row]
 		col = self.ed.curpos.x
 		left = text[0:col] if col > 0 else ""
 		right = text[col:] if len(text) > 0 else ""
 			
 		if(n == 1):
-			self.ed.lines[row] = left + data[0] + right
+			self.ed.buffer.lines[row] = left + data[0] + right
 			self.ed.curpos.x += len(data[0])
 		elif(n == 2):
-			self.ed.lines[row] = left + data[0]
-			self.ed.lines.insert(row+1, data[1] + right)
+			self.ed.buffer.lines[row] = left + data[0]
+			self.ed.buffer.lines.insert(row+1, data[1] + right)
 			self.ed.curpos.y += 1
 			self.ed.curpos.x = len(data[1])
 		elif(n > 2):
-			self.ed.lines[row] = left + data[0]
-			self.ed.lines.insert(row+1, data[n-1] + right)
+			self.ed.buffer.lines[row] = left + data[0]
+			self.ed.buffer.lines.insert(row+1, data[n-1] + right)
 			for i in range(n-2, 0, -1):
-				self.ed.lines.insert(row+1, data[i])
+				self.ed.buffer.lines.insert(row+1, data[i])
 
 		self.ed.save_status = False

@@ -31,26 +31,6 @@ class TopLevelWindow(Window):
 		self.editors.append(ed)
 		if(self.active_editor_index < 0 and ed != None): self.active_editor_index = 0
 
-	# removes an editor from the workspace
-	def remove_editor(self, index):
-		self.editors.pop(index)
-		if(self.active_editor_index == index):
-			if(len(self.editors) == 0):
-				self.active_editor_index = -1
-			elif(index == 0):
-				self.active_editor_index = 1
-			else:
-				self.active_editor_index -= 1
-
-	# load data for an editor
-	def set_editor_data(self, index, data):
-		if(index < len(self.editors)):
-			self.editors[index].set_data(data)
-
-	# checks if layout can be changed
-	def can_change_layout(self, layout_type):
-		return self.layout_manager.can_change_layout(layout_type)
-	
 	# sets layout
 	def set_layout(self, layout_type):
 		self.layout_manager.set_layout(layout_type)
@@ -81,6 +61,7 @@ class TopLevelWindow(Window):
 		if(self.active_editor_index < 0): return
 
 		# close active editor
+		self.editors[self.active_editor_index].destroy()
 		self.editors[self.active_editor_index] = None
 		self.active_editor_index = -1
 
@@ -95,12 +76,6 @@ class TopLevelWindow(Window):
 		self.repaint()
 		if(self.active_editor_index < 0): curses.curs_set(False)
 
-	# closes a given editor
-	def close_editor(self, index):
-		self.editors[index] = None
-		if(index == self.active_editor_index): self.active_editor_index = -1
-		self.repaint()
-
 	def update_status(self):
 		aed = self.get_active_editor()
 
@@ -114,14 +89,14 @@ class TopLevelWindow(Window):
 		encoding = ""
 
 		if(aed != None):
-			lines, sloc = aed.get_loc()
+			lines, sloc = aed.buffer.get_loc()
 			loc_count = str(lines) + " lines (" + str(sloc) + " sloc)"
 			
-			if(aed.has_been_allotted_file):
-				if(os.path.isfile(aed.filename)): file_size = aed.get_file_size()
-				language = get_file_type(aed.filename)
+			if(aed.filename != None):
+				if(os.path.isfile(aed.buffer.filename)): file_size = aed.buffer.get_file_size()
+				language = get_file_type(aed.buffer.filename)
 				if(language == None): language = "unknown"
-				if(aed.save_status):
+				if(aed.buffer.save_status):
 					editor_state = "saved"
 				else:
 					editor_state = "modified"
@@ -133,7 +108,7 @@ class TopLevelWindow(Window):
 			encoding = aed.encoding
 			tab_size = str(aed.tab_size)
 		
-		unsaved_file_count = str(get_number_of_unsaved_files(self.app.files) + get_number_of_unsaved_buffers(self)) + "*"
+		unsaved_file_count = str(self.app.buffers.get_unsaved_count()) + "*"
 		
 		self.status.set(0, editor_state)
 		self.status.set(1, language)
@@ -196,49 +171,9 @@ class TopLevelWindow(Window):
 		
 		self.win.refresh()
 
-	# <----------------------------------- dialog boxes ----------------------------------->
-	def reload_in_all(self, filename):
-		aed = self.get_active_editor()
-		if(aed == None): return			# not possible, since this fn was called from the active-editor on Ctrl+S
-
-		reload_required = False
+	# <------------------------ called from dialogbox handlers -------------------------------->
+	def get_first_free_editor_index(self, barring = -1):
 		n = len(self.editors)
-		aei = self.active_editor_index
-
-		# check if reload is necessary
 		for i in range(n):
-			if(i == aei): continue
-			if(not self.layout_manager.editor_exists(i)): continue
-
-			ed = self.editors[i]
-			if(ed.has_been_allotted_file and ed.filename == filename):
-				reload_required = True
-				break
-
-		if(not reload_required): return
-		if(not self.app.ask_question("RELOAD", "Reload files in other editors?")): return
-
-		for i in range(n):
-			if(i == aei): continue
-			if(not self.layout_manager.editor_exists(i)): continue
-
-			ed = self.editors[i]
-			if(ed.has_been_allotted_file and ed.filename == filename):
-				ed.read_from_file()
-				ed.save_status = True
-				ed.repaint()
-
-	
-	def do_save_as(self, filename):
-		aed = self.get_active_editor()
-		if(aed == None): return
-		
-		# check if the filename is already in the active/recent files list
-		# if not, add it to the workspace
-		if(not file_exists_in_buffer(self.app.files, filename)):
-			# just add the filename, allot_and_save_file() will take care of putting
-			# the latest data into buffer
-			self.app.files.append(FileData(filename))
-
-		# write to file
-		aed.allot_and_save_file(filename)
+			if(i != barring and self.editors[i] == None): return i		
+		return -1

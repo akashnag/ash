@@ -135,19 +135,6 @@ def get_number_of_unsaved_buffers(main_window):
 
 	return count
 
-# returns the index of the first free editor except 'barring'
-def get_first_free_editor_index(main_window, barring = -1):
-	n = len(main_window.editors)
-	for i in range(n):
-		if(i != barring and main_window.editors[i] == None): return i
-	
-	# no free editor, so check if any editor exists with no-file and no-data
-	for i in range(n):
-		ed = main_window.editors[i]
-		if(ed != None and i!=barring and not ed.has_been_allotted_file and len(ed.__str__()) == 0): return i
-	
-	return -1
-
 def get_file_size(filename):
 	if(filename == None): 
 		return None

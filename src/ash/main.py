@@ -45,8 +45,7 @@ class AshEditorApp:
 		read_file_associations(self)
 		
 	def run(self):
-		self.buffer_manager = BufferManager()
-		self.files = list()
+		self.buffers = BufferManager()
 		
 		if(self.argc == 1):
 			self.app_mode = APP_MODE_FILE
@@ -55,7 +54,9 @@ class AshEditorApp:
 			self.project_dir = str(pathlib.Path(self.args[1]).absolute())
 			all_files = glob.glob(self.project_dir + "/**/*.*", recursive=True)
 			for f in all_files:
-				if(f.find("/__pycache__/") == -1): self.files.append(FileData(f))
+				if(f.find("/__pycache__/") == -1): 
+					has_backup = BufferManager.backup_exists(f)
+					self.buffers.create_new_buffer(filename=f, has_backup=has_backup)
 		else:
 			self.app_mode = APP_MODE_FILE
 			for i in range(1, len(self.args)):
@@ -63,7 +64,8 @@ class AshEditorApp:
 					print("ERROR: cannot open more than 1 project")
 					return
 				filePath = str(pathlib.Path(self.args[i]).absolute())
-				self.files.append(FileData(filePath))
+				has_backup = BufferManager.backup_exists(filePath)
+				self.buffers.create_new_buffer(filename=filePath, has_backup=has_backup)
 		
 		# invoke the GUI initialization routine
 		ret_code = curses.wrapper(self.app_main)
@@ -96,11 +98,9 @@ class AshEditorApp:
 				return app_title
 
 		if(self.app_mode == APP_MODE_FILE):
-			app_title = get_file_title(active_editor.filename)
+			app_title = get_file_title(active_editor.buffer.get_name())
 		elif(self.app_mode == APP_MODE_PROJECT):
-			app_title = get_relative_file_title(self.project_dir, active_editor.filename)
-		else:
-			app_title = "untitled"
+			app_title = get_relative_file_title(self.project_dir, active_editor.buffer.filename)
 		
 		app_title = ("  " if active_editor.save_status else UNSAVED_BULLET + " ") + app_title
 		return app_title
@@ -125,10 +125,13 @@ class AshEditorApp:
 		
 		if(self.app_mode != APP_MODE_PROJECT):
 			editor = Editor(self.main_window)
-			if(len(self.files) == 0):
-				editor.set_data(FileData())
+			if(len(self.buffers) == 0): 
+				bid, buffer = self.buffers.create_new_buffer()
 			else:
-				editor.set_data(self.files[0])
+				bid = 0
+				buffer = self.buffers.get_buffer_by_id(bid)
+							
+			editor.set_buffer(bid, buffer)			
 			self.main_window.add_editor(editor)
 			self.main_window.layout_manager.readjust(True)
 		
@@ -222,23 +225,4 @@ class AshEditorApp:
 
 	# checks if buffer is up-to-date with file on disk
 	def is_file_already_loaded(self, filename):
-		n = len(self.files)
-		for i in range(n):
-			if(self.files[i].filename == filename):
-				if(not self.files[i].save_status):
-					return True			# do not reload from disk as buffer is updated
-				else:
-					return False		# can reload from disk
-
-		# assumes that file is already present in the list
-		# if file not present in list, do NOT call this function as returned value can be misinterpreted
-		return False
-
-	# <------------------------------ Dialog stubs ------------------------------------->
-
-	# called from editor because filename is required
-	def invoke_file_save_as(self, filename=None):
-		self.dialog_handler.invoke_file_save_as(filename)
-
-	# -----------------------------------------------------------------------------------
-
+		return self.buffers.does_file_have_its_own_buffer(filename)

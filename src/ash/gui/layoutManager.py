@@ -191,71 +191,49 @@ class LayoutManager:
 		elif(self.win.layout_type == LAYOUT_2HT_1B):
 			pass
 
-	# checks if layout can be changed
-	def can_change_layout(self, layout_type):
-		old_ec = EDITOR_COUNTS[self.win.layout_type]
-		new_ec = EDITOR_COUNTS[layout_type]
-
-		if(new_ec >= old_ec):
-			return True
-		else:
-			for i in range(new_ec, old_ec):
-				if(self.editor_exists(i) and not self.win.editors[i].save_status): 
-					# if blank buffer then okay, otherwise cannot switch layout without saving
-					if(not self.win.editors[i].has_been_allotted_file and len(str(self.win.editors[i]))==0): continue
-					return False
-			return True
-
-	# changes the current layout
+	# changes the current layout: add code to attach/detach editors
 	def set_layout(self, layout_type):
-		if(not self.can_change_layout(layout_type)): return
-
 		old_ec = EDITOR_COUNTS[self.win.layout_type]
 		new_ec = EDITOR_COUNTS[layout_type]
 
-		if(new_ec >= old_ec):
-			while(len(self.win.editors) > old_ec):
-				self.win.editors.pop(old_ec)
+		if(new_ec >= old_ec):						# increase the no. of editors
 			for i in range(old_ec, new_ec):
 				self.win.editors.append(None)
-		else:
+		else:										# decrease the no. of editors
 			for i in range(new_ec, old_ec):
-				if(self.editor_exists(new_ec)):
-					self.win.remove_editor(new_ec)
+				self.win.editors[new_ec].destroy()
+				self.win.editors.pop(new_ec)
 
 		self.win.layout_type = layout_type			
 		self.readjust(True)
 		self.win.repaint()
 
 	# called from app_main() in response to Function key press
-	def invoke_activate_editor(self, index):
+	def invoke_activate_editor(self, index, new_bid = None, new_buffer = None):
 		ec = EDITOR_COUNTS[self.win.layout_type]
 		aei = self.win.active_editor_index
 		
 		# layout does not support that editor
 		if(index >= ec):
 			self.win.app.show_error("Selected editor does not exist")
-			return
+			return None
 		
 		# if already active, return
-		if(aei == ec): return
+		if(aei == index): 
+			if(new_bid != None and new_buffer != None): 
+				self.win.editors[index].set_buffer(new_bid, new_buffer)
+			return
 
 		if(self.win.editors[index] == None):
 			self.win.editors[index] = Editor(self.win)
+			if(new_bid != None and new_buffer != None):
+				self.win.editors[index].set_buffer(new_bid, new_buffer)
 		
 		self.win.active_editor_index = index
 		self.readjust(True)
 		self.win.repaint()
 		
-		if(aei >= 0): 
-			# before switching, save recent changes to buffer
-			save_to_buffer(self.win.app.files, self.win.editors[aei])
-			
-			# remove focus
-			self.win.editors[aei].blur()
-
-		# load most recent changes from buffer
-		load_from_buffer(self.win.app.files, self.win.editors[index])
-		
-		# put focus
+		if(aei >= 0): self.win.editors[aei].blur()
 		self.win.editors[index].focus()
+		
+		return self.win.editors[index]

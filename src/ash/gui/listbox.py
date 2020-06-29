@@ -19,6 +19,7 @@ class ListBox(Widget):
 		self.row_count = row_count
 		self.placeholder_text = placeholder_text
 		self.items = list()
+		self.tags = list()
 		self.theme = gc(COLOR_FORMFIELD)
 		self.focus_theme = gc(COLOR_FORMFIELD_FOCUSSED)
 		self.sel_blur_theme = gc(COLOR_FORMFIELD_SELECTED_BLURRED)
@@ -48,6 +49,13 @@ class ListBox(Widget):
 			return None
 		else:
 			return self.items[self.sel_index]
+
+	# returns the tag of the selected item
+	def get_sel_tag(self):
+		if(self.sel_index < 0):
+			return None
+		else:
+			return self.tags[self.sel_index]
 
 	# draw the listbox
 	def repaint(self):
@@ -107,14 +115,16 @@ class ListBox(Widget):
 		self.repaint()
 
 	# append an item to the list
-	def add_item(self, item):
+	def add_item(self, item, tag=None):
 		self.items.append(item)
+		self.tags.append(tag)
 		if(self.sel_index < 0): self.sel_index = 0
 		self.focussable = True
 
 	# remove an item from the list
 	def remove_item(self, index):
 		self.items.pop(index)
+		self.tags.pop(index)
 		if(len(self.items) == 0):
 			self.sel_index = -1
 			self.focussable = False
@@ -122,8 +132,9 @@ class ListBox(Widget):
 			self.sel_index = 0
 
 	# insert an item in the middle of the list
-	def insert_item(self, index, item):
+	def insert_item(self, index, item, tag=None):
 		self.items.insert(index, item)
+		self.tags.insert(index, tag)
 		if(self.sel_index == index): self.sel_index += 1
 
 	# returns the text of the selected item

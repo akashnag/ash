@@ -21,38 +21,38 @@ class EditorUtility:
 
 		if(start.y == end.y):
 			sel_len = end.x - start.x
-			del_text = self.ed.lines[start.y][start.x:end.x]
-			self.ed.lines[start.y] = self.ed.lines[start.y][0:start.x] + self.ed.lines[start.y][end.x:]			
+			del_text = self.ed.buffer.lines[start.y][start.x:end.x]
+			self.ed.buffer.lines[start.y] = self.ed.buffer.lines[start.y][0:start.x] + self.ed.buffer.lines[start.y][end.x:]			
 		else:
-			del_text = self.ed.lines[start.y][start.x:] + self.ed.newline
+			del_text = self.ed.buffer.lines[start.y][start.x:] + self.ed.newline
 						
 			# delete entire lines between selection start and end
 			lc = end.y - start.y - 1
 			while(lc > 0):
-				del_text += self.ed.lines[start.y+1] + self.ed.newline
-				self.ed.lines.pop(start.y + 1)
+				del_text += self.ed.buffer.lines[start.y+1] + self.ed.newline
+				self.ed.buffer.lines.pop(start.y + 1)
 				self.ed.curpos.y -= 1
 				end.y -= 1
 				lc -= 1
 
 			# delete a portion of the selection start line
-			self.ed.lines[start.y] = self.ed.lines[start.y][0:start.x]
+			self.ed.buffer.lines[start.y] = self.ed.buffer.lines[start.y][0:start.x]
 
 			# delete a portion of the selection end line
-			del_text += self.ed.lines[end.y][0:end.x]
-			self.ed.lines[end.y] = self.ed.lines[end.y][end.x:]
+			del_text += self.ed.buffer.lines[end.y][0:end.x]
+			self.ed.buffer.lines[end.y] = self.ed.buffer.lines[end.y][end.x:]
 
 			# bring the selection end line up towards the end of the selection start line
-			text = self.ed.lines[end.y]
-			self.ed.lines.pop(end.y)
+			text = self.ed.buffer.lines[end.y]
+			self.ed.buffer.lines.pop(end.y)
 			self.ed.curpos.y = start.y
-			self.ed.curpos.x = len(self.ed.lines[start.y])
-			self.ed.lines[start.y] += text
+			self.ed.curpos.x = len(self.ed.buffer.lines[start.y])
+			self.ed.buffer.lines[start.y] += text
 		
 		# turn off selection mode
 		self.ed.selection_mode = False
 		self.ed.curpos.x = max(self.ed.curpos.x, 0)
-		self.ed.curpos.x = min(self.ed.curpos.x, len(self.ed.lines[self.ed.curpos.y]))
+		self.ed.curpos.x = min(self.ed.curpos.x, len(self.ed.buffer.lines[self.ed.curpos.y]))
 		self.ed.save_status = False
 		return del_text
 
@@ -63,12 +63,12 @@ class EditorUtility:
 
 		if(start.y == end.y):
 			sel_len = end.x - start.x
-			sel_text = self.ed.lines[start.y][start.x:end.x]
+			sel_text = self.ed.buffer.lines[start.y][start.x:end.x]
 		else:
-			sel_text = self.ed.lines[start.y][start.x:] + self.ed.newline
+			sel_text = self.ed.buffer.lines[start.y][start.x:] + self.ed.newline
 			for row in range(start.y+1, end.y):
-				sel_text = self.ed.lines[row] + self.ed.newline
-			sel_text += self.ed.lines[end.y][0:end.x]
+				sel_text = self.ed.buffer.lines[row] + self.ed.newline
+			sel_text += self.ed.buffer.lines[end.y][0:end.x]
 
 		return sel_text
 
@@ -76,7 +76,7 @@ class EditorUtility:
 	def shift_selection_right(self):
 		start, end = self.ed.get_selection_endpoints()
 		for i in range(start.y, end.y+1):
-			self.ed.lines[i] = "\t" + self.ed.lines[i]
+			self.ed.buffer.lines[i] = "\t" + self.ed.buffer.lines[i]
 		self.ed.curpos.x += 1
 		self.ed.sel_start.x += 1
 		self.ed.sel_end.x += 1
@@ -90,14 +90,14 @@ class EditorUtility:
 		# check if all lines have at least 1 indent
 		has_tab_in_all = True
 		for i in range(start.y, end.y+1):
-			if(not self.ed.lines[i].startswith("\t")):
+			if(not self.ed.buffer.lines[i].startswith("\t")):
 				has_tab_in_all = False
 				break
 
 		# decrease indent only if all lines are indented
 		if(has_tab_in_all):
 			for i in range(start.y, end.y+1):
-				self.ed.lines[i] = self.ed.lines[i][1:]
+				self.ed.buffer.lines[i] = self.ed.buffer.lines[i][1:]
 			self.ed.curpos.x -= 1
 			self.ed.sel_start.x -= 1
 			self.ed.sel_end.x -= 1
@@ -108,7 +108,7 @@ class EditorUtility:
 
 	# returns the block of leading whitespaces on a given line 
 	def get_leading_whitespaces(self, line_index):
-		text = self.ed.lines[line_index]
+		text = self.ed.buffer.lines[line_index]
 		nlen = len(text)
 		ws = ""
 		for i in range(nlen):
@@ -138,24 +138,6 @@ class EditorUtility:
 			start = copy.copy(self.ed.sel_end)
 			end = copy.copy(self.ed.sel_start)
 		return (start, end)
-
-	# count lines and SLOC
-	def get_loc(self):
-		nlines = len(self.ed.lines)
-		sloc = 0
-		
-		for x in self.ed.lines:
-			if(len(x.strip()) == 0):
-				sloc += 1
-
-		return (nlines, nlines - sloc)
-
-	# get file size
-	def get_file_size(self):
-		if(self.ed.has_been_allotted_file):
-			return get_file_size(self.ed.filename)
-		else:
-			return "0 bytes"
 
 	# implements search
 	def find_next(self, str):

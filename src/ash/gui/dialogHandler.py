@@ -79,9 +79,9 @@ class DialogHandler:
 				return -1
 			
 			aed = self.app.main_window.get_active_editor()
-			if(row < 0 or row >= len(aed.lines)):
+			if(row < 0 or row >= len(aed.buffer.lines)):
 				beep()
-			elif(col < 0 or col > len(aed.lines[row])):
+			elif(col < 0 or col > len(aed.buffer.lines[row])):
 				beep()
 			else:
 				self.app.dlgGoTo.hide()
@@ -109,6 +109,7 @@ class DialogHandler:
 		# 		(a) No other editors exist: check if unsaved files exist
 		# 			(i) no unsaved files exist: quit application
 		#			(ii) unsaved files exist: ask user (Yes: save-all, No: discard-all, Cancel: dont-quit)
+		#			(iii) unsaved buffers/files exist: same as 3(a)(ii)
 		# 		(b) Other editors exist: inform user that other editors exist
 
 		if(aed == None):
@@ -125,61 +126,36 @@ class DialogHandler:
 				self.app.show_error("Close all windows to quit application or use Ctrl+@ to force-quit")
 			else:
 				# case 3(a): no other editors exist
-				all_saved = True
-				for f in self.app.files:
-					if(not f.save_status):
-						all_saved = False
-						break
-
-				if(all_saved):
+				unsaved_count = self.app.buffers.get_unsaved_count()
+				if(unsaved_count == 0):
 					# case 3(a)[i]: all buffers saved: quit app
 					mw.hide()
-				else:
+				elif(self.app.buffers.can_destroy_after_saving()):
 					# case 3(a)[ii]: some buffers are unsaved: confirm with user
 					response = self.app.ask_question("SAVE/DISCARD ALL", "One or more unsaved files exist, choose yes(save-all) / no(discard-all) / cancel(dont-quit)", True)
-					if(response == None):
-						return
-					elif(response):
-						write_all_buffers_to_disk(self.app.files)
-						mw.hide()
-						return
-					elif(not response):
-						mw.hide()
-						return
-		else:
-			if(aed.save_status):
-				# case 1: active editor is saved
-				save_to_buffer(self.app.files, aed)
-				mw.close_active_editor()
-			else:
-				# case 2: active editor has unsaved changes
-				if(not aed.has_been_allotted_file):
-					# active editor does not have any allotted file
-					if(aed.can_quit()):
-						# still if can close (i.e. editor is blank: no data), then close editor
-						mw.close_active_editor()
+					if(response == None): return
+					if(response):
+						self.app.buffers.write_all()
 					else:
-						# case 2(a): has unsaved changes: confirm with user
-						response = self.app.ask_question("DISCARD CHANGES", "Do you want to save this file (Yes) or discard changes (No)?", True)
-						if(response == None): return
-						if(response):
-							# user wants to save before closing: so show file-save-as dialogbox
-							self.invoke_file_save_as()
-							if(aed.save_status): 
-								# no need to add this filedata to list of active files as
-								# invoke_file_save_as() already does it
-								mw.close_active_editor()
-						else:
-							# user wants to discard changes
-							mw.close_active_editor()
+						self.app.buffers.destroy()
+					
+					mw.hide()
+					return
 				else:
-					# case 2(b) [same as case 1]: active editor has been allotted file
-					# so: save the contents into mapped buffer and close editor
-					filename = aed.filename
-					buffer_index = get_file_buffer_index(self.app.files, filename)
-					filedata = aed.get_data()
-					self.app.files[buffer_index] = filedata
-					mw.close_active_editor()
+					# case 3(a)[iii]: some buffers are unsaved and don't even have a filename
+					response = self.app.ask_question("UNSAVED BUFFERS EXIST", "One or more unsaved buffers exist, you can:\nChoose YES to save all files and discard all unsaved buffers\nChoose NO to discard all changes (files and buffers)\nChoose CANCEL to stay back.", True)
+					if(response == None): return
+					if(response):
+						self.app.buffers.write_all_wherever_possible()
+					else:
+						self.app.buffers.destroy()
+					
+					mw.hide()
+					return					
+		else:
+			# close active-editor: don't worry about saving changes or asking user
+			mw.close_active_editor()
+			
 
 	# <--------------------------- Set Preferences ------------------------------>
 
@@ -198,12 +174,12 @@ class DialogHandler:
 		chkHardWrap = CheckBox(self.app.dlgPreferences, 14, 2, "Hard Wrap")
 		
 		for enc in SUPPORTED_ENCODINGS:
-			lstEncodings.add_item(("  " if aed.encoding != enc else TICK_MARK + " ") +  enc)
+			lstEncodings.add_item(("  " if aed.buffer.encoding != enc else TICK_MARK + " ") +  enc)
 		
 		chkShowLineNumbers.set_value(aed.show_line_numbers)
 		chkWordWrap.set_value(aed.word_wrap)
 		chkHardWrap.set_value(aed.hard_wrap)
-		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index(aed.encoding)
+		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index(aed.buffer.encoding)
 		
 		self.app.dlgPreferences.add_widget("txtTabSize", txtTabSize)
 		self.app.dlgPreferences.add_widget("lstEncodings", lstEncodings)
@@ -237,7 +213,7 @@ class DialogHandler:
 				return -1
 
 			aed.tab_size = tab_size
-			aed.encoding = SUPPORTED_ENCODINGS[encoding_index]
+			aed.buffer.set_encoding(SUPPORTED_ENCODINGS[encoding_index])
 			aed.toggle_line_numbers(show_line_numbers)
 			aed.set_wrap(word_wrap, hard_wrap)
 
@@ -254,27 +230,14 @@ class DialogHandler:
 		aed = mw.get_active_editor()
 		aedi = mw.active_editor_index
 
-		if(aed == None or (not aed.can_quit() and not aed.has_been_allotted_file)):
-			# no active-editor exists OR it is an unsaved buffer
-			# so: look for a different editor to place the new file
-			ffedi = get_first_free_editor_index(mw)
-			if(ffedi == -1):
-				# no other editor also exists
-				self.app.show_error("No free editors available: switch layout or close an editor")
-				return -1
+		# create blank buffer
+		new_bid, new_buffer = self.app.buffers.create_new_buffer()
 
-			# different editor found, make it the active editor
-			mw.layout_manager.invoke_activate_editor(ffedi)
-			aed = mw.get_active_editor()
+		if(aed == None):
+			ffedi = mw.get_first_free_editor_index()			
+			aed = mw.layout_manager.invoke_activate_editor(ffedi, new_bid, new_buffer)
 		else:
-			# active editor has allotted-file and can be quit
-			
-			# so: save recent changes to buffer
-			save_to_buffer(self.app.files, aed)
-
-			# close and reopen
-			mw.editors[aedi] = None
-			mw.layout_manager.invoke_activate_editor(aedi)
+			mw.layout_manager.invoke_activate_editor(aedi, new_bid, new_buffer)
 
 		mw.repaint()
 		
@@ -292,8 +255,9 @@ class DialogHandler:
 		lstEncodings = ListBox(self.app.dlgFileOpen, 12, 2, 56, 1)
 
 		# add the list of active files
-		for f in self.app.files:
-			lstActiveFiles.add_item(("  " if f.save_status else UNSAVED_BULLET) +  get_file_title(f.filename))
+		blist = self.app.buffers.get_list()
+		for (bid, save_status, bname) in blist:
+			lstActiveFiles.add_item((("  " if save_status else UNSAVED_BULLET) +  get_file_title(bname), tag=bid)
 		
 		# add the encodings
 		for enc in SUPPORTED_ENCODINGS:
@@ -312,76 +276,56 @@ class DialogHandler:
 		txtFileName = self.app.dlgFileOpen.get_widget("txtFileName")
 		lstActiveFiles = self.app.dlgFileOpen.get_widget("lstActiveFiles")
 		lstEncodings = self.app.dlgFileOpen.get_widget("lstEncodings")
-		sel_index = lstActiveFiles.get_sel_index()
+
+		sel_bid = lstActiveFiles.get_sel_tag()
 		mw = self.app.main_window
 		aed = mw.get_active_editor()
 		aedi = mw.active_editor_index
-
+		
 		if(is_ctrl(ch, "Q")):
 			self.app.dlgFileOpen.hide()
 			return -1
 		elif(is_newline(ch)):
-			if(lstActiveFiles.is_in_focus and sel_index > -1): txtFileName.set_text(self.app.files[sel_index].filename)
-			filename = str(txtFileName)
+			is_buffer = False
+			sel_buffer = None
+
+			if(lstActiveFiles.is_in_focus and sel_index > -1): 
+				sel_buffer = self.app.buffers.get_buffer_by_id(sel_bid)
+				is_buffer = True
+				filename = sel_buffer.filename
+			else:							
+				filename = str(txtFileName)
+
 			sel_encoding = str(lstEncodings)
 			self.app.dlgFileOpen.hide()
 			
-			if(not file_exists_in_buffer(self.app.files, filename)):
-				# new file is being opened
-				if(os.path.isfile(filename)):
-					# file exists on disk, so add it to buffer
-					try:
-						file_data = FileData(filename, encoding = sel_encoding)
-						self.app.files.append(file_data)
-					except:
-						self.app.show_error("The selected encoding does not match file encoding")
-						return -1
-				else:
-					# file does not exist: show error
-					self.app.show_error("The selected file does not exist")
-					return -1
+			if(not is_buffer):
+				# it is a file
+				if(not os.path.isfile(filename)):
+					# file does not exist on disk
+					response = self.app.ask_question("CREATE FILE", "The selected file does not exist, create?")
+					if(not response): -1
 
-			new_editor = False
-			if(aed == None or (not aed.can_quit() and not aed.has_been_allotted_file)):
-				# no active-editor OR it is an unsaved-buffer
-				# so: look for a different editor to place the new file
-				ffedi = get_first_free_editor_index(mw)
+				sel_buffer = self.app.buffers.get_buffer_by_filename(filename)
+				if(sel_buffer == None):
+					# create buffer from file
+					backup_status = BufferManager.backup_exists(filename)
+					sel_bid, sel_buffer = self.app.buffers.create_new_buffer(filename=filename, encoding=sel_encoding, has_backup=backup_status)
+				
+			# at this point, buffer exists in sel_buffer			
+			if(aed == None):
+				ffedi = mw.get_first_free_editor_index()
+				aed = mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.bid, sel_buffer)
+			else:
+				ffedi = mw.get_first_free_editor_index(aedi)
 				if(ffedi == -1):
-					# no other editor also exists
-					self.app.show_error("No free editors available: switch layout or close an editor")
-					return -1
-
-				# different editor found, make it the active editor
-				mw.layout_manager.invoke_activate_editor(ffedi)
-				aed = mw.get_active_editor()
-				aedi = ffedi
-				new_editor = True
-			
-			if(not new_editor and aed.has_been_allotted_file):
-				# if active editor has a file: find a new editor
-				ffedi = get_first_free_editor_index(mw, aedi)
-
-				if(ffedi == -1):
-					# no other editor also exists
 					if(self.app.ask_question("REPLACE ACTIVE EDITOR", "No free editors available: replace active editor?")):
-						# yes: replace the active-editor, save any changes
-						save_to_buffer(self.app.files, aed)
+						ffedi = aedi
 					else:
-						# cancel open operation
 						return -1
-				else:
-					mw.layout_manager.invoke_activate_editor(ffedi)
-					aed = mw.get_active_editor()
-					aedi = ffedi
-					new_editor = True
-
-			bi = get_file_buffer_index(self.app.files, filename)
-			aed.set_data(self.app.files[bi])
-			mw.repaint()
-			
+				mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.bid, sel_buffer)
+				mw.repaint()			
 			return -1
-		elif(is_tab(ch) or ch == curses.KEY_BTAB):
-			if(sel_index > -1): txtFileName.set_text(self.app.files[sel_index].filename)			
 		
 		return ch
 
@@ -421,13 +365,10 @@ class DialogHandler:
 			self.app.dlgSwitchLayout.hide()
 			self.app.main_window.repaint()
 
-			if(new_layout == self.app.main_window.layout_type):				
-				return -1
-			elif(self.app.main_window.layout_manager.can_change_layout(new_layout)):
+			if(new_layout != self.app.main_window.layout_type):				
 				self.app.main_window.layout_manager.set_layout(new_layout)
 				return -1
-			else:
-				return self.app.show_error("One or more files need to be saved first")				
+			
 		return ch
 
 	# -------------------------------------------------------------------------------------
@@ -435,11 +376,14 @@ class DialogHandler:
 
 	# <----------------------------------- File Save As ---------------------------------->
 
-	def invoke_file_save_as(self, filename=None):
+	def invoke_file_save_as(self, buffer):
 		self.app.readjust()
 		y, x = get_center_coords(self.app, 5, 60)
 		self.app.dlgSaveAs = ModalDialog(self.app.main_window, y, x, 5, 60, "SAVE AS", self.file_save_as_key_handler)
-		if(filename == None): filename = str(os.getcwd()) + "/untitled.txt"
+		if(buffer.filename == None): 
+			filename = str(os.getcwd()) + "/" + buffer.get_name()
+		else:
+			filename = buffer.filename
 		txtFileName = TextField(self.app.dlgSaveAs, 3, 2, 56, filename)
 		self.app.dlgSaveAs.add_widget("txtFileName", txtFileName)
 		self.app.dlgSaveAs.show()
@@ -450,19 +394,11 @@ class DialogHandler:
 		elif(is_newline(ch)):
 			self.app.dlgSaveAs.hide()
 			txtFileName = self.app.dlgSaveAs.get_widget("txtFileName")
-			if(not os.path.isfile(str(txtFileName))):
-				self.save_or_overwrite(str(txtFileName))
+			filename = str(txtFileName)
+			if(not os.path.isfile(fileName)):
+				buffer.write_to_disk(filename)
 			else:				
 				if(self.app.ask_question("REPLACE FILE", "File already exists, replace?")):
-					self.save_or_overwrite(str(txtFileName))
+					buffer.write_to_disk(fileName)
 					
 		return ch
-
-	def save_or_overwrite(self, filename):
-		self.app.dlgSaveAs.hide()
-		try:
-			self.app.main_window.do_save_as(filename)
-		except Exception as e:
-			self.app.show_error("ERROR: " + str(e))
-
-	# --------------------------------------------------------------------------------------

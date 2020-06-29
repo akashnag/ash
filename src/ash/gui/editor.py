@@ -36,24 +36,18 @@ class Editor(Widget):
 		self.word_wrap = False
 						
 		# set up the text and cursor data structures
-		self.lines = [ "" ]
 		self.curpos = CursorPosition(0,0)
-		self.filename = None
-		self.has_been_allotted_file = False
-		self.save_status = False
-
+		
 		# set accepted charset
 		self.separators = "~`!@#$%^&*()-_=+\\|[{]};:\'\",<.>/? "
 		self.charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 		self.charset += self.separators
-		self.newline = "\n"
 		
 		# set initial selection status
 		self.selection_mode = False
 		self.sel_start = CursorPosition(0,0)
 		self.sel_end = CursorPosition(0,0)
-		self.encoding = "utf-8"
-
+		
 		# set default tab size
 		self.tab_size = 4
 
@@ -79,11 +73,10 @@ class Editor(Widget):
 		self.col_end = 0
 		self.line_start = -1
 		self.line_end = -1
-		self.history = None
-	
-	def set_wrap(self, word_wrap, hard_wrap):
-		self.word_wrap = word_wrap
-		self.hard_wrap = hard_wrap
+		self.bid = -1
+		self.buffer = None
+		
+	def reset(self):
 		self.selection_mode = False
 		self.col_start = 0
 		self.col_end = self.width
@@ -91,13 +84,29 @@ class Editor(Widget):
 		self.line_end = self.height
 		self.curpos.x = 0
 		self.curpos.y = 0
+
+	def set_buffer(self, bid, buffer):
+		self.bid = bid
+		self.buffer = buffer
+		self.buffer.attach_editor(self)
+		self.reset()
+
+	def destroy(self):			# called by TopLevelWindow.close_active_editor()
+		self.buffer.detach_editor(self)
+
+	def set_wrap(self, word_wrap, hard_wrap):
+		self.word_wrap = word_wrap
+		self.hard_wrap = hard_wrap
+		self.reset()
 		self.repaint()
 
 	def wrap_all(self):
+		if(self.buffer == None): return
+
 		self.sub_lines = list()
 		self.cum_sub_line_lengths = list()
 		total = 0
-		for line in self.lines:
+		for line in self.buffer.lines:
 			wline = wrapped(line, self.width, self.word_wrap, self.hard_wrap)
 			self.sub_lines.extend(wline)
 			self.cum_sub_line_lengths.append(total)
@@ -123,12 +132,6 @@ class Editor(Widget):
 		self.line_end = self.height
 
 		self.repaint()
-
-	# checks to see if editor can be closed without user confirmation
-	def can_quit(self):
-		if(self.save_status): return True
-		if(not self.has_been_allotted_file and len(self.__str__()) == 0): return True
-		return False
 
 	# when focus received
 	def focus(self):
@@ -168,14 +171,14 @@ class Editor(Widget):
 			self.repaint()
 			return None
 		
-		if(self.history == None): self.history = EditHistory(self.__str__(), self.curpos)
-		
-		undoable_action = False
+		edit_made = False
 
 		if(ch == curses.KEY_BACKSPACE):
-			undoable_action = self.keyHandler.handle_backspace_key(ch)
+			self.keyHandler.handle_backspace_key(ch)
+			edit_made = True
 		elif(ch == curses.KEY_DC):
-			undoable_action = self.keyHandler.handle_delete_key(ch)
+			self.keyHandler.handle_delete_key(ch)
+			edit_made = True
 		elif(ch in [ curses.KEY_HOME, curses.KEY_END ]):
 			self.keyHandler.handle_home_end_keys(ch)
 		elif(ch in [ curses.KEY_SHOME, curses.KEY_SEND ]):
@@ -193,25 +196,47 @@ class Editor(Widget):
 		elif(is_ctrl_arrow(ch, "LEFT") or is_ctrl_arrow(ch, "RIGHT")):
 			self.keyHandler.handle_ctrl_arrow_keys(ch)
 		elif(is_tab(ch) or ch == curses.KEY_BTAB):
-			undoable_action = self.keyHandler.handle_tab_keys(ch)
+			self.keyHandler.handle_tab_keys(ch)
+			edit_made = True
 		elif(is_newline(ch)):
-			undoable_action = self.keyHandler.handle_newline(ch)
+			self.keyHandler.handle_newline(ch)
+			edit_made = True
 		elif(str(chr(ch)) in self.charset):
-			undoable_action = self.keyHandler.handle_printable_character(ch)
+			self.keyHandler.handle_printable_character(ch)
+			edit_made = True
 		elif(is_ctrl_or_func(ch)):
-			undoable_action = self.keyHandler.handle_ctrl_and_func_keys(ch)
+			self.keyHandler.handle_ctrl_and_func_keys(ch)
+			edit_made = True
 		else:
 			beep()
 		
-		if(undoable_action):
-			self.history.add_change(self.__str__(), self.curpos)
-
+		if(edit_made): self.buffer.update(self.curpos, self)
 		self.repaint()
 
+	# <------------------- Functions called from BufferManager --------------------->
+
+	def notify_update(self):
+		repaint_needed = False
+		if(self.curpos.y >= len(self.buffer.lines) or self.curpos.x > len(self.buffer.lines[self.curpos.y])):
+			self.curpos.x = 0
+			self.curpos.y = 0			
+		if(self.selection_mode):
+			if(self.sel_start.y >= len(self.buffer.lines) or self.sel_start.x > len(self.buffer.lines[self.sel_start.y]) or self.sel_end.y >= len(self.buffer.lines) or self.sel_end.x > len(self.buffer.lines[self.sel_end.y])):
+				self.selection_mode = False
+		self.repaint()
+
+	def notify_merge(new_bid, new_buffer):
+		self.bid = new_bid
+		self.buffer = new_buffer
+		self.selection_mode = False
+		if(self.curpos.y >= len(self.buffer.lines) or self.curpos.x > len(self.buffer.lines[self.curpos.y])):
+			self.curpos.x = 0
+			self.curpos.y = 0
+		self.repaint()
 
 	# <---------------------------- Repaint Operations ----------------------------->
 
-		# checks if line_index is within the text that was selected
+	# checks if line_index is within the text that was selected
 	def is_in_selection_rendered(self, line_index):
 		if(self.selection_mode):
 			if(is_start_before_end(self.rendered_sel_start, self.rendered_sel_end)):
@@ -296,20 +321,22 @@ class Editor(Widget):
 		self.parent.layout_manager.readjust()
 
 		if(self.height <= 0 or self.width <= 0): return
-		if(self.curpos.x < 0 or self.curpos.y < 0 or self.line_start < 0 or self.line_end <= self.line_start or self.col_start < 0 or self.col_end <= self.col_start): return
+		if(self.curpos.x < 0 or self.curpos.y < 0): return
+		if(self.line_start < 0 or self.line_end <= self.line_start): return
+		if(self.col_start < 0 or self.col_end <= self.col_start): return
 
 		curses.curs_set(self.is_in_focus)
 
 		if(self.word_wrap):
 			self.wrap_all()
 			self.rendered_lines = self.sub_lines
-			self.rendered_curpos = get_rendered_pos(self.lines, self.width, self.hard_wrap, self.curpos, self.cum_sub_line_lengths)
+			self.rendered_curpos = get_rendered_pos(self.buffer.lines, self.width, self.hard_wrap, self.curpos, self.cum_sub_line_lengths)
 
 			if(self.selection_mode):
-				self.rendered_sel_start = get_rendered_pos(self.lines, self.width, self.hard_wrap, self.sel_start, self.cum_sub_line_lengths)
-				self.rendered_sel_end = get_rendered_pos(self.lines, self.width, self.hard_wrap, self.sel_end, self.cum_sub_line_lengths)
+				self.rendered_sel_start = get_rendered_pos(self.buffer.lines, self.width, self.hard_wrap, self.sel_start, self.cum_sub_line_lengths)
+				self.rendered_sel_end = get_rendered_pos(self.buffer.lines, self.width, self.hard_wrap, self.sel_end, self.cum_sub_line_lengths)
 		else:
-			self.rendered_lines = self.lines
+			self.rendered_lines = self.buffer.lines
 			self.rendered_curpos = self.curpos
 			self.rendered_sel_start = self.sel_start
 			self.rendered_sel_end = self.sel_end
@@ -368,9 +395,9 @@ class Editor(Widget):
 
 		if(start.y != end.y):
 			for i in range(start.y + 1, end.y):
-				count += len(self.lines[i]) + 1
+				count += len(self.buffer.lines[i]) + 1
 
-			count += len(self.lines[start.y]) - start.x
+			count += len(self.buffer.lines[start.y]) - start.x
 			count += end.x
 			count += 1
 		else:
@@ -380,79 +407,18 @@ class Editor(Widget):
 
 	# returns the string representation of the document
 	def __str__(self):
-		return self.newline.join(self.lines)
+		return self.buffer.get_data()
 
-	# returns a file-data object
-	def get_data(self):
-		file_data = FileData(self.filename, self.__str__(), self.curpos, self.save_status, self.selection_mode, self.sel_start, self.sel_end, self.encoding, self.tab_size)
-		return file_data
-
-	# assigns a file-data object
-	def set_data(self, file_data):
-		text = file_data.buffer
-
-		self.curpos = file_data.curpos
-		self.selection_mode = file_data.selection_mode
-		self.sel_start = file_data.sel_start
-		self.sel_end = file_data.sel_end
-		self.filename = file_data.filename
-		self.has_been_allotted_file = file_data.has_been_allotted_file
-		self.save_status = file_data.save_status
-		self.encoding = file_data.encoding
-		self.tab_size = file_data.tab_size
-
-		self.render_data_to_lines(text)
-
-	def render_data_to_lines(self, text, initialize_history = True):
-		# parse lines
-		self.lines.clear()
-		if(len(text) == 0):
-			self.lines.append("")
-		else:
-			lines = text.splitlines()
-			for line in lines:
-				self.lines.append(line)
-			if(text.endswith("\n")): self.lines.append("")
-
-		# initialize history
-		if(initialize_history): self.history = EditHistory(text, CursorPosition(0,0))
-
-	# allots a file and writes to it
-	def allot_and_save_file(self, filename):
-		self.filename = filename
-		self.has_been_allotted_file = True
-		try:
-			self.save_to_file()
-			self.parent.update_status()
-		except:
-			self.filename = None
-			self.has_been_allotted_file = False
-			raise
-
-	# save to file
-	def save_to_file(self):
-		# save to buffer
-		save_to_buffer(self.parent.app.files, self, True)
-		# write buffer to disk
-		write_buffer_to_disk(self.parent.app.files, self.filename)
-		# update status
-		self.save_status = True
-	
-	# saves data to a file, overwrites it if it exists
-	def read_from_file(self):
-		text = load_buffer_from_disk(self.parent.app.files, self.filename)
-		
-		self.selection_mode = False
-		self.render_data_to_lines(text)
-		self.curpos.y = 0
-		self.curpos.x = 0
-
-		self.save_status = True
-		self.parent.update_status()
-
-	# checks if no data
-	def is_empty(self):
-		return True if len(self.__str__())==0 else False
+	# returns information about editor-state
+	def get_info(self):
+		return({
+			"bid": self.bid,
+			"buffer": self.buffer,
+			"selection_mode": self.selection_mode,
+			"sel_start": self.sel_start,
+			"sel_end": self.sel_end,
+			"tab_size": self.tab_size
+		})		
 
 	# turns on/off line numbers
 	def toggle_line_numbers(self, show_numbers):
@@ -462,10 +428,6 @@ class Editor(Widget):
 		else:
 			self.line_number_width = 0
 		self.repaint()
-
-	# turns on/off soft-wrap
-	def toggle_word_wrap(self, wrap):
-		pass		# add code
 
 	# <--------------------- stub functions ---------------------->
 
@@ -496,10 +458,6 @@ class Editor(Widget):
 	# returns the selection endpoints in the correct order
 	def get_selection_endpoints(self):
 		return self.utility.get_selection_endpoints()
-
-	# count lines and SLOC
-	def get_loc(self):
-		return self.utility.get_loc()
 
 	# get file size
 	def get_file_size(self):

@@ -92,7 +92,7 @@ class TopLevelWindow(Window):
 			lines, sloc = aed.buffer.get_loc()
 			loc_count = str(lines) + " lines (" + str(sloc) + " sloc)"
 			
-			if(aed.filename != None):
+			if(aed.buffer.filename != None):
 				if(os.path.isfile(aed.buffer.filename)): file_size = aed.buffer.get_file_size()
 				language = get_file_type(aed.buffer.filename)
 				if(language == None): language = "unknown"
@@ -105,7 +105,7 @@ class TopLevelWindow(Window):
 				language = "unknown"
 
 			cursor_position = str(aed.get_cursor_position()) + aed.get_selection_length_as_string()
-			encoding = aed.encoding
+			encoding = aed.buffer.encoding
 			tab_size = str(aed.tab_size)
 		
 		unsaved_file_count = str(self.app.buffers.get_unsaved_count()) + "*"
@@ -160,11 +160,13 @@ class TopLevelWindow(Window):
 
 		if(self.status != None): self.win.addstr(self.height-1, 0, str(self.status), gc(COLOR_STATUSBAR))
 		
-		title_text = self.title + " - " + self.app_name
-		
-		ts = (self.width - len(title_text)) // 2
-		self.win.addstr(0, ts, self.title + " - ", gc(COLOR_TITLEBAR))
-		self.win.addstr(0, ts + len(self.title + " - "), self.app_name, curses.A_BOLD | gc(COLOR_TITLEBAR))
+		if(len(self.title) == 0):
+			self.win.addstr(0, 0, self.app_name.center(self.width), curses.A_BOLD | gc(COLOR_TITLEBAR))
+		else:
+			title_text = self.title + " - " + self.app_name		
+			ts = (self.width - len(title_text)) // 2
+			self.win.addstr(0, ts, self.title + " - ", gc(COLOR_TITLEBAR))
+			self.win.addstr(0, ts + len(self.title + " - "), self.app_name, curses.A_BOLD | gc(COLOR_TITLEBAR))
 
 		self.layout_manager.draw_layout_borders()
 		self.layout_manager.repaint_editors()

@@ -6,6 +6,7 @@
 # This module implements the Buffer Management Interface
 
 from ash.core import *
+from ash.core.logger import *
 
 from ash.gui.cursorPosition import *
 from ash.core.dataUtils import *
@@ -27,6 +28,7 @@ class Buffer:
 			self.lines = list()
 			self.lines.append("")
 			self.save_status = False
+			log("buffer:init()")
 			self.backup_file = None
 			self.display_name = "untitled-" + str(self.id + 1)
 		else:
@@ -56,17 +58,22 @@ class Buffer:
 		return (False if self.filename == None else True)
 
 	def undo(self):
-		return self.history.undo()			# alias function
+		data = self.history.undo()			# alias function
+		if(data != None): self.save_status = False
+		return data
 
 	def redo(self):
-		return self.history.redo()			# alias function
+		data = self.history.redo()			# alias function
+		if(data != None): self.save_status = False
+		return data
 
 	def update(self, curpos, caller):			# must be called after every edit made
 		self.save_status = False
+		log("buffer:update()")
 		new_data_size = sys.getsizeof(self.lines)
-		if(self.backup_file != None and abs(new_data_size - old_data_size) >= BACKUP_FREQUENCY_SIZE):
+		if(self.backup_file != None and abs(new_data_size - self.old_data_size) >= BACKUP_FREQUENCY_SIZE):
 			self.make_backup()		
-		if(abs(new_data_size - old_data_size) >= HISTORY_FREQUENCY_SIZE):
+		if(abs(new_data_size - self.old_data_size) >= HISTORY_FREQUENCY_SIZE):
 			self.history.add_change(self.lines, curpos)		
 		self.old_data_size = new_data_size
 		for ed in self.editors:
@@ -74,7 +81,7 @@ class Buffer:
 	
 	def write_to_disk(self, filename = None):
 		if(self.filename == None and filename == None): raise(Exception("Error 1: buffer.write_to_disk()"))
-		self.filename = filename		# update filename even if filename has changed
+		if(filename != None): self.filename = filename		# update filename even if filename has changed
 		self.display_name = None
 
 		data = self.get_data()
@@ -83,7 +90,7 @@ class Buffer:
 		textFile.close()
 		self.save_status = True
 		self.backup_file = get_file_directory(self.filename) + "/.ash.b-" + get_file_title(self.filename)
-		return self.parent.merge_if_required(self.id)
+		return self.manager.merge_if_required(self.id)
 
 	def is_editor_attached(self, editor):
 		return (True if editor in self.editors else False)
@@ -105,7 +112,7 @@ class Buffer:
 		return (nlines, nlines - sloc)
 
 	def destroy(self):
-		if(self.backup_file != None): 
+		if(self.backup_file != None and os.path.isfile(self.backup_file)): 
 			os.remove(self.backup_file)			# remove backup safely
 
 	def get_data(self):
@@ -144,6 +151,7 @@ class Buffer:
 			self.save_status = True
 		else:
 			self.save_status = False
+			log("buffer:read_from_disk")
 
 	def render_data_to_lines(self, text):
 		self.lines = list()
@@ -196,11 +204,13 @@ class BufferManager:
 		return None
 
 	def get_buffer_by_filename(self, filename):
+		if(filename == None): return None
 		for bid, buffer in self.buffers.items():
 			if(buffer.filename == filename): return buffer
 		return None
 
 	def does_file_have_its_own_buffer(self, filename):
+		if(filename == None): return False
 		for bid, buffer in self.buffers.items():
 			if(buffer.filename == filename): return True
 		return False

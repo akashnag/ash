@@ -9,7 +9,6 @@ from ash import *
 
 from ash.core.bufferManager import *
 from ash.core.logger import *
-from ash.core.fileData import *
 from ash.core.utils import *
 from ash.core.dataUtils import *
 
@@ -102,7 +101,7 @@ class AshEditorApp:
 		elif(self.app_mode == APP_MODE_PROJECT):
 			app_title = get_relative_file_title(self.project_dir, active_editor.buffer.filename)
 		
-		app_title = ("  " if active_editor.save_status else UNSAVED_BULLET + " ") + app_title
+		app_title = ("  " if active_editor.buffer.save_status else UNSAVED_BULLET + " ") + app_title
 		return app_title
 
 	# initialize the GUI

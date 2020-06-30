@@ -224,12 +224,18 @@ class LayoutManager:
 				self.win.editors[index].set_buffer(new_bid, new_buffer)
 			return
 
+		# set active editor
+		self.win.active_editor_index = index
+
 		if(self.win.editors[index] == None):
 			self.win.editors[index] = Editor(self.win)
 			if(new_bid != None and new_buffer != None):
 				self.win.editors[index].set_buffer(new_bid, new_buffer)
-		
-		self.win.active_editor_index = index
+			else:
+				# add code to invoke open_file, for now: add a blank buffer
+				new_bid, new_buffer = self.win.app.buffers.create_new_buffer()
+				self.win.editors[index].set_buffer(new_bid, new_buffer)				
+				
 		self.readjust(True)
 		self.win.repaint()
 		

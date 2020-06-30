@@ -7,10 +7,9 @@
 
 from ash.gui import *
 
+from ash.core.bufferManager import *
 from ash.core.utils import *
 from ash.core.dataUtils import *
-from ash.core.fileData import *
-
 from ash.gui.modalDialog import *
 from ash.gui.findReplaceDialog import *
 from ash.gui.checkbox import *
@@ -257,7 +256,7 @@ class DialogHandler:
 		# add the list of active files
 		blist = self.app.buffers.get_list()
 		for (bid, save_status, bname) in blist:
-			lstActiveFiles.add_item((("  " if save_status else UNSAVED_BULLET) +  get_file_title(bname), tag=bid)
+			lstActiveFiles.add_item((" " if save_status else UNSAVED_BULLET) + " " + get_file_title(bname), tag=bid)
 		
 		# add the encodings
 		for enc in SUPPORTED_ENCODINGS:
@@ -278,6 +277,8 @@ class DialogHandler:
 		lstEncodings = self.app.dlgFileOpen.get_widget("lstEncodings")
 
 		sel_bid = lstActiveFiles.get_sel_tag()
+		sel_index = lstActiveFiles.get_sel_index()
+
 		mw = self.app.main_window
 		aed = mw.get_active_editor()
 		aedi = mw.active_editor_index
@@ -315,7 +316,7 @@ class DialogHandler:
 			# at this point, buffer exists in sel_buffer			
 			if(aed == None):
 				ffedi = mw.get_first_free_editor_index()
-				aed = mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.bid, sel_buffer)
+				aed = mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
 			else:
 				ffedi = mw.get_first_free_editor_index(aedi)
 				if(ffedi == -1):
@@ -323,7 +324,7 @@ class DialogHandler:
 						ffedi = aedi
 					else:
 						return -1
-				mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.bid, sel_buffer)
+				mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
 				mw.repaint()			
 			return -1
 		
@@ -385,6 +386,7 @@ class DialogHandler:
 		else:
 			filename = buffer.filename
 		txtFileName = TextField(self.app.dlgSaveAs, 3, 2, 56, filename)
+		self.app.dlgSaveAs_Buffer = buffer
 		self.app.dlgSaveAs.add_widget("txtFileName", txtFileName)
 		self.app.dlgSaveAs.show()
 
@@ -392,13 +394,14 @@ class DialogHandler:
 		if(is_ctrl(ch, "Q")): 
 			self.app.dlgSaveAs.hide()
 		elif(is_newline(ch)):
+			buffer = self.app.dlgSaveAs_Buffer
 			self.app.dlgSaveAs.hide()
 			txtFileName = self.app.dlgSaveAs.get_widget("txtFileName")
 			filename = str(txtFileName)
-			if(not os.path.isfile(fileName)):
+			if(not os.path.isfile(filename)):
 				buffer.write_to_disk(filename)
-			else:				
+			else:
 				if(self.app.ask_question("REPLACE FILE", "File already exists, replace?")):
-					buffer.write_to_disk(fileName)
+					buffer.write_to_disk(filename)
 					
 		return ch

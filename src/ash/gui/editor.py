@@ -14,7 +14,6 @@ from ash.formatting.colors import *
 
 from ash.core.utils import *
 from ash.core.editHistory import *
-from ash.core.fileData import *
 from ash.core.dataUtils import *
 
 PREFERRED_LINE_NUMBER_WIDTH = 6
@@ -174,11 +173,9 @@ class Editor(Widget):
 		edit_made = False
 
 		if(ch == curses.KEY_BACKSPACE):
-			self.keyHandler.handle_backspace_key(ch)
-			edit_made = True
+			edit_made = self.keyHandler.handle_backspace_key(ch)
 		elif(ch == curses.KEY_DC):
-			self.keyHandler.handle_delete_key(ch)
-			edit_made = True
+			edit_made = self.keyHandler.handle_delete_key(ch)
 		elif(ch in [ curses.KEY_HOME, curses.KEY_END ]):
 			self.keyHandler.handle_home_end_keys(ch)
 		elif(ch in [ curses.KEY_SHOME, curses.KEY_SEND ]):
@@ -196,17 +193,13 @@ class Editor(Widget):
 		elif(is_ctrl_arrow(ch, "LEFT") or is_ctrl_arrow(ch, "RIGHT")):
 			self.keyHandler.handle_ctrl_arrow_keys(ch)
 		elif(is_tab(ch) or ch == curses.KEY_BTAB):
-			self.keyHandler.handle_tab_keys(ch)
-			edit_made = True
+			edit_made = self.keyHandler.handle_tab_keys(ch)
 		elif(is_newline(ch)):
-			self.keyHandler.handle_newline(ch)
-			edit_made = True
+			edit_made = self.keyHandler.handle_newline(ch)
 		elif(str(chr(ch)) in self.charset):
-			self.keyHandler.handle_printable_character(ch)
-			edit_made = True
+			edit_made = self.keyHandler.handle_printable_character(ch)
 		elif(is_ctrl_or_func(ch)):
-			self.keyHandler.handle_ctrl_and_func_keys(ch)
-			edit_made = True
+			edit_made = self.keyHandler.handle_ctrl_and_func_keys(ch)			
 		else:
 			beep()
 		

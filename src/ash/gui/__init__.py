@@ -10,6 +10,8 @@ import os
 import pathlib
 import select
 
+from ash.core.logger import *
+
 clipboard = None
 
 # Check if xsel/pyperclip is present, then use it, else use internal-clipboard

@@ -24,12 +24,12 @@ class EditorUtility:
 			del_text = self.ed.buffer.lines[start.y][start.x:end.x]
 			self.ed.buffer.lines[start.y] = self.ed.buffer.lines[start.y][0:start.x] + self.ed.buffer.lines[start.y][end.x:]			
 		else:
-			del_text = self.ed.buffer.lines[start.y][start.x:] + self.ed.newline
+			del_text = self.ed.buffer.lines[start.y][start.x:] + self.ed.buffer.newline
 						
 			# delete entire lines between selection start and end
 			lc = end.y - start.y - 1
 			while(lc > 0):
-				del_text += self.ed.buffer.lines[start.y+1] + self.ed.newline
+				del_text += self.ed.buffer.lines[start.y+1] + self.ed.buffer.newline
 				self.ed.buffer.lines.pop(start.y + 1)
 				self.ed.curpos.y -= 1
 				end.y -= 1
@@ -53,7 +53,7 @@ class EditorUtility:
 		self.ed.selection_mode = False
 		self.ed.curpos.x = max(self.ed.curpos.x, 0)
 		self.ed.curpos.x = min(self.ed.curpos.x, len(self.ed.buffer.lines[self.ed.curpos.y]))
-		self.ed.save_status = False
+		
 		return del_text
 
 	# returns the selected text
@@ -65,9 +65,9 @@ class EditorUtility:
 			sel_len = end.x - start.x
 			sel_text = self.ed.buffer.lines[start.y][start.x:end.x]
 		else:
-			sel_text = self.ed.buffer.lines[start.y][start.x:] + self.ed.newline
+			sel_text = self.ed.buffer.lines[start.y][start.x:] + self.ed.buffer.newline
 			for row in range(start.y+1, end.y):
-				sel_text = self.ed.buffer.lines[row] + self.ed.newline
+				sel_text = self.ed.buffer.lines[row] + self.ed.buffer.newline
 			sel_text += self.ed.buffer.lines[end.y][0:end.x]
 
 		return sel_text
@@ -80,7 +80,7 @@ class EditorUtility:
 		self.ed.curpos.x += 1
 		self.ed.sel_start.x += 1
 		self.ed.sel_end.x += 1
-		self.ed.save_status = False
+		
 		return True
 
 	# decrease indent of selected lines
@@ -101,7 +101,7 @@ class EditorUtility:
 			self.ed.curpos.x -= 1
 			self.ed.sel_start.x -= 1
 			self.ed.sel_end.x -= 1
-			self.ed.save_status = False
+			
 			return True
 		else:
 			return False

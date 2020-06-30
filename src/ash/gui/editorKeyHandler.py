@@ -19,9 +19,9 @@ class EditorKeyHandler:
 		elif(is_ctrl(ch, "C")):
 			self.handle_copy()
 		elif(is_ctrl(ch, "X")):
-			self.handle_cut()
+			return self.handle_cut()
 		elif(is_ctrl(ch, "V")):
-			self.handle_paste()
+			return self.handle_paste()
 		elif(is_ctrl(ch, "S")):
 			self.handle_save()
 		elif(is_ctrl(ch, "G")):
@@ -42,6 +42,8 @@ class EditorKeyHandler:
 			self.handle_redo()
 		elif(is_ctrl(ch, "P")):
 			self.ed.parent.app.dialog_handler.invoke_set_preferences()
+
+		return False
 
 	# handle the 4 arrow keys
 	def handle_arrow_keys(self, ch):
@@ -199,16 +201,14 @@ class EditorKeyHandler:
 			left = text[0:col] if col > 0 else ""
 			right = text[col+1:] if col < len(text)-1 else ""
 			self.ed.buffer.lines[self.ed.curpos.y] = left + right
-		
-		self.ed.save_status = False
+				
 		return True
 	
 	# handles backspace key: deletes the character to the left of the
 	# cursor, or deletes the selected text
 	def handle_backspace_key(self, ch):
 		if(self.ed.selection_mode):
-			self.ed.delete_selected_text()
-			self.ed.save_status = False			
+			self.ed.delete_selected_text()						
 			return True		
 
 		text = self.ed.buffer.lines[self.ed.curpos.y]
@@ -230,7 +230,6 @@ class EditorKeyHandler:
 			self.ed.buffer.lines[self.ed.curpos.y] = left + right
 			self.ed.curpos.x -= 1		
 		
-		self.ed.save_status = False
 		return True
 
 	# handles HOME and END keys
@@ -289,7 +288,6 @@ class EditorKeyHandler:
 				beep()
 				return False
 		
-		self.ed.save_status = False
 		return True
 		
 	# handles ENTER / Ctrl+J
@@ -311,7 +309,7 @@ class EditorKeyHandler:
 		
 		self.ed.curpos.y += 1
 		self.ed.curpos.x = len(whitespaces)
-		self.ed.save_status = False
+		
 		return True
 			
 	# handles printable characters in the charset
@@ -340,8 +338,7 @@ class EditorKeyHandler:
 		left = text[0:col] if col > 0 else ""
 		right = text[col:] if len(text) > 0 else ""
 		self.ed.buffer.lines[self.ed.curpos.y] = left + sch + right
-		self.ed.curpos.x += 1
-		self.ed.save_status = False
+		self.ed.curpos.x += 1		
 
 		return (True if sch in self.ed.separators else False)
 			
@@ -439,13 +436,12 @@ class EditorKeyHandler:
 			self.ed.curpos = copy.copy(hdata.curpos)
 
 	def handle_save(self):
-		if(not self.ed.save_status):
-			if(self.ed.has_been_allotted_file):
-				self.ed.save_to_file()
+		log("Ctrl+S pressed")
+		if(not self.ed.buffer.save_status):
+			if(self.ed.buffer.filename != None):
+				self.ed.buffer.write_to_disk()
 			else:
-				self.ed.parent.app.dialog_handler.invoke_file_save_as()
-		
-		if(self.ed.save_status): self.ed.parent.reload_in_all(self.ed.filename)
+				self.ed.parent.app.dialog_handler.invoke_file_save_as(self.ed.buffer)
 
 	def handle_select_all(self):
 		nlen = len(self.ed.buffer.lines)
@@ -461,13 +457,16 @@ class EditorKeyHandler:
 		clipboard.copy(sel_text)
 
 	def handle_cut(self):
-		if(not self.ed.selection_mode): return
+		if(not self.ed.selection_mode): return False
 		del_text = self.ed.delete_selected_text()
 		clipboard.copy(del_text)
-		self.ed.save_status = False
-		
+		return True
+			
 	def handle_paste(self):
-		data = clipboard.paste().splitlines()
+		whole = clipboard.paste()
+		if(len(whole) == 0): return False
+
+		data = whole.splitlines()
 		if(self.ed.selection_mode): self.ed.delete_selected_text()
 		
 		n = len(data)
@@ -491,4 +490,4 @@ class EditorKeyHandler:
 			for i in range(n-2, 0, -1):
 				self.ed.buffer.lines.insert(row+1, data[i])
 
-		self.ed.save_status = False
+		return True

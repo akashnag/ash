@@ -18,9 +18,9 @@ class TreeView(Widget):
 		self.width = width
 		self.row_count = row_count
 		self.files_list = files_list
-		self.theme = gc(COLOR_FORMFIELD)
-		self.focus_theme = gc(COLOR_FORMFIELD_FOCUSSED)
-		self.sel_blur_theme = gc(COLOR_FORMFIELD_SELECTED_BLURRED)
+		self.theme = gc("formfield")
+		self.focus_theme = gc("formfield-focussed")
+		self.sel_blur_theme = gc("formfield-selection-blurred")
 		self.sel_index = -1
 		self.is_in_focus = False
 		self.repaint()

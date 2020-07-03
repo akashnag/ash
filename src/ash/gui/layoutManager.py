@@ -35,26 +35,26 @@ class LayoutManager:
 		if(self.win.layout_type == LAYOUT_SINGLE): 
 			return		
 		elif(self.win.layout_type == LAYOUT_VERTICAL_2):
-			self.win.addstr(self.win.height//2, 0, BORDER_HORIZONTAL * self.win.width, gc(COLOR_DIVISION))
+			self.win.addstr(self.win.height//2, 0, BORDER_HORIZONTAL * self.win.width, gc("inner-border"))
 		elif(self.win.layout_type == LAYOUT_HORIZONTAL_2):
 			for row in range(1, self.win.height-1):
-				self.win.addstr(row, self.win.width//2, BORDER_VERTICAL, gc(COLOR_DIVISION))
+				self.win.addstr(row, self.win.width//2, BORDER_VERTICAL, gc("inner-border"))
 		elif(self.win.layout_type == LAYOUT_HORIZONTAL_3):
 			for row in range(1, self.win.height-1):
-				self.win.addstr(row, self.win.width//3, BORDER_VERTICAL, gc(COLOR_DIVISION))
-				self.win.addstr(row, (self.win.width*2)//3, BORDER_VERTICAL, gc(COLOR_DIVISION))
+				self.win.addstr(row, self.win.width//3, BORDER_VERTICAL, gc("inner-border"))
+				self.win.addstr(row, (self.win.width*2)//3, BORDER_VERTICAL, gc("inner-border"))
 		elif(self.win.layout_type == LAYOUT_HORIZONTAL_4):
 			for row in range(1, self.win.height-1):
-				self.win.addstr(row, self.win.width//4, BORDER_VERTICAL, gc(COLOR_DIVISION))
-				self.win.addstr(row, self.win.width//2, BORDER_VERTICAL, gc(COLOR_DIVISION))
-				self.win.addstr(row, (self.win.width*3)//4, BORDER_VERTICAL, gc(COLOR_DIVISION))
+				self.win.addstr(row, self.win.width//4, BORDER_VERTICAL, gc("inner-border"))
+				self.win.addstr(row, self.win.width//2, BORDER_VERTICAL, gc("inner-border"))
+				self.win.addstr(row, (self.win.width*3)//4, BORDER_VERTICAL, gc("inner-border"))
 		elif(self.win.layout_type == LAYOUT_2X2):
 			for row in range(1, self.win.height//2):
-				self.win.addstr(row, self.win.width//2, BORDER_VERTICAL, gc(COLOR_DIVISION))
-			self.win.addstr(self.win.height//2, 0, BORDER_HORIZONTAL * self.win.width, gc(COLOR_DIVISION))
-			self.win.addstr(self.win.height//2, self.win.width//2, BORDER_CROSSROADS, gc(COLOR_DIVISION))
+				self.win.addstr(row, self.win.width//2, BORDER_VERTICAL, gc("inner-border"))
+			self.win.addstr(self.win.height//2, 0, BORDER_HORIZONTAL * self.win.width, gc("inner-border"))
+			self.win.addstr(self.win.height//2, self.win.width//2, BORDER_CROSSROADS, gc("inner-border"))
 			for row in range(self.win.height//2 + 1, self.win.height-1):
-				self.win.addstr(row, self.win.width//2, BORDER_VERTICAL, gc(COLOR_DIVISION))
+				self.win.addstr(row, self.win.width//2, BORDER_VERTICAL, gc("inner-border"))
 		elif(self.win.layout_type == LAYOUT_2X3):
 			pass
 		elif(self.win.layout_type == LAYOUT_1L_2VR):
@@ -121,7 +121,7 @@ class LayoutManager:
 		return (y, x, w)
 		
 	def __addstr(self, y, x, w):
-		self.win.win.addstr(y, x, "No files selected".center(w), gc(COLOR_DISABLED))
+		self.win.win.addstr(y, x, "No files selected".center(w), gc("disabled"))
 
 	def get_dimensions(self, layout_type):
 		if(self.win.layout_type == LAYOUT_SINGLE): 

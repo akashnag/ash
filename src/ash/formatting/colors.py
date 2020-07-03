@@ -6,83 +6,155 @@
 # This module handles all color formatting for the application
 
 from ash.formatting import *
+import os
 
-# list of color combinations
-COLOR_DIMWHITE_ON_DARKGRAY	= 1
-COLOR_WHITE_ON_DARKGRAY		= 2
-COLOR_WHITE_ON_LIGHTGRAY	= 3
-COLOR_WHITE_ON_BLUE			= 4
-COLOR_BLUE_ON_DARKGRAY		= 5
-COLOR_GREEN_ON_DARKGRAY		= 6
-COLOR_LIGHTGRAY_ON_DARKGRAY	= 7
-COLOR_YELLOW_ON_DARKGRAY	= 8
-COLOR_RED_ON_DARKGRAY		= 9
-COLOR_DARKGRAY_ON_YELLOW	= 10
-COLOR_WHITE_ON_RED			= 11
-COLOR_DARKGRAY_ON_DIMWHITE	= 12
-COLOR_DARKGRAY_ON_WHITE		= 13
-COLOR_DARKGRAY_ON_BLUE		= 14
-
-# color aliases
-COLOR_DARKGRAY 						= curses.COLOR_BLACK
-COLOR_WHITE 						= curses.COLOR_WHITE
-COLOR_RED 							= curses.COLOR_RED
-COLOR_GREEN 						= curses.COLOR_GREEN
-COLOR_BLUE 							= curses.COLOR_BLUE
-COLOR_YELLOW 						= curses.COLOR_YELLOW
-COLOR_LIGHTGRAY 					= curses.COLOR_MAGENTA
-COLOR_DIMWHITE 						= curses.COLOR_CYAN
-
-# element color aliases
-COLOR_DEFAULT 						= COLOR_DIMWHITE_ON_DARKGRAY
-COLOR_TITLEBAR						= COLOR_WHITE_ON_DARKGRAY
-COLOR_BORDER						= COLOR_WHITE_ON_DARKGRAY
-COLOR_DIALOG_PROMPT					= COLOR_WHITE_ON_DARKGRAY
-COLOR_STATUSBAR						= COLOR_DARKGRAY_ON_WHITE
-COLOR_KEYWORD						= COLOR_BLUE_ON_DARKGRAY
-COLOR_COMMENT						= COLOR_GREEN_ON_DARKGRAY
-COLOR_LINENUMBER					= COLOR_LIGHTGRAY_ON_DARKGRAY
-COLOR_HIGHLIGHTED_LINENUMBER		= COLOR_YELLOW_ON_DARKGRAY
-COLOR_STRING						= COLOR_YELLOW_ON_DARKGRAY
-COLOR_ERROR							= COLOR_RED_ON_DARKGRAY
-COLOR_SELECTION						= COLOR_DARKGRAY_ON_YELLOW
-COLOR_FORMFIELD						= COLOR_BLUE_ON_DARKGRAY
-COLOR_FORMFIELD_FOCUSSED			= COLOR_DARKGRAY_ON_BLUE
-COLOR_FORMFIELD_SELECTED_BLURRED	= COLOR_DARKGRAY_ON_DIMWHITE
-COLOR_MSGBOX						= COLOR_WHITE_ON_RED
-COLOR_DIVISION						= COLOR_LIGHTGRAY_ON_DARKGRAY
-COLOR_DISABLED						= COLOR_LIGHTGRAY_ON_DARKGRAY
+# name of the config file
+CONFIG_FILE					= os.path.expanduser("~/.ashrc")
 
 # <----------------------- color formatting functions ----------------->
+def get_default_colors():
+	colors = dict()
+	element_colors = dict()
 
-# initializes the color palette and color combinations
-def init_colors():
-	curses.init_color(0, 140, 140, 140)
-		
-	curses.init_color(curses.COLOR_BLACK, 140, 140, 140)		# dark gray
-	curses.init_color(curses.COLOR_WHITE, 999, 999, 999)		# bright white
-	curses.init_color(curses.COLOR_RED, 999, 0, 0)
-	curses.init_color(curses.COLOR_GREEN, 0, 999, 0)
-	curses.init_color(curses.COLOR_BLUE, 0, 700, 999)			# sweet blue
-	curses.init_color(curses.COLOR_YELLOW, 999, 999, 0)
-	curses.init_color(COLOR_LIGHTGRAY, 426, 426, 426)
-	curses.init_color(COLOR_DIMWHITE, 855, 855, 855)
+	colors["darkgray"] = (113, 113, 113)
+	colors["lightgray"] = (516, 516, 516)
+	colors["dimwhite"] = (825, 825, 825)
+	colors["white"] = (999, 999, 999)
+	colors["red"] = (999, 0, 0)
+	colors["green"] = (410, 594, 328)
+	colors["blue"] = (332, 605, 832)
+	colors["yellow"] = (910, 691, 51)
+	colors["cyan"] = (301, 781, 684)
+	colors["magenta"] = (999, 0, 999)
+	colors["purple"] = (766, 520, 746)
+	colors["orange"] = (801, 562, 465)
 	
-	curses.init_pair(COLOR_DIMWHITE_ON_DARKGRAY, COLOR_DIMWHITE, COLOR_DARKGRAY)
-	curses.init_pair(COLOR_WHITE_ON_DARKGRAY, COLOR_WHITE, COLOR_DARKGRAY)
-	curses.init_pair(COLOR_WHITE_ON_LIGHTGRAY, COLOR_WHITE, COLOR_LIGHTGRAY)
-	curses.init_pair(COLOR_WHITE_ON_BLUE, COLOR_WHITE, COLOR_BLUE)
-	curses.init_pair(COLOR_BLUE_ON_DARKGRAY, COLOR_BLUE, COLOR_DARKGRAY)
-	curses.init_pair(COLOR_GREEN_ON_DARKGRAY, COLOR_GREEN, COLOR_DARKGRAY)
-	curses.init_pair(COLOR_LIGHTGRAY_ON_DARKGRAY, COLOR_LIGHTGRAY, COLOR_DARKGRAY)
-	curses.init_pair(COLOR_YELLOW_ON_DARKGRAY, COLOR_YELLOW, COLOR_DARKGRAY)
-	curses.init_pair(COLOR_RED_ON_DARKGRAY, COLOR_RED, COLOR_DARKGRAY)
-	curses.init_pair(COLOR_DARKGRAY_ON_YELLOW, COLOR_DARKGRAY, COLOR_YELLOW)
-	curses.init_pair(COLOR_WHITE_ON_RED, COLOR_WHITE, COLOR_RED)
-	curses.init_pair(COLOR_DARKGRAY_ON_DIMWHITE, COLOR_DARKGRAY, COLOR_DIMWHITE)
-	curses.init_pair(COLOR_DARKGRAY_ON_WHITE, COLOR_DARKGRAY, COLOR_WHITE)
-	curses.init_pair(COLOR_DARKGRAY_ON_BLUE, COLOR_DARKGRAY, COLOR_BLUE)
+	element_colors["titlebar"] = ("white", "darkgray")
+	element_colors["outer-border"] = ("white", "darkgray")
+	element_colors["line-number"] = ("lightgray", "darkgray")
+	element_colors["highlighted-line-number"] = ("yellow", "darkgray")
+	element_colors["selection"] = ("darkgray", "yellow")
+	element_colors["formfield"] = ("cyan", "darkgray")
+	element_colors["formfield-focussed"] = ("darkgray", "cyan")
+	element_colors["formfield-selection-blurred"] = ("darkgray", "dimwhite")
+	element_colors["inner-border"] = ("lightgray", "darkgray")
+	element_colors["messagebox-border"] = ("white", "red")
+	element_colors["messagebox-background"] = ("white", "red")
+	element_colors["disabled"] = ("lightgray", "darkgray")
+
+	element_colors["status-0"] = ("darkgray", "white")
+	element_colors["status-1"] = ("darkgray", "white")
+	element_colors["status-2"] = ("darkgray", "white")
+	element_colors["status-3"] = ("darkgray", "white")
+	element_colors["status-4"] = ("darkgray", "white")
+	element_colors["status-5"] = ("darkgray", "white")
+	element_colors["status-6"] = ("darkgray", "white")
+	element_colors["status-7"] = ("darkgray", "white")
+	
+	element_colors["global-default"] = ("dimwhite", "darkgray")
+	element_colors["global-keyword"] = ("blue", "darkgray")
+	element_colors["global-comment"] = ("green", "darkgray")
+	element_colors["global-string"] = ("orange", "darkgray")
+	element_colors["global-error"] = ("red", "darkgray")
+	element_colors["global-function"] = ("yellow", "darkgray")
+	element_colors["global-variable"] = ("dimwhite", "darkgray")
+	element_colors["global-literal"] = ("dimwhite", "darkgray")
+
+	return (colors, element_colors)
+
+def get_color_index(color_name):
+	colnames = ( "darkgray", "lightgray", "dimwhite", "white", 
+				 "red", "green", "blue", "yellow", "cyan", "magenta",
+				 "purple", "orange" )
+
+	try:
+		return colnames.index(color_name)
+	except:
+		return -1
+
+def get_element_color_index(element_name):
+	element_names = ( 	"null",
+						"titlebar", "outer-border", "line-number", "highlighted-line-number",
+						"selection", "formfield", "formfield-focussed", "formfield-selection-blurred",
+						"inner-border", "messagebox-border", "messagebox-background", "disabled",
+						"status-0", "status-1",	"status-2", "status-3",	"status-4", "status-5",
+						"status-6", "status-7", "global-default", "global-keyword", "global-comment",
+						"global-string", "global-error", "global-function", "global-variable",
+						"global-literal" ) 
+
+	try:
+		return element_names.index(element_name)
+	except:
+		return -1
+
+def write_to_config(colors, element_colors):
+	configFile = open(CONFIG_FILE, "wt")
+	for name, rgb in colors.items():
+		configFile.write("color-" + name + " = rgb(" + str(rgb[0]) + ", " + str(rgb[1]) + ", " + str(rgb[2]) + ")\n")
+	for name, pair in element_colors.items():
+		configFile.write("color-" + name + " = (" + pair[0] + ", " + pair[1] + ")\n")
+	configFile.close()
+
+def load_config(colors = None, element_colors = None):
+	if(not os.path.isfile(CONFIG_FILE)):
+		return (colors, element_colors)
+	
+	if(colors == None): colors = dict()
+	if(element_colors == None): element_colors = dict()
+
+	configFile = open(CONFIG_FILE, "rt")
+	config = configFile.read().splitlines()
+	configFile.close()
+
+	for line in config:
+		# format = magenta=rgb(113,154,132)
+		line = line.strip().lower().replace(" ", "")
+		pos1 = line.find("=rgb(")
+		pos2 = line.find("=(")
+
+		if(not line.endswith(")") or not line.startswith("color-")): continue
+		if(pos1 == -1 and pos2 == -1): continue
+
+		if(pos1 > -1):
+			triplet = line[pos1+5:-1].split(",")
+			if(len(triplet) != 3): continue
+			rgb = ( round(int(triplet[0]) * 3.90625), round(int(triplet[1]) * 3.90625), round(int(triplet[2]) * 3.90625) )
+			colname = line[6:pos1]
+			colors[colname] = rgb
+		elif(pos2 > -1):
+			colname = line[6:pos2]
+			pair = line[pos2+2:-1].split(",")
+			if(len(pair) != 2): continue
+			element_colors[colname] = (pair[0], pair[1])
+
+	return (colors, element_colors)
+
+def init_colors():
+	colors, element_colors = get_default_colors()
+
+	if(not os.path.isfile(CONFIG_FILE)):
+		write_to_config(colors, element_colors)
+		set_colors(colors, element_colors)
+	else:
+		colors, element_colors = load_config(colors, element_colors)
+		set_colors(colors, element_colors)
+
+def set_colors(colors, element_colors):
+	for colname, rgb in colors.items():
+		index = get_color_index(colname)
+		if(index < 0): continue
+		curses.init_color(index, rgb[0], rgb[1], rgb[2])
+
+	for elemname, pair in element_colors.items():
+		index = get_element_color_index(elemname)
+		fgindex = get_color_index(pair[0])
+		bgindex = get_color_index(pair[1])
+		if(index < 0 or fgindex < 0 or bgindex < 0): continue
+		try:
+			curses.init_pair(index, fgindex, bgindex)
+		except:
+			raise(Exception(str(index), str(fgindex), str(bgindex)))
 
 # retrieve a curses.color_pair() object for a given color combination
-def gc(cp = COLOR_DEFAULT):
-	return curses.color_pair(cp)
+def gc(cp = "global-default"):
+	return curses.color_pair(get_element_color_index(cp))

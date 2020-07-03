@@ -15,13 +15,13 @@ class TextField(Widget):
 		self.y = y
 		self.x = x
 		self.width = width
-		self.theme = gc(COLOR_FORMFIELD)
+		self.theme = gc("formfield")
 		self.text = initial_text
 		self.curpos = len(self.text)
 		self.parent = parent
 		self.numeric = numeric
 		self.maxlen = maxlen
-		self.focus_theme = gc(COLOR_FORMFIELD_FOCUSSED)
+		self.focus_theme = gc("formfield-focussed")
 		self.is_in_focus = False
 
 		self.charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"

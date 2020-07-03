@@ -97,65 +97,28 @@ class DialogHandler:
 
 	def invoke_quit(self):
 		mw = self.app.main_window
+		lm = mw.layout_manager
 		aed = mw.get_active_editor()
 
-		# Scenarios:
-		# 1. Active editor is saved: close editor (maintain buffer)
-		# 2. Active editor is unsaved: check if file-allotted or not
-		#		(a) if no file allotted: ask to be saved first, before closing
-		#		(b)	if file allotted: close editor (maintain buffer)
-		# 3. No active editor: check if other editors exist:
-		# 		(a) No other editors exist: check if unsaved files exist
-		# 			(i) no unsaved files exist: quit application
-		#			(ii) unsaved files exist: ask user (Yes: save-all, No: discard-all, Cancel: dont-quit)
-		#			(iii) unsaved buffers/files exist: same as 3(a)(ii)
-		# 		(b) Other editors exist: inform user that other editors exist
-
-		if(aed == None):
-			# case 3: no active editor exists
-			n = len(mw.editors)
-			other_editors_exist = False
-			for i in range(n):
-				if(mw.editors[i] != None):
-					other_editors_exist = True
-					break
-			
-			if(other_editors_exist):
-				# case 3(b): other editors exist
-				self.app.show_error("Close all windows to quit application or use Ctrl+@ to force-quit")
+		unsaved_count = self.app.buffers.get_true_unsaved_count()
+		editor_count = mw.get_visible_editor_count()
+		
+		if(unsaved_count == 0):
+			if(editor_count <= 1):
+				mw.hide()
 			else:
-				# case 3(a): no other editors exist
-				unsaved_count = self.app.buffers.get_unsaved_count()
-				if(unsaved_count == 0):
-					# case 3(a)[i]: all buffers saved: quit app
-					mw.hide()
-				elif(self.app.buffers.can_destroy_after_saving()):
-					# case 3(a)[ii]: some buffers are unsaved: confirm with user
-					response = self.app.ask_question("SAVE/DISCARD ALL", "One or more unsaved files exist, choose yes(save-all) / no(discard-all) / cancel(dont-quit)", True)
-					if(response == None): return
-					if(response):
-						self.app.buffers.write_all()
-					else:
-						self.app.buffers.destroy()
-					
-					mw.hide()
-					return
-				else:
-					# case 3(a)[iii]: some buffers are unsaved and don't even have a filename
-					response = self.app.ask_question("UNSAVED BUFFERS EXIST", "One or more unsaved buffers exist, you can:\nChoose YES to save all files and discard all unsaved buffers\nChoose NO to discard all changes (files and buffers)\nChoose CANCEL to stay back.", True)
-					if(response == None): return
-					if(response):
-						self.app.buffers.write_all_wherever_possible()
-					else:
-						self.app.buffers.destroy()
-					
-					mw.hide()
-					return					
+				mw.close_active_editor()
 		else:
-			# close active-editor: don't worry about saving changes or asking user
-			mw.close_active_editor()
+			if(aed != None): 
+				mw.close_active_editor()
+				return
 			
-
+			response = self.app.ask_question("SAVE/DISCARD ALL", "One or more unsaved files exist, choose:\nYes: save all filed-changes and quit\nNo: discard all unsaved changes and quit\nCancel: don't quit", True)
+			if(response == None): return
+			if(response): self.app.buffers.write_all_wherever_possible()
+			
+			mw.hide()
+			
 	# <--------------------------- Set Preferences ------------------------------>
 
 	def invoke_set_preferences(self):

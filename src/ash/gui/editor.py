@@ -55,7 +55,6 @@ class Editor(Widget):
 		self.hard_wrap = False
 		
 		# set up default color themes
-		self.set_theme()
 		self.set_comment_symbol(None, None, None)
 		self.is_in_focus = False
 
@@ -145,16 +144,6 @@ class Editor(Widget):
 	# returns the current cursor position
 	def get_cursor_position(self):
 		return str(self.curpos)
-
-	# set general text theme
-	def set_theme(self):
-		self.text_theme = gc(COLOR_DEFAULT)
-		self.selection_theme = gc(COLOR_SELECTION)
-		self.line_number_theme = gc(COLOR_LINENUMBER)
-		self.highlighted_line_number_theme = gc(COLOR_HIGHLIGHTED_LINENUMBER)
-		self.keyword_theme = gc(COLOR_KEYWORD)
-		self.string_theme = gc(COLOR_STRING)
-		self.comment_theme = gc(COLOR_COMMENT)
 
 	# set programming-language comment symbol
 	def set_comment_symbol(self, single_line_comment, multiline_comment_start, multiline_comment_end):
@@ -263,19 +252,19 @@ class Editor(Widget):
 
 		if(start.y == end.y):						
 			# print in 3 parts: before start, between start & end, after end
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext[0:vstartx], self.text_theme)
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vstartx, vtext[vstartx:vendx], self.selection_theme)
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vendx, vtext[vendx:], self.text_theme)
+			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext[0:vstartx], gc("global-default"))
+			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vstartx, vtext[vstartx:vendx], gc("selection"))
+			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vendx, vtext[vendx:], gc("global-default"))
 		elif(line_index == start.y):
 			# print in 2 parts: before start, after start
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext[0:vstartx], self.text_theme)
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vstartx, vtext[vstartx:], self.selection_theme)
+			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext[0:vstartx], gc("global-default"))
+			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vstartx, vtext[vstartx:], gc("selection"))
 		elif(line_index == end.y):
 			# print in 2 parts: before end, after end
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext[0:vendx], self.selection_theme)
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vendx, vtext[vendx:], self.text_theme)
+			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext[0:vendx], gc("selection"))
+			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vendx, vtext[vendx:], gc("global-default"))
 		else:
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext, self.selection_theme)
+			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext, gc("selection"))
 
 	# returns the vertical portion of the editor to be displayed
 	def determine_vertical_visibility(self):
@@ -349,12 +338,12 @@ class Editor(Widget):
 					if(len(line_number) > 0): last_line_number_printed = int(line_number)
 					
 					if(should_highlight(self.rendered_curpos.y, i, self.cum_sub_line_lengths, last_line_number_printed)):
-						line_theme = self.highlighted_line_number_theme
+						line_theme = gc("highlighted-line-number")
 					else:
-						line_theme = self.line_number_theme
+						line_theme = gc("line-number")
 				else:
 					line_number = str(i + 1)				
-					line_theme = self.highlighted_line_number_theme if self.rendered_curpos.y == i else self.line_number_theme
+					line_theme = gc("highlighted-line-number") if self.rendered_curpos.y == i else gc("line-number")
 				
 				self.parent.addstr(self.y + i - self.line_start, self.x, line_number.rjust(self.line_number_width), line_theme)
 			
@@ -367,13 +356,15 @@ class Editor(Widget):
 				if(self.is_in_selection_rendered(i)):
 					self.print_selection(i)
 				else:
-					self.parent.addstr(self.y + i - self.line_start, self.x + self.line_number_width + 1, vtext, self.text_theme)
+					self.parent.addstr(self.y + i - self.line_start, self.x + self.line_number_width + 1, vtext, gc("global-default"))
 		
 		# reposition the cursor
 		try:
-			if(self.is_in_focus): self.parent.move(self.y + curpos_row, self.x + self.line_number_width + 1 + curpos_col)
+			if(self.is_in_focus):
+				self.parent.move(self.y + curpos_row, self.x + self.line_number_width + 1 + curpos_col)
 		except:
-			self.parent.addstr(0,0,str(self.y + curpos_row)+","+str(self.x + self.line_number_width + 1 + curpos_col),gc())
+			pass
+			#self.parent.addstr(0,0,str(self.y + curpos_row)+","+str(self.x + self.line_number_width + 1 + curpos_col),gc())
 		
 	# <-------------------------------------------------------------------------------------->
 

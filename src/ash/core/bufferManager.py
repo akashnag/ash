@@ -131,6 +131,12 @@ class Buffer:
 		else:
 			return self.display_name
 
+	def can_destroy(self):
+		if(self.save_status): return True
+		if(self.filename != None): return False
+		if(self.is_empty()): return True
+		return False
+
 	# <------------------- private functions ---------------------->
 	def make_backup(self):
 		if(self.backup_file == None): return
@@ -221,22 +227,32 @@ class BufferManager:
 			if(not buffer.save_status): count += 1
 		return count
 
+	def get_unsaved_file_count(self):
+		count = 0
+		for bid, buffer in self.buffers.items():
+			if(buffer.filename != None and not buffer.save_status): count += 1
+		return count
+
+	def get_true_unsaved_count(self):
+		count = 0
+		for bid, buffer in self.buffers.items():
+			if(not buffer.save_status):
+				if(buffer.filename != None or not buffer.is_empty()): count += 1
+		return count
+
 	def can_destroy_after_saving(self):
 		for bid, buffer in self.buffers.items():
 			if(buffer.filename != None and not buffer.is_empty()): return False
 		return True
 
 	def write_all_wherever_possible(self):
-		try:
-			self.write_all()
-		except:
-			pass
-
-	def write_all(self):
+		self.write_all(True)
+						
+	def write_all(self, ignore_errors=False):
 		for bid, buffer in self.buffers.items():
 			if(not buffer.save_status):
 				if(buffer.filename == None):
-					raise(Exception("Error 4: buffermanager.write_all()"))
+					if(not ignore_errors): raise(Exception("Error 4: buffermanager.write_all()"))
 				else:
 					buffer.write_to_disk()
 

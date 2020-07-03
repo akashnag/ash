@@ -14,7 +14,7 @@ class ModalDialog(Window):
 	def __init__(self, parent, y, x, height, width, title, handler_func):
 		super().__init__(y, x, height, width, title)
 		self.parent = parent
-		self.theme = gc(COLOR_BORDER)
+		self.theme = gc("outer-border")
 		self.handler_func = handler_func
 		self.win = None
 

@@ -117,7 +117,7 @@ class TopLevelWindow(Window):
 		self.status.set(4, file_size)		
 		self.status.set(5, unsaved_file_count)
 		self.status.set(6, tab_size)
-		self.status.set(7, cursor_position)
+		self.status.set(7, cursor_position, "right")
 				
 		if(aed != None):
 			self.set_title(self.app.get_app_title(aed))
@@ -158,15 +158,15 @@ class TopLevelWindow(Window):
 		self.layout_manager.readjust()
 		self.win.clear()
 
-		if(self.status != None): self.win.addstr(self.height-1, 0, str(self.status), gc(COLOR_STATUSBAR))
+		if(self.status != None): self.status.repaint(self.win, self.width-1, self.height-1, 0)
 		
 		if(len(self.title) == 0):
-			self.win.addstr(0, 0, self.app_name.center(self.width), curses.A_BOLD | gc(COLOR_TITLEBAR))
+			self.win.addstr(0, 0, self.app_name.center(self.width), curses.A_BOLD | gc("titlebar"))
 		else:
 			title_text = self.title + " - " + self.app_name		
 			ts = (self.width - len(title_text)) // 2
-			self.win.addstr(0, ts, self.title + " - ", gc(COLOR_TITLEBAR))
-			self.win.addstr(0, ts + len(self.title + " - "), self.app_name, curses.A_BOLD | gc(COLOR_TITLEBAR))
+			self.win.addstr(0, ts, self.title + " - ", gc("titlebar"))
+			self.win.addstr(0, ts + len(self.title + " - "), self.app_name, curses.A_BOLD | gc("titlebar"))
 
 		self.layout_manager.draw_layout_borders()
 		self.layout_manager.repaint_editors()
@@ -179,3 +179,9 @@ class TopLevelWindow(Window):
 		for i in range(n):
 			if(i != barring and self.editors[i] == None): return i		
 		return -1
+
+	def get_visible_editor_count(self):
+		count = 0
+		for i in range(len(self.editors)):
+			if(self.editors[i] != None): count += 1
+		return count

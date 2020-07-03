@@ -48,7 +48,7 @@ class Window:
 			if(self.win != None): self.win.addstr(y, x, s, theme)
 		except:
 			pass
-			#self.win.addstr(0, 0, "ERROR: " + str(self.get_height()) + ", " + str(self.get_width()) + ", " + str(y) + ", " + str(x) + ", " + str(len(s)), gc(COLOR_TITLEBAR))
+			#self.win.addstr(0, 0, "ERROR: " + str(self.get_height()) + ", " + str(self.get_width()) + ", " + str(y) + ", " + str(x) + ", " + str(len(s)), gc("titlebar"))
 
 	# interface to curses-window.move()
 	def move(self, newy, newx):

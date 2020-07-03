@@ -16,7 +16,7 @@ class FindReplaceDialog(Window):
 		super().__init__(y, x, (7 if replace else 5), 30, ("FIND AND REPLACE" if replace else "FIND"))
 		self.ed = ed
 		self.parent = parent
-		self.theme = gc(COLOR_BORDER)
+		self.theme = gc("outer-border")
 		self.win = None
 		self.text = str(self.ed)
 

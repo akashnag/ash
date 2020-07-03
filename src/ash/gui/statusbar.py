@@ -6,6 +6,7 @@
 # This module implements the StatusBar widget
 
 from ash.gui import *
+from ash.formatting.colors import *
 
 class StatusBar(Widget):
 	def __init__(self, parent, section_widths):
@@ -13,10 +14,12 @@ class StatusBar(Widget):
 		self.parent = parent
 		self.section_widths = section_widths
 		self.sections = [ "" for i in range(len(section_widths)) ]
+		self.alignments = [ "left" for i in range(len(section_widths)) ]
 
 	# set status text for a given section
-	def set(self, section_id, text):
+	def set(self, section_id, text, alignment = "left"):
 		self.sections[section_id] = text
+		self.alignments[section_id] = alignment
 
 	# returns the status text of a given section
 	def get(self, section_id):
@@ -46,3 +49,28 @@ class StatusBar(Widget):
 			return str[0:w]
 		else:
 			return str + (" " * (w - len(str)))
+
+	def repaint(self, win, width, y, x):				# called from TopLevelWindow
+		n = len(self.sections)
+
+		# compute the total width of all sections whose widths are specified
+		total = 0
+		for i in range(n):
+			w = self.section_widths[i]
+			if(w > 0): total += w
+
+		cumw = 0
+		for i in range(n):
+			w = self.section_widths[i]
+			if(w < 0): w = width - total
+			s = " " + self.sections[i] + " "
+
+			if(self.alignments[i] == "left"):
+				s = s.ljust(w)
+			elif(self.alignments[i] == "right"):
+				s = s.center(w)
+			elif(self.alignments[i] == "center"):
+				s = s.rjust(w)
+
+			win.addstr(y, x + cumw, s, gc("status-" + str(i)))
+			cumw += w

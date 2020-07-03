@@ -140,7 +140,7 @@ class AshEditorApp:
 	
 	# called on app_exit
 	def __destroy(self):
-		pass
+		self.buffers.destroy()
 
 	# primary key handler to receive all key combinations from TopLevelWindow
 	def main_key_handler(self, ch):

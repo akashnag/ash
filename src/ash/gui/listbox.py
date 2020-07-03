@@ -20,9 +20,9 @@ class ListBox(Widget):
 		self.placeholder_text = placeholder_text
 		self.items = list()
 		self.tags = list()
-		self.theme = gc(COLOR_FORMFIELD)
-		self.focus_theme = gc(COLOR_FORMFIELD_FOCUSSED)
-		self.sel_blur_theme = gc(COLOR_FORMFIELD_SELECTED_BLURRED)
+		self.theme = gc("formfield")
+		self.focus_theme = gc("formfield-focussed")
+		self.sel_blur_theme = gc("formfield-selection-blurred")
 		self.sel_index = -1
 		self.is_in_focus = False
 		self.focussable = False
@@ -94,7 +94,7 @@ class ListBox(Widget):
 			else:				
 				self.parent.addstr(self.y + i - start, self.x, text, self.theme)
 
-		if(count == 0): self.parent.addstr(self.y + (self.row_count // 2), self.x, ("" if self.placeholder_text == None else self.placeholder_text).center(self.width), gc(COLOR_DISABLED))
+		if(count == 0): self.parent.addstr(self.y + (self.row_count // 2), self.x, ("" if self.placeholder_text == None else self.placeholder_text).center(self.width), gc("disabled"))
 	
 	# handle key presses
 	def perform_action(self, ch):

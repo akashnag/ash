@@ -15,8 +15,8 @@ class CheckBox(Widget):
 		self.parent = parent
 		self.y = y
 		self.x = x
-		self.theme = gc(COLOR_FORMFIELD)
-		self.focus_theme = gc(COLOR_FORMFIELD_FOCUSSED)
+		self.theme = gc("formfield")
+		self.focus_theme = gc("formfield-focussed")
 		self.text = text
 		self.is_in_focus = False
 		self.checked = False

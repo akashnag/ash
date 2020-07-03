@@ -29,7 +29,8 @@ class MessageBox(Window):
 		super().__init__(y, x, msg_lines + 5, msg_len + 4, title)
 		self.type = type
 		self.parent = parent.stdscr
-		self.theme = gc(COLOR_MSGBOX)
+		self.border_theme = gc("messagebox-border")
+		self.theme = gc("messagebox-background")
 		self.message = message
 		self.win = None
 
@@ -68,7 +69,7 @@ class MessageBox(Window):
 		if(self.win == None): return
 
 		self.win.clear()
-		self.win.attron(self.theme)
+		self.win.attron(self.border_theme)
 		self.win.border()
 		self.win.addstr(2, 0, BORDER_SPLIT_RIGHT, self.theme)
 		self.win.addstr(2, self.width-1, BORDER_SPLIT_LEFT, self.theme)

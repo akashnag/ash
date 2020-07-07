@@ -274,14 +274,15 @@ class Editor(Widget):
 		else:
 			self.parent.addstr(offset_y, offset_x, vtext, gc("selection"))
 		
-		if(self.is_in_focus and offset_y == self.vcurpos[0] and self.vcurpos[1] >= offset_x and self.vcurpos[1] <= offset_x + len(vtext)):
+		if(offset_y == self.vcurpos[0] and self.vcurpos[1] >= offset_x and self.vcurpos[1] <= offset_x + len(vtext)):
 			char_pos = self.vcurpos[1] - offset_x
 			if(char_pos >= len(vtext)):
 				char_under_cursor = " "
 			else:
 				char_under_cursor = vtext[char_pos]
-			self.parent.addstr(offset_y, self.vcurpos[1], char_under_cursor, gc("cursor"))
-
+			
+			self.parent.addstr(offset_y, self.vcurpos[1], char_under_cursor, gc("cursor") if self.is_in_focus else gc())
+			
 
 	# returns the vertical portion of the editor to be displayed
 	def determine_vertical_visibility(self):
@@ -383,15 +384,15 @@ class Editor(Widget):
 			tlen = len(text)
 
 			self.parent.addstr(offset_y, offset_x, text, style)
-			log("y, x, len(text) = " + str(offset_y) + ", " + str(offset_x) + ", " + str(len(text)))
-
-			if(self.is_in_focus and offset_y == self.vcurpos[0] and self.vcurpos[1] >= offset_x and self.vcurpos[1] <= offset_x + len(text)):
+			
+			if(offset_y == self.vcurpos[0] and self.vcurpos[1] >= offset_x and self.vcurpos[1] <= offset_x + len(text)):
 				char_pos = self.vcurpos[1] - offset_x
 				if(char_pos >= len(text)):
 					char_under_cursor = " "
 				else:
 					char_under_cursor = text[char_pos]
-				self.parent.addstr(offset_y, self.vcurpos[1], char_under_cursor, gc("cursor"))
+			
+				self.parent.addstr(offset_y, self.vcurpos[1], char_under_cursor, gc("cursor") if self.is_in_focus else gc())
 				
 			offset_x += tlen
 		

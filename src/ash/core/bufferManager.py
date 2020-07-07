@@ -12,6 +12,8 @@ from ash.gui.cursorPosition import *
 from ash.core.dataUtils import *
 from ash.core.editHistory import *
 
+from ash.formatting.syntaxHighlighting import *
+
 BACKUP_FREQUENCY_SIZE	= 32		# backup after every 32 bytes changed
 HISTORY_FREQUENCY_SIZE	= 8			# every >=8-character edit can be undone
 
@@ -31,12 +33,14 @@ class Buffer:
 			log("buffer:init()")
 			self.backup_file = None
 			self.display_name = "untitled-" + str(self.id + 1)
+			self.formatter = SyntaxHighlighter(self.display_name)
 		else:
 			if(has_backup):
 				self.backup_file = get_file_directory(self.filename) + "/.ash.b-" + get_file_title(self.filename)
 				self.read_file_from_disk(True)
 			else:
-				self.read_file_from_disk()
+				self.read_file_from_disk()			
+			self.formatter = SyntaxHighlighter(self.filename)
 		
 		self.history = EditHistory(self.lines, CursorPosition(0,0))
 		self.newline = newline
@@ -82,6 +86,8 @@ class Buffer:
 	def write_to_disk(self, filename = None):
 		if(self.filename == None and filename == None): raise(Exception("Error 1: buffer.write_to_disk()"))
 		if(filename != None): self.filename = filename		# update filename even if filename has changed
+
+		self.formatter = SyntaxHighlighter(self.filename)
 		self.display_name = None
 
 		data = self.get_data()
@@ -136,6 +142,9 @@ class Buffer:
 		if(self.filename != None): return False
 		if(self.is_empty()): return True
 		return False
+
+	def format_code(self, text):
+		return self.formatter.format_code(text)
 
 	# <------------------- private functions ---------------------->
 	def make_backup(self):

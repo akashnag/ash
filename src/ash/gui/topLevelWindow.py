@@ -73,8 +73,7 @@ class TopLevelWindow(Window):
 				break
 
 		# repaint
-		self.repaint()
-		if(self.active_editor_index < 0): curses.curs_set(False)
+		self.repaint()		
 
 	def update_status(self):
 		aed = self.get_active_editor()

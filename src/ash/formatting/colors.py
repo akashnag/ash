@@ -6,10 +6,13 @@
 # This module handles all color formatting for the application
 
 from ash.formatting import *
+from ash.core.logger import *
+
 import os
 
 # name of the config file
 CONFIG_FILE					= os.path.expanduser("~/.ashrc")
+MULTIPLIER					= 3.90625
 
 # <----------------------- color formatting functions ----------------->
 def get_default_colors():
@@ -41,6 +44,7 @@ def get_default_colors():
 	element_colors["messagebox-border"] = ("white", "red")
 	element_colors["messagebox-background"] = ("white", "red")
 	element_colors["disabled"] = ("lightgray", "darkgray")
+	element_colors["cursor"] = ("darkgray", "white")
 
 	element_colors["status-0"] = ("darkgray", "white")
 	element_colors["status-1"] = ("darkgray", "white")
@@ -58,8 +62,14 @@ def get_default_colors():
 	element_colors["global-error"] = ("red", "darkgray")
 	element_colors["global-function"] = ("yellow", "darkgray")
 	element_colors["global-variable"] = ("dimwhite", "darkgray")
-	element_colors["global-literal"] = ("dimwhite", "darkgray")
-
+	element_colors["global-punctuation"] = ("dimwhite", "darkgray")
+	element_colors["global-integer"] = ("dimwhite", "darkgray")
+	element_colors["global-float"] = ("dimwhite", "darkgray")
+	element_colors["global-operator"] = ("dimwhite", "darkgray")
+	element_colors["global-builtin-function"] = ("cyan", "darkgray")
+	element_colors["global-builtin-constant"] = ("blue", "darkgray")
+	element_colors["global-namespace"] = ("dimwhite", "darkgray")
+	
 	return (colors, element_colors)
 
 def get_color_index(color_name):
@@ -76,11 +86,13 @@ def get_element_color_index(element_name):
 	element_names = ( 	"null",
 						"titlebar", "outer-border", "line-number", "highlighted-line-number",
 						"selection", "formfield", "formfield-focussed", "formfield-selection-blurred",
-						"inner-border", "messagebox-border", "messagebox-background", "disabled",
+						"inner-border", "messagebox-border", "messagebox-background", "disabled", "cursor",
 						"status-0", "status-1",	"status-2", "status-3",	"status-4", "status-5",
 						"status-6", "status-7", "global-default", "global-keyword", "global-comment",
 						"global-string", "global-error", "global-function", "global-variable",
-						"global-literal" ) 
+						"global-punctuation", "global-integer", "global-float", "global-operator",
+						"global-builtin-function", "global-builtin-constant", "global-namespace"
+					) 
 
 	try:
 		return element_names.index(element_name)
@@ -90,7 +102,7 @@ def get_element_color_index(element_name):
 def write_to_config(colors, element_colors):
 	configFile = open(CONFIG_FILE, "wt")
 	for name, rgb in colors.items():
-		configFile.write("color-" + name + " = rgb(" + str(rgb[0]) + ", " + str(rgb[1]) + ", " + str(rgb[2]) + ")\n")
+		configFile.write("color-" + name + " = rgb(" + str(int(rgb[0] // MULTIPLIER)) + ", " + str(int(rgb[1] // MULTIPLIER)) + ", " + str(int(rgb[2] // MULTIPLIER)) + ")\n")
 	for name, pair in element_colors.items():
 		configFile.write("color-" + name + " = (" + pair[0] + ", " + pair[1] + ")\n")
 	configFile.close()
@@ -118,7 +130,7 @@ def load_config(colors = None, element_colors = None):
 		if(pos1 > -1):
 			triplet = line[pos1+5:-1].split(",")
 			if(len(triplet) != 3): continue
-			rgb = ( round(int(triplet[0]) * 3.90625), round(int(triplet[1]) * 3.90625), round(int(triplet[2]) * 3.90625) )
+			rgb = ( round(int(triplet[0]) * MULTIPLIER), round(int(triplet[1]) * MULTIPLIER), round(int(triplet[2]) * MULTIPLIER) )
 			colname = line[6:pos1]
 			colors[colname] = rgb
 		elif(pos2 > -1):
@@ -144,7 +156,7 @@ def set_colors(colors, element_colors):
 		index = get_color_index(colname)
 		if(index < 0): continue
 		curses.init_color(index, rgb[0], rgb[1], rgb[2])
-
+		
 	for elemname, pair in element_colors.items():
 		index = get_element_color_index(elemname)
 		fgindex = get_color_index(pair[0])

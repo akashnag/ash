@@ -1,6 +1,8 @@
-bin/test.py
+bin/*.py
 src/__pycache__
 src/ash/__pycache__
-src/ash/widgets/__pycache__
-src/ash/widgets/utils/__pycache__
+src/ash/core/__pycache__
+src/ash/formatting/__pycache__
+src/ash/gui/__pycache__
+*.pyc
 *.txt

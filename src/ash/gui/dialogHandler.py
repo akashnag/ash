@@ -268,7 +268,7 @@ class DialogHandler:
 				if(not os.path.isfile(filename)):
 					# file does not exist on disk
 					response = self.app.ask_question("CREATE FILE", "The selected file does not exist, create?")
-					if(not response): -1
+					if(not response): return -1
 
 				sel_buffer = self.app.buffers.get_buffer_by_filename(filename)
 				if(sel_buffer == None):

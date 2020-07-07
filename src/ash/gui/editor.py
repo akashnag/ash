@@ -103,9 +103,17 @@ class Editor(Widget):
 
 		self.sub_lines = list()
 		self.cum_sub_line_lengths = list()
+		self.col_spans = list()
+
 		total = 0
 		for line in self.buffer.lines:
 			wline = wrapped(line, self.width, self.word_wrap, self.hard_wrap)
+
+			cumx = 0
+			for sl in wline:
+				self.col_spans.append( (cumx, cumx + len(sl)-1) )
+				cumx += len(sl)
+
 			self.sub_lines.extend(wline)
 			self.cum_sub_line_lengths.append(total)
 			total += len(wline)
@@ -250,21 +258,30 @@ class Editor(Widget):
 		vstartx = get_horizontal_cursor_position(text, start.x, self.tab_size)
 		vendx = get_horizontal_cursor_position(text, end.x, self.tab_size)
 
-		if(start.y == end.y):						
-			# print in 3 parts: before start, between start & end, after end
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext[0:vstartx], gc("global-default"))
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vstartx, vtext[vstartx:vendx], gc("selection"))
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vendx, vtext[vendx:], gc("global-default"))
-		elif(line_index == start.y):
-			# print in 2 parts: before start, after start
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext[0:vstartx], gc("global-default"))
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vstartx, vtext[vstartx:], gc("selection"))
+		offset_y = self.y + line_index - self.line_start
+		offset_x = self.x + self.line_number_width + 1
+		
+		if(line_index == start.y):
+			if(start.y == end.y):
+				self.print_formatted(line_index, vtext)
+				self.parent.addstr(offset_y, offset_x + vstartx, vtext[vstartx:vendx], gc("selection"))
+			else:
+				self.print_formatted(line_index, vtext)
+				self.parent.addstr(offset_y, offset_x + vstartx, vtext[vstartx:], gc("selection"))
 		elif(line_index == end.y):
-			# print in 2 parts: before end, after end
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext[0:vendx], gc("selection"))
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1 + vendx, vtext[vendx:], gc("global-default"))
+			self.print_formatted(line_index, vtext)
+			self.parent.addstr(offset_y, offset_x, vtext[0:vendx], gc("selection"))			
 		else:
-			self.parent.addstr(self.y + line_index - self.line_start, self.x + self.line_number_width + 1, vtext, gc("selection"))
+			self.parent.addstr(offset_y, offset_x, vtext, gc("selection"))
+		
+		if(self.is_in_focus and offset_y == self.vcurpos[0] and self.vcurpos[1] >= offset_x and self.vcurpos[1] <= offset_x + len(vtext)):
+			char_pos = self.vcurpos[1] - offset_x
+			if(char_pos >= len(vtext)):
+				char_under_cursor = " "
+			else:
+				char_under_cursor = vtext[char_pos]
+			self.parent.addstr(offset_y, self.vcurpos[1], char_under_cursor, gc("cursor"))
+
 
 	# returns the vertical portion of the editor to be displayed
 	def determine_vertical_visibility(self):
@@ -307,8 +324,6 @@ class Editor(Widget):
 		if(self.line_start < 0 or self.line_end <= self.line_start): return
 		if(self.col_start < 0 or self.col_end <= self.col_start): return
 
-		curses.curs_set(self.is_in_focus)
-
 		if(self.word_wrap):
 			self.wrap_all()
 			self.rendered_lines = self.sub_lines
@@ -326,6 +341,8 @@ class Editor(Widget):
 		curpos_row = self.determine_vertical_visibility()
 		curpos_col = self.determine_horizontal_visibility()
 		nlines = len(self.rendered_lines)
+		
+		self.vcurpos = (self.y + curpos_row, self.x + self.line_number_width + 1 + curpos_col)
 		
 		last_line_number_printed = 0
 		for i in range(self.line_start, self.line_end):
@@ -349,22 +366,34 @@ class Editor(Widget):
 			
 			# print the text
 			text = self.rendered_lines[i].expandtabs(self.tab_size)
-
-			if(self.col_start < len(text)):
-				vtext = text[self.col_start:] if self.col_end > len(text) else text[self.col_start:self.col_end]
-				
-				if(self.is_in_selection_rendered(i)):
-					self.print_selection(i)
-				else:
-					self.parent.addstr(self.y + i - self.line_start, self.x + self.line_number_width + 1, vtext, gc("global-default"))
+			vtext = text[self.col_start:] if self.col_end > len(text) else text[self.col_start:self.col_end]
+			if(self.is_in_selection_rendered(i)):
+				self.print_selection(i)
+			else:
+				self.print_formatted(i, vtext)
 		
-		# reposition the cursor
-		try:
-			if(self.is_in_focus):
-				self.parent.move(self.y + curpos_row, self.x + self.line_number_width + 1 + curpos_col)
-		except:
-			pass
-			#self.parent.addstr(0,0,str(self.y + curpos_row)+","+str(self.x + self.line_number_width + 1 + curpos_col),gc())
+	def print_formatted(self, i, vtext, off_y = 0, off_x = 0):
+		format = self.buffer.format_code(vtext)
+		n = len(format)
+		offset_y = self.y + i - self.line_start + off_y
+		offset_x = self.x + self.line_number_width + 1 + off_x
+
+		for i in range(n):
+			index, text, style = format[i]
+			tlen = len(text)
+
+			self.parent.addstr(offset_y, offset_x, text, style)
+			log("y, x, len(text) = " + str(offset_y) + ", " + str(offset_x) + ", " + str(len(text)))
+
+			if(self.is_in_focus and offset_y == self.vcurpos[0] and self.vcurpos[1] >= offset_x and self.vcurpos[1] <= offset_x + len(text)):
+				char_pos = self.vcurpos[1] - offset_x
+				if(char_pos >= len(text)):
+					char_under_cursor = " "
+				else:
+					char_under_cursor = text[char_pos]
+				self.parent.addstr(offset_y, self.vcurpos[1], char_under_cursor, gc("cursor"))
+				
+			offset_x += tlen
 		
 	# <-------------------------------------------------------------------------------------->
 
@@ -434,11 +463,11 @@ class Editor(Widget):
 	# returns the block of leading whitespaces on a given line 
 	def get_leading_whitespaces(self, line_index):
 		return self.utility.get_leading_whitespaces(line_index)
-	
-	# checks if line_index is within the text that was selected
-	def is_in_selection(self, line_index):
-		return self.utility.is_in_selection(line_index)
 
+	# returns the block of leading whitespaces on a given rendered line
+	def get_leading_whitespaces_rendered(self, line_index):
+		return self.utility.get_leading_whitespaces_rendered(line_index)
+		
 	# returns the selection endpoints in the correct order
 	def get_selection_endpoints(self):
 		return self.utility.get_selection_endpoints()

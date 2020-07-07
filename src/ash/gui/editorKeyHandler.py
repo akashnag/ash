@@ -236,14 +236,20 @@ class EditorKeyHandler:
 	def handle_home_end_keys(self, ch):
 		self.ed.selection_mode = False
 
-		if(ch == curses.KEY_HOME):
-			# toggle between beginning of line and beginning of indented-code
-			if(self.ed.curpos.x == 0):
-				self.ed.curpos.x = len(self.ed.get_leading_whitespaces(self.ed.curpos.y))
-			else:
-				self.ed.curpos.x = 0
-		elif(ch == curses.KEY_END):
-			self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
+		if(self.ed.word_wrap):
+			if(ch == curses.KEY_HOME):
+				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][0]
+			elif(ch == curses.KEY_END):
+				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][1]
+		else:
+			if(ch == curses.KEY_HOME):
+				# toggle between beginning of line and beginning of indented-code
+				if(self.ed.curpos.x == 0):
+					self.ed.curpos.x = len(self.ed.get_leading_whitespaces(self.ed.curpos.y))
+				else:
+					self.ed.curpos.x = 0
+			elif(ch == curses.KEY_END):
+				self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
 
 	# handles Shift+Home and Shift+End keys
 	def handle_shift_home_end_keys(self, ch):

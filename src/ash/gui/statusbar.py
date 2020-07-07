@@ -53,23 +53,17 @@ class StatusBar(Widget):
 	def repaint(self, win, width, y, x):				# called from TopLevelWindow
 		n = len(self.sections)
 
-		# compute the total width of all sections whose widths are specified
-		total = 0
-		for i in range(n):
-			w = self.section_widths[i]
-			if(w > 0): total += w
-
 		cumw = 0
 		for i in range(n):
 			w = self.section_widths[i]
-			if(w < 0): w = width - total
+			if(w < 0): w = width - cumw
 			s = " " + self.sections[i] + " "
 
 			if(self.alignments[i] == "left"):
 				s = s.ljust(w)
-			elif(self.alignments[i] == "right"):
-				s = s.center(w)
 			elif(self.alignments[i] == "center"):
+				s = s.center(w)
+			elif(self.alignments[i] == "right"):
 				s = s.rjust(w)
 
 			win.addstr(y, x + cumw, s, gc("status-" + str(i)))

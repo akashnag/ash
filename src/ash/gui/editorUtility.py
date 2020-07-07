@@ -106,9 +106,7 @@ class EditorUtility:
 		else:
 			return False
 
-	# returns the block of leading whitespaces on a given line 
-	def get_leading_whitespaces(self, line_index):
-		text = self.ed.buffer.lines[line_index]
+	def get_leading_whitespaces_from_text(self, text):
 		nlen = len(text)
 		ws = ""
 		for i in range(nlen):
@@ -117,17 +115,15 @@ class EditorUtility:
 			else:
 				break
 		return ws
-	
-	# checks if line_index is within the text that was selected
-	def is_in_selection(self, line_index):
-		if(self.ed.selection_mode):
-			if(is_start_before_end(self.ed.sel_start, self.ed.sel_end)):
-				return(True if (line_index >= self.ed.sel_start.y and line_index <= self.ed.sel_end.y) else False)
-			else:
-				return(True if (line_index >= self.ed.sel_end.y and line_index <= self.ed.sel_start.y) else False)
-		else:
-			return False
 
+	# returns the block of leading whitespaces on a given line 
+	def get_leading_whitespaces(self, line_index):
+		return self.get_leading_whitespaces_from_text(self.ed.buffer.lines[line_index])
+		
+	# returns the block of leading whitespaces on a given rendered line 
+	def get_leading_whitespaces_rendered(self, line_index):
+		return self.get_leading_whitespaces_from_text(self.ed.rendered_lines[line_index])
+		
 	# returns the selection endpoints in the correct order
 	def get_selection_endpoints(self):
 		forward_sel = is_start_before_end(self.ed.sel_start, self.ed.sel_end)

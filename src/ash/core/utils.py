@@ -193,7 +193,7 @@ def get_wrapped_curpos(sublines, x):
 	vpos = -1
 	cpos = x
 	for l in sublines:
-		if(cpos <= len(l)):
+		if(cpos < len(l)):
 			vpos = i
 			break
 		else:
@@ -202,22 +202,26 @@ def get_wrapped_curpos(sublines, x):
 
 	return (vpos, cpos)
 
+def get_rendered_pos(lines, width, hard_wrap, orig_pos, cum_lengths):
+	wrapped_current_line = soft_wrap(lines[orig_pos.y], width, hard_wrap)
+	offset_y, offset_x = get_wrapped_curpos(wrapped_current_line, orig_pos.x)
+	y = cum_lengths[orig_pos.y] + offset_y
+	x = offset_x
+	rendered_curpos = CursorPosition(y, x)	
+	return rendered_curpos
+
+
+# 01234 l=5
+# 567   l=3
+# len(sublines)=2, x=5
+# i=0, vpos = -1, cpos = 0
+
 # w=10
 # 0 (35):= 0, 1, 2, 3 {4}, cl=0		0,1,2,3
 # 1 (11):= 0, 1		  {2}, cl=4		4,5
 # 2 (5) := 0		  {1}, cl=6		6
 # 3 (25):= 0, 1, 2	  {3}, cl=7		7,8,9
 # what is the y-pos of 3? = cl[y] = cl[3] = 7+0 or 7+1 or 7+2
-
-def get_rendered_pos(lines, width, hard_wrap, orig_pos, cum_lengths):
-	wrapped_current_line = soft_wrap(lines[orig_pos.y], width, hard_wrap)
-	offset_y, offset_x = get_wrapped_curpos(wrapped_current_line, orig_pos.x)
-	
-	y = cum_lengths[orig_pos.y] + offset_y
-	x = offset_x
-	rendered_curpos = CursorPosition(y, x)
-	
-	return rendered_curpos
 
 def approx_bsearch(num_list, sval):
 	lb = 0

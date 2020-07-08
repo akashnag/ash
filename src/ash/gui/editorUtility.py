@@ -135,16 +135,115 @@ class EditorUtility:
 			end = copy.copy(self.ed.sel_start)
 		return (start, end)
 
-	# implements search
-	def find_next(self, str):
+	# performs word-wrapping on a given line, and returns the sub-lines formed thus
+	def soft_wrap(self, text, width, break_words):
+		# assumes 'text' does not contain newlines
+		if("\n" in text): raise(Exception("Newline found during wrap operation!"))
+
+		separators = "~!@#$%^&*()-=+\\|[{]};:,<.>/? \t\n"
+		text += "\n"		# append newline to make life easier
+		n = len(text) - 1
+		lines = list()
+		while(n > width):
+			sub = text[0:width]
+			if(sub[-1] in separators or text[width] == "\n"):
+				# we are lucky to have the line end in a separator
+				lines.append(sub)
+				text = text[width:]
+				n -= width
+				if(text == "\n"): text = ""
+			else:
+				ls = len(sub)
+				rsub = str_reverse(sub)
+				index = next((i for i, ch in enumerate(rsub) if ch in separators), None)
+				if(index == None):
+					# no separator found before intended line-break
+					if(break_words):
+						# breaking words are allowed: switch to hard-wrap
+						lines.append(sub)
+						text = text[width:]
+						n -= width
+						if(text == "\n"): text = ""
+					else:
+						# breaking words are not allowed: find next separator position
+						index = next((i for i, ch in enumerate(text) if ch in separators), None)
+						# index will never be None bcoz we have appended newline to end
+						if(text[index] == "\n"):
+							lines.append(text[0:index])
+							text = ""
+							n = 0
+						else:
+							sub = text[0:index+1]
+							text = text[index+1:]
+							lines.append(sub)
+							n -= index+1
+				else:
+					sub = text[0:ls-index]
+					lines.append(sub)
+					text = text[ls-index:]
+					n -= (ls-index)
+		
+		lines.append(text[0:n])
+		return lines
+
+	# returns the list of sub-lines formed from wrapping a given line
+	# high-level function: calles soft_wrap() internally
+	def wrapped(self, line, width, word_wrap, break_words):
+		sub_lines = list()
+		if(not word_wrap):
+			sub_lines.append(line)
+		else:
+			sub_lines = soft_wrap(line, width, break_words)
+		return sub_lines
+
+	# returns the cursor position in a wrapped document given its actual position in the raw document
+	def get_wrapped_curpos(self, sublines, x):
+		if(len(sublines) <= 1): return (0,x)
+
+		i = 0
+		vpos = -1
+		cpos = x
+		for l in sublines:
+			if(cpos < len(l)):
+				vpos = i
+				break
+			else:
+				cpos -= len(l)
+			i += 1
+
+		return (vpos, cpos)
+
+	# returns the position of the cursor on screen given its actual position in the document
+	def get_rendered_pos(self, lines, width, hard_wrap, orig_pos, cum_lengths):
+		wrapped_current_line = soft_wrap(lines[orig_pos.y], width, hard_wrap)
+		offset_y, offset_x = get_wrapped_curpos(wrapped_current_line, orig_pos.x)
+		y = cum_lengths[orig_pos.y] + offset_y
+		x = offset_x
+		rendered_curpos = CursorPosition(y, x)	
+		return rendered_curpos
+
+	# finds all text in the given document
+	def find_all(self, s):
+		self.ed.highlighted_text = s
+		self.ed.repaint()
+
+	# cancels all highlights if any
+	def cancel_find(self):
+		if(self.ed.highlighted_text != None):
+			self.ed.highlighted_text = None
+			self.ed.repaint()
+
+	# moves cursor to next match
+	def find_next(self, s):
 		pass
 
-	def find_previous(self, str):
+	# moves cursor to previous match
+	def find_previous(self, s):
 		pass
 
 	# replaces the first occurrence (after last find/replace operation)
-	def replace(self, strf, strr):
+	def replace(self, sfind, srep):
 		pass
 
-	def replace_all(self, strf, strr):
+	def replace_all(self, sfind, srep):
 		pass

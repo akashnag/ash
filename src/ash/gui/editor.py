@@ -46,6 +46,8 @@ class Editor(Widget):
 		self.selection_mode = False
 		self.sel_start = CursorPosition(0,0)
 		self.sel_end = CursorPosition(0,0)
+		self.highlighted_text = None
+		self.find_mode = False
 		
 		# set default tab size
 		self.tab_size = 4
@@ -107,7 +109,7 @@ class Editor(Widget):
 
 		total = 0
 		for line in self.buffer.lines:
-			wline = wrapped(line, self.width, self.word_wrap, self.hard_wrap)
+			wline = self.utility.wrapped(line, self.width, self.word_wrap, self.hard_wrap)
 
 			cumx = 0
 			for sl in wline:
@@ -215,7 +217,7 @@ class Editor(Widget):
 				self.selection_mode = False
 		self.repaint()
 
-	def notify_merge(new_bid, new_buffer):
+	def notify_merge(self, new_bid, new_buffer):
 		self.bid = new_bid
 		self.buffer = new_buffer
 		self.selection_mode = False
@@ -328,11 +330,11 @@ class Editor(Widget):
 		if(self.word_wrap):
 			self.wrap_all()
 			self.rendered_lines = self.sub_lines
-			self.rendered_curpos = get_rendered_pos(self.buffer.lines, self.width, self.hard_wrap, self.curpos, self.cum_sub_line_lengths)
-
+			self.rendered_curpos = self.utility.get_rendered_pos(self.buffer.lines, self.width, self.hard_wrap, self.curpos, self.cum_sub_line_lengths)
+			
 			if(self.selection_mode):
-				self.rendered_sel_start = get_rendered_pos(self.buffer.lines, self.width, self.hard_wrap, self.sel_start, self.cum_sub_line_lengths)
-				self.rendered_sel_end = get_rendered_pos(self.buffer.lines, self.width, self.hard_wrap, self.sel_end, self.cum_sub_line_lengths)
+				self.rendered_sel_start = self.utility.get_rendered_pos(self.buffer.lines, self.width, self.hard_wrap, self.sel_start, self.cum_sub_line_lengths)
+				self.rendered_sel_end = self.utility.get_rendered_pos(self.buffer.lines, self.width, self.hard_wrap, self.sel_end, self.cum_sub_line_lengths)
 		else:
 			self.rendered_lines = self.buffer.lines
 			self.rendered_curpos = self.curpos
@@ -345,6 +347,21 @@ class Editor(Widget):
 		
 		self.vcurpos = (self.y + curpos_row, self.x + self.line_number_width + 1 + curpos_col)
 		
+		# highlighting
+		if(self.selection_mode and not self.find_mode):
+			start, end = self.get_selection_endpoints_rendered()
+			if(start.y == end.y):
+				text = self.rendered_lines[start.y]
+				wstext = text.expandtabs(self.tab_size)
+				vtext = wstext[self.col_start:] if self.col_end > len(wstext) else wstext[self.col_start:self.col_end]
+				vstartx = get_horizontal_cursor_position(text, start.x, self.tab_size)
+				vendx = get_horizontal_cursor_position(text, end.x, self.tab_size)
+				self.highlighted_text = vtext[vstartx:vendx]
+			else:
+				self.highlighted_text = None
+		elif(not self.find_mode):
+			self.highlighted_text = None
+
 		last_line_number_printed = 0
 		for i in range(self.line_start, self.line_end):
 			if(i >= nlines): break
@@ -378,12 +395,14 @@ class Editor(Widget):
 		n = len(format)
 		offset_y = self.y + i - self.line_start + off_y
 		offset_x = self.x + self.line_number_width + 1 + off_x
-
+		
+		char_under_cursor = None
 		for i in range(n):
 			index, text, style = format[i]
 			tlen = len(text)
 
 			self.parent.addstr(offset_y, offset_x, text, style)
+			self.highlight(offset_y, offset_x, vtext)
 			
 			if(offset_y == self.vcurpos[0] and self.vcurpos[1] >= offset_x and self.vcurpos[1] <= offset_x + len(text)):
 				char_pos = self.vcurpos[1] - offset_x
@@ -391,11 +410,20 @@ class Editor(Widget):
 					char_under_cursor = " "
 				else:
 					char_under_cursor = text[char_pos]
-			
-				self.parent.addstr(offset_y, self.vcurpos[1], char_under_cursor, gc("cursor") if self.is_in_focus else gc())
 				
 			offset_x += tlen
 		
+		if(char_under_cursor != None):			
+			self.parent.addstr(offset_y, self.vcurpos[1], char_under_cursor, gc("cursor") if self.is_in_focus else gc())
+			
+
+	def highlight(self, offset_y, offset_x, vtext):
+		if(self.highlighted_text == None or not self.is_in_focus): return
+		pos = vtext.find(self.highlighted_text)
+		if(pos < 0): return
+		n = len(self.highlighted_text)
+		self.parent.addstr(offset_y, offset_x + pos, self.highlighted_text, gc("highlight"))
+
 	# <-------------------------------------------------------------------------------------->
 
 	# <---------------------------- Data and File I/O ----------------------------->

@@ -37,6 +37,7 @@ def get_default_colors():
 	element_colors["line-number"] = ("lightgray", "darkgray")
 	element_colors["highlighted-line-number"] = ("white", "darkgray")
 	element_colors["selection"] = ("darkgray", "yellow")
+	element_colors["highlight"] = ("white", "magenta")
 	element_colors["formfield"] = ("cyan", "darkgray")
 	element_colors["formfield-focussed"] = ("darkgray", "cyan")
 	element_colors["formfield-selection-blurred"] = ("darkgray", "dimwhite")
@@ -85,8 +86,9 @@ def get_color_index(color_name):
 def get_element_color_index(element_name):
 	element_names = ( 	"null",
 						"titlebar", "outer-border", "line-number", "highlighted-line-number",
-						"selection", "formfield", "formfield-focussed", "formfield-selection-blurred",
-						"inner-border", "messagebox-border", "messagebox-background", "disabled", "cursor",
+						"selection", "highlight", "cursor",
+						"formfield", "formfield-focussed", "formfield-selection-blurred",
+						"inner-border", "messagebox-border", "messagebox-background", "disabled",
 						"status-0", "status-1",	"status-2", "status-3",	"status-4", "status-5",
 						"status-6", "status-7", "global-default", "global-keyword", "global-comment",
 						"global-string", "global-error", "global-function", "global-variable",
@@ -119,7 +121,8 @@ def load_config(colors = None, element_colors = None):
 	configFile.close()
 
 	for line in config:
-		# format = magenta=rgb(113,154,132)
+		# syntax:
+		# magenta=rgb(113,154,132)
 		line = line.strip().lower().replace(" ", "")
 		pos1 = line.find("=rgb(")
 		pos2 = line.find("=(")

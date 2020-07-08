@@ -27,21 +27,30 @@ Here is a picture of **ash** editing this README file (syntax highlighting is no
 
 The following is a list of design goals for **ash**; some of which have already been implemented, while some are yet to be:
 
-- Easy to use.
-- Clean interface.
-- No dependencies.
-- Common keybindings.
-- Support for wide variety of splits.
-- Autocompletion/Suggestions.
-- Syntax highlighting.
-- Color scheme support.
-- Macros and command-palette.
-- Integrated terminal.
-- Common editor features such as undo/redo, line numbers, Unicode support, soft wrapping, …
-- Auto-backup.
-- Git integration.
-- Encryption.
-- File transfer over TCP/UDP.
+**Already implemented:**
+
+- Easy to use
+- Clean and intuitive interface
+- Minimal dependencies
+- Common keybindings
+- Support for a wide variety of splits and windows
+- Support for various text-encodings
+- Syntax highlighting
+- Selection highlighting (highlights text under selection wherever they occur in the document)
+- Color scheme support
+- Common editor features such as undo/redo, line numbers, find-replace, cut-copy-paste, etc.
+- True support for wrapping (both hard & soft) with intuitive cursor movements along wrapped text
+- Auto-backup
+
+**Not yet implemented:**
+
+- Project mode (opening complete directories instead of individual files)
+- Git integration
+- Support for Unicode
+- Macros and command-palette
+- Autocompletion/Suggestions
+- Integrated terminal
+- Plugin system
 
 ## Installation
 
@@ -55,6 +64,7 @@ You need certain packages and Python 3 itself to download and run the developmen
 $ sudo apt install git
 $ sudo apt install xclip
 $ sudo apt install python3
+$ sudo pip3 install pygments
 ```
 
 #### Downloading and setting up ash
@@ -84,11 +94,11 @@ On Linux, clipboard support requires the `xclip` command. If you do not have thi
 
 ### Colors
 
-If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`.
+If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `.ashrc` file inside your home directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.ashrc`.
 
 ## Usage
 
-Once you have downloaded the **ash** source code, and set it up as detailed above, you are ready to use it (Note: it may run a bit slow for the first time):
+Once you have downloaded the **ash** source code, and set it up as detailed above, you are ready to use it (Note: it may take some time to load for the first time):
 
 ```bash
 $ ash path/to/file.txt
@@ -110,7 +120,7 @@ See the [key-bindings](KEYBINDINGS.md) for help on how to navigate in ash.
 
 ## Contributing
 
-If you find any bugs, please report them. I am also happy to accept pull requests from anyone. For more information on what features to implement and the project structure, see the [Contribution Guidelines](CONTRIBUTING.md)
+If you find any bugs, please report them. I am also happy to accept pull requests from anyone for either bug-fixes, performance improvements, or for implementing the not-yet-implemented features listed above. Please consider contributing towards new features **only when** the features listed above have been fully implemented. For more information on what features to implement and the project structure, see the [Contribution Guidelines](CONTRIBUTING.md)
 
 You can use the [GitHub issue tracker](https://github.com/akashnag/ash/issues) to report bugs, ask questions, or suggest new features.
 

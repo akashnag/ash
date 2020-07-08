@@ -193,7 +193,7 @@ class EditorUtility:
 		if(not word_wrap):
 			sub_lines.append(line)
 		else:
-			sub_lines = soft_wrap(line, width, break_words)
+			sub_lines = self.soft_wrap(line, width, break_words)
 		return sub_lines
 
 	# returns the cursor position in a wrapped document given its actual position in the raw document
@@ -215,8 +215,8 @@ class EditorUtility:
 
 	# returns the position of the cursor on screen given its actual position in the document
 	def get_rendered_pos(self, lines, width, hard_wrap, orig_pos, cum_lengths):
-		wrapped_current_line = soft_wrap(lines[orig_pos.y], width, hard_wrap)
-		offset_y, offset_x = get_wrapped_curpos(wrapped_current_line, orig_pos.x)
+		wrapped_current_line = self.soft_wrap(lines[orig_pos.y], width, hard_wrap)
+		offset_y, offset_x = self.get_wrapped_curpos(wrapped_current_line, orig_pos.x)
 		y = cum_lengths[orig_pos.y] + offset_y
 		x = offset_x
 		rendered_curpos = CursorPosition(y, x)	
@@ -284,8 +284,22 @@ class EditorUtility:
 				return
 		
 	# replaces the first occurrence (after last find/replace operation)
-	def replace_next(self, sfind, srep):
-		pass
+	def replace_next(self, sfind, srep, do_update = True):
+		n = len(sfind)
+		line = self.ed.buffer.lines[self.ed.curpos.y]
+		if(line[self.ed.curpos.x:self.ed.curpos.x+n] == sfind):
+			prev = line[0:self.ed.curpos.x]
+			next = line[self.ed.curpos.x+n:]
+			self.ed.buffer.lines[self.ed.curpos.y] = prev + srep + next
+			if(do_update): self.ed.buffer.major_update(self.ed.curpos, self.ed)
+			self.find_next(sfind)
+			return True
+		
+		return False
 
 	def replace_all(self, sfind, srep):
-		pass
+		self.find_next(sfind)
+		count = 0
+		while(self.replace_next(sfind, srep, False)):
+			count += 1		
+		if(count > 0): self.ed.buffer.major_update(self.ed.curpos, self.ed, True)

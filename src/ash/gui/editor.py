@@ -392,31 +392,35 @@ class Editor(Widget):
 			else:
 				self.print_formatted(i, vtext)
 
+	def get_real_line_from_rendered_line(self, rline):
+		if(not self.word_wrap): return rline
+		index = approx_bsearch(self.cum_sub_line_lengths, rline)
 		
+		if(rline < self.cum_sub_line_lengths[index]): index -= 1
+		return index
 		
-	def print_formatted(self, i, vtext, off_y = 0, off_x = 0):
-		format = self.buffer.format_code(vtext)
-		n = len(format)
+	def print_formatted(self, i, vtext, off_y = 0, off_x = 0):		
 		offset_y = self.y + i - self.line_start + off_y
 		init_offset_x = self.x + self.line_number_width + 1 + off_x
 		offset_x = init_offset_x
-
 		char_under_cursor = None
-				
+		
+		format = self.buffer.format_code(vtext)
+		n = len(format)
 		for i in range(n):
-			index, text, style = format[i]
+			index, text, style = format[i]			
 			tlen = len(text)
-
 			self.parent.addstr(offset_y, offset_x, text, style)
-						
+				
 			if(offset_y == self.vcurpos[0] and self.vcurpos[1] >= offset_x and self.vcurpos[1] <= offset_x + len(text)):
 				char_pos = self.vcurpos[1] - offset_x
 				if(char_pos >= len(text)):
 					char_under_cursor = " "
 				else:
 					char_under_cursor = text[char_pos]
-				
+					
 			offset_x += tlen
+			
 		
 		self.highlight(offset_y, init_offset_x, vtext)
 
@@ -540,8 +544,10 @@ class Editor(Widget):
 
 	# replace next instance
 	def replace_next(self, search_text, replace_text):
-		return self.utility.replace_next(search_text, replace_text)
+		self.utility.replace_next(search_text, replace_text)
+		self.repaint()
 
 	# replace all instances
 	def replace_all(self, search_text, replace_text):
-		return self.utility.replace_all(search_text, replace_text)
+		self.utility.replace_all(search_text, replace_text)
+		self.repaint()

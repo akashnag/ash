@@ -430,7 +430,7 @@ class EditorKeyHandler:
 		if(hdata == None):
 			beep()
 		else:
-			self.ed.render_data_to_lines(hdata.data, False)
+			self.ed.buffer.lines = copy.copy(hdata.data)
 			self.ed.curpos = copy.copy(hdata.curpos)
 
 	def handle_redo(self):
@@ -438,7 +438,7 @@ class EditorKeyHandler:
 		if(hdata == None):
 			beep()
 		else:
-			self.ed.render_data_to_lines(hdata.data, False)
+			self.ed.buffer.lines = copy.copy(hdata.data)
 			self.ed.curpos = copy.copy(hdata.curpos)
 
 	def handle_save(self):

@@ -76,10 +76,18 @@ class Buffer:
 		if(self.backup_file != None and abs(new_data_size - self.old_data_size) >= BACKUP_FREQUENCY_SIZE):
 			self.make_backup()		
 		if(abs(new_data_size - self.old_data_size) >= HISTORY_FREQUENCY_SIZE):
-			self.history.add_change(self.lines, curpos)		
+			self.history.add_change(self.lines, curpos)
 		self.old_data_size = new_data_size
 		for ed in self.editors:
-			ed.notify_update()
+			if(ed != caller): ed.notify_update()
+
+	def major_update(self, curpos, caller, make_backup = False):
+		self.save_status = False		
+		if(make_backup): self.make_backup()
+		self.history.add_change(self.lines, curpos)		
+		self.old_data_size = sys.getsizeof(self.lines)
+		for ed in self.editors:
+			if(ed != caller): ed.notify_update()
 	
 	def write_to_disk(self, filename = None):
 		if(self.filename == None and filename == None): raise(Exception("Error 1: buffer.write_to_disk()"))

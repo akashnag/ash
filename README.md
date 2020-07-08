@@ -25,28 +25,35 @@ Here is a picture of **ash** editing this README file (syntax highlighting is no
 
 ## Design Goals
 
-The following is a list of design goals for **ash**; some of which have already been implemented, while some are yet to be:
-
-**Already implemented:**
+The following is a list of design goals for **ash**:
 
 - Easy to use
 - Clean and intuitive interface
 - Minimal dependencies
 - Common keybindings
-- Support for a wide variety of splits and windows
-- Support for various text-encodings
-- Syntax highlighting
-- Selection highlighting (highlights text under selection wherever they occur in the document)
-- Color scheme support
+
+The following is a list of features available in **ash**; some of which have already been implemented, while some are yet to be:
+
+**Already implemented:**
+
 - Common editor features such as undo/redo, line numbers, find-replace, cut-copy-paste, etc.
 - True support for wrapping (both hard & soft) with intuitive cursor movements along wrapped text
 - Auto-backup
+- Support for Unicode
+- Project mode (opening a directory instead of individual files)
+- Support for splits/windows
+- Support for various text-encodings
+- Syntax highlighting
+- Selection highlighting (highlights text under selection wherever they occur in the document)
+- Color scheme customization
 
 **Not yet implemented:**
 
-- Project mode (opening complete directories instead of individual files)
+- View list of recent files
 - Git integration
-- Support for Unicode
+
+**Future goals:**
+
 - Macros and command-palette
 - Autocompletion/Suggestions
 - Integrated terminal

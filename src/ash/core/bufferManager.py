@@ -191,8 +191,13 @@ class BufferManager:
 		self.buffers = dict()
 		self.buffer_count = 0
 	
-	def create_new_buffer(self, filename = None, encoding = "utf-8", newline = "\n", has_backup = False):
+	def create_new_buffer(self, filename = None, encoding = None, newline = "\n", has_backup = False):
 		if(self.does_file_have_its_own_buffer(filename)): raise(Exception("Error 5: buffermanager.create_new_buffer()"))
+		if(encoding == None):
+			if(filename == None or not os.path.isfile(filename)):
+				encoding = "utf-8"
+			else:
+				encoding = predict_file_encoding(filename)
 		self.buffers[self.buffer_count] = Buffer(self, self.buffer_count, filename, encoding, newline, has_backup)
 		self.buffer_count += 1
 		return (self.buffer_count - 1, self.buffers[self.buffer_count - 1])

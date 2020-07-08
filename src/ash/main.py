@@ -53,9 +53,8 @@ class AshEditorApp:
 			self.project_dir = str(pathlib.Path(self.args[1]).absolute())
 			all_files = glob.glob(self.project_dir + "/**/*.*", recursive=True)
 			for f in all_files:
-				if(f.find("/__pycache__/") == -1): 
-					has_backup = BufferManager.backup_exists(f)
-					self.buffers.create_new_buffer(filename=f, has_backup=has_backup)
+				has_backup = BufferManager.backup_exists(f)
+				self.buffers.create_new_buffer(filename=f, has_backup=has_backup)
 		else:
 			self.app_mode = APP_MODE_FILE
 			for i in range(1, len(self.args)):
@@ -122,17 +121,16 @@ class AshEditorApp:
 		# *unsaved-file-count (4), *tab-size (1), cursor-position (6+1+6+3+8=24)
 		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 13, 9, 22, 12, 6, 3, -1 ]))
 		
-		if(self.app_mode != APP_MODE_PROJECT):
-			editor = Editor(self.main_window)
-			if(len(self.buffers) == 0): 
-				bid, buffer = self.buffers.create_new_buffer()
-			else:
-				bid = 0
-				buffer = self.buffers.get_buffer_by_id(bid)
+		editor = Editor(self.main_window)
+		if(len(self.buffers) == 0): 
+			bid, buffer = self.buffers.create_new_buffer()
+		else:
+			bid = 0
+			buffer = self.buffers.get_buffer_by_id(bid)
 							
-			editor.set_buffer(bid, buffer)			
-			self.main_window.add_editor(editor)
-			self.main_window.layout_manager.readjust(True)
+		editor.set_buffer(bid, buffer)			
+		self.main_window.add_editor(editor)
+		self.main_window.layout_manager.readjust(True)
 		
 		self.main_window.show()		# this call returns when main_window() is closed
 		self.__destroy()
@@ -168,6 +166,10 @@ class AshEditorApp:
 			# adjust layout
 			self.dialog_handler.invoke_switch_layout()
 			return -1
+		elif(is_ctrl(ch, "E") and self.app_mode == APP_MODE_PROJECT):
+			# project explorer
+			self.dialog_handler.invoke_project_explorer()
+			return -1
 		elif(is_ctrl(ch, "N") and self.main_window.get_active_editor() == None):
 			# file-new
 			self.dialog_handler.invoke_file_new()
@@ -175,7 +177,7 @@ class AshEditorApp:
 		elif(is_ctrl(ch, "O") and self.main_window.get_active_editor() == None):
 			# file-open
 			self.dialog_handler.invoke_file_open()
-			return -1
+			return -1		
 		elif(is_func(ch)):
 			# F1 - F6 to select an active editor
 			fn = get_func_key(ch)

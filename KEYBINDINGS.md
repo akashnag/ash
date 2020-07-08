@@ -22,6 +22,8 @@ These key combinations can be used even if no editor is currently active.
 
 <kbd>Ctrl</kbd> + <kbd>O</kbd> &nbsp;&nbsp;Open a file
 
+<kbd>Ctrl</kbd> + <kbd>E</kbd> &nbsp;&nbsp;Opens project explorer (if directory has been opened)
+
 <kbd>F1</kbd> - <kbd>F6</kbd> &nbsp;&nbsp;&nbsp;&nbsp;Activates the corresponding editor (if exists in the current layout)
 
 ### Editor commands
@@ -82,13 +84,9 @@ The following key bindings have not yet been implemented but will be in the fina
 
 <kbd>Ctrl</kbd> + <kbd>T</kbd> &nbsp;&nbsp;Print
 
-<kbd>Ctrl</kbd> + <kbd>K</kbd> &nbsp;&nbsp;Send/Receive a file over TCP/UDP
-
-<kbd>Ctrl</kbd> + <kbd>E</kbd> &nbsp;&nbsp;Encrypt file
-
 ### Commands for find and replace operations
 
-These commands work when the Find/Replace dialog box is active:
+These key combinations work when the Find/Replace dialog box is active:
 
 <kbd>Enter</kbd> &nbsp;&nbsp;Find next match
 
@@ -97,6 +95,16 @@ These commands work when the Find/Replace dialog box is active:
 <kbd>F8</kbd> &nbsp;&nbsp;Replace the current match
 
 <kbd>Ctrl</kbd> + <kbd>F8</kbd> &nbsp;&nbsp;Replace all matches
+
+### Commands for Project Explorer
+
+These key combinations work when the Project Explorer dialog-box is active:
+
+<kbd>Ctrl</kbd> + <kbd>R</kbd> &nbsp;&nbsp;Refresh file tree
+
+<kbd>+</kbd> &nbsp;&nbsp;Collapse the current selected directory
+
+<kbd>-</kbd> &nbsp;&nbsp;Expand the current selected directory
 
 ## Other features
 

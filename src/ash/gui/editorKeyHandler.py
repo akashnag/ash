@@ -34,8 +34,6 @@ class EditorKeyHandler:
 			self.ed.parent.app.dialog_handler.invoke_find()			
 		elif(is_ctrl(ch, "H")):
 			self.ed.parent.app.dialog_handler.invoke_find_and_replace()
-		elif(is_ctrl(ch, "T")):
-			self.ed.parent.app.dialog_handler.invoke_file_print()
 		elif(is_ctrl(ch, "Z")):
 			self.handle_undo()
 		elif(is_ctrl(ch, "Y")):
@@ -79,18 +77,30 @@ class EditorKeyHandler:
 			if(row == nlen-1):
 				beep()
 			else:
-				if(self.ed.curpos.x > len(self.ed.buffer.lines[row+1])):
-					# cannot preserve column, so move to end
-					self.ed.curpos.x = len(self.ed.buffer.lines[row+1])
-				self.ed.curpos.y += 1
+				if(self.ed.word_wrap):
+					if(self.ed.col_spans[self.ed.rendered_curpos.y + 1][0] == 0):
+						self.ed.curpos.y += 1
+					else:
+						self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y + 1][0]
+				else:
+					if(self.ed.curpos.x > len(self.ed.buffer.lines[row+1])):
+						# cannot preserve column, so move to end
+						self.ed.curpos.x = len(self.ed.buffer.lines[row+1])
+					self.ed.curpos.y += 1
 		elif(ch == curses.KEY_UP):
 			if(row == 0):
 				beep()
 			else:
-				if(self.ed.curpos.x > len(self.ed.buffer.lines[row-1])):
-					# cannot preserve column, so move to end
-					self.ed.curpos.x = len(self.ed.buffer.lines[row-1])
-				self.ed.curpos.y -= 1
+				if(self.ed.word_wrap):
+					if(self.ed.col_spans[self.ed.rendered_curpos.y][0] == 0):
+						self.ed.curpos.y -= 1
+					
+					self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y - 1][0]
+				else:
+					if(self.ed.curpos.x > len(self.ed.buffer.lines[row-1])):
+						# cannot preserve column, so move to end
+						self.ed.curpos.x = len(self.ed.buffer.lines[row-1])
+					self.ed.curpos.y -= 1
 
 		self.ed.selection_mode = False		# turn off selection mode
 
@@ -154,22 +164,34 @@ class EditorKeyHandler:
 				self.ed.curpos.x = 0
 			else:
 				self.ed.curpos.x += 1
-		elif(ch == curses.KEY_SF):
+		elif(ch == curses.KEY_SF):			# down
 			if(row == nlen-1):
 				beep()
 			else:
-				if(self.ed.curpos.x > len(self.ed.buffer.lines[row+1])):
-					# cannot preserve column
-					self.ed.curpos.x = len(self.ed.buffer.lines[row+1])
-				self.ed.curpos.y += 1
-		elif(ch == curses.KEY_SR):
+				if(self.ed.word_wrap):
+					if(self.ed.col_spans[self.ed.rendered_curpos.y + 1][0] == 0):
+						self.ed.curpos.y += 1
+					else:
+						self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y + 1][0]
+				else:
+					if(self.ed.curpos.x > len(self.ed.buffer.lines[row+1])):
+						# cannot preserve column
+						self.ed.curpos.x = len(self.ed.buffer.lines[row+1])
+					self.ed.curpos.y += 1
+		elif(ch == curses.KEY_SR):			# up
 			if(row == 0):
 				beep()
 			else:
-				if(self.ed.curpos.x > len(self.ed.buffer.lines[row-1])):
-					# cannot preserve column
-					self.ed.curpos.x = len(self.ed.buffer.lines[row-1])
-				self.ed.curpos.y -= 1
+				if(self.ed.word_wrap):
+					if(self.ed.col_spans[self.ed.rendered_curpos.y][0] == 0):
+						self.ed.curpos.y -= 1
+					
+					self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y - 1][0]
+				else:
+					if(self.ed.curpos.x > len(self.ed.buffer.lines[row-1])):
+						# cannot preserve column
+						self.ed.curpos.x = len(self.ed.buffer.lines[row-1])
+					self.ed.curpos.y -= 1
 
 		# ensure cursor does not exceed bounds
 		self.ed.curpos.x = min([self.ed.curpos.x, len(self.ed.buffer.lines[self.ed.curpos.y])])
@@ -257,11 +279,17 @@ class EditorKeyHandler:
 			self.ed.selection_mode = True
 			self.ed.sel_start = copy.copy(self.ed.curpos)
 		
-		if(ch == curses.KEY_SHOME):
-			self.ed.curpos.x = 0
-		elif(ch == curses.KEY_SEND):
-			self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
-				
+		if(self.ed.word_wrap):
+			if(ch == curses.KEY_SHOME):
+				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][0]
+			elif(ch == curses.KEY_SEND):
+				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][1]
+		else:
+			if(ch == curses.KEY_SHOME):
+				self.ed.curpos.x = 0
+			elif(ch == curses.KEY_SEND):
+				self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
+		
 		self.ed.sel_end = copy.copy(self.ed.curpos)
 
 	# handles TAB/Ctrl+I and Shift+TAB keys

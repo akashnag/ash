@@ -15,6 +15,7 @@ from ash.gui.findReplaceDialog import *
 from ash.gui.checkbox import *
 from ash.gui.listbox import *
 from ash.gui.textfield import *
+from ash.gui.treeview import TreeView
 
 UNSAVED_BULLET		= "\u2022"
 TICK_MARK			= "\u2713"
@@ -205,8 +206,51 @@ class DialogHandler:
 		
 	# <----------------------------------- File Open --------------------------------->
 
-	def invoke_project_file_open(self):
-		pass
+	def invoke_project_explorer(self):
+		self.app.readjust()
+		y, x = get_center_coords(self.app, 20, 60)
+		self.app.dlgProjectExplorer = ModalDialog(self.app.main_window, y, x, 20, 60, "PROJECT EXPLORER", self.project_explorer_key_handler)
+		lstFiles = TreeView(self.app.dlgProjectExplorer, 3, 2, 56, 16, self.app.buffers, self.app.project_dir)
+		self.app.dlgProjectExplorer.add_widget("lstFiles", lstFiles)	
+		self.app.dlgProjectExplorer.show()
+
+	def project_explorer_key_handler(self, ch):
+		lstFiles = self.app.dlgProjectExplorer.get_widget("lstFiles")		
+		
+		mw = self.app.main_window
+		aed = mw.get_active_editor()
+		aedi = mw.active_editor_index
+		
+		if(is_ctrl(ch, "Q")):
+			self.app.dlgProjectExplorer.hide()
+			mw.repaint()
+			return -1
+		elif(is_newline(ch)):
+			tag = lstFiles.get_sel_tag()		# format: {d/f}:path
+			if(tag == None): return -1
+			file_type = tag[0].lower()
+			filename = tag[2:]
+			if(file_type == "d"): return -1
+
+
+			sel_buffer = self.app.buffers.get_buffer_by_filename(filename)
+			self.app.dlgProjectExplorer.hide()
+							
+			if(aed == None):
+				ffedi = mw.get_first_free_editor_index()
+				aed = mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
+			else:
+				ffedi = mw.get_first_free_editor_index(aedi)
+				if(ffedi == -1):
+					if(self.app.ask_question("REPLACE ACTIVE EDITOR", "No free editors available: replace active editor?")):
+						ffedi = aedi
+					else:
+						return -1
+				mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
+				mw.repaint()			
+			return -1
+		
+		return ch
 
 	def invoke_file_open(self):
 		self.app.readjust()

@@ -8,6 +8,8 @@
 from ash.core import *
 from ash.gui.cursorPosition import *
 
+import chardet
+
 # <---------------------- key bindings --------------------------->
 
 # check if Caps Lock is on/off
@@ -114,6 +116,23 @@ def get_message_dimensions(msg):
 			mlen = len(line)
 	return (mlines, mlen)
 
+def get_file_title(filename):
+	pos = filename.rfind("/")
+	return filename[pos+1:]
+
+def get_file_directory(filename):
+	pos = filename.rfind("/")
+	return filename[0:pos]
+
+def filter_child_directories(parent_dir, dir_list):
+	filtered = list()
+	n = len(parent_dir)
+	for d in dir_list:
+		if(d.startswith(parent_dir + "/")):
+			sd = d[n+1:]
+			if(sd.find("/") == -1): filtered.append(d)
+	return filtered
+
 def get_relative_file_title(project_dir, filename):
 	pos = project_dir.rfind("/")
 	if(pos == 0):
@@ -121,26 +140,17 @@ def get_relative_file_title(project_dir, filename):
 	else:
 		return filename[pos+1:]
 
+def predict_file_encoding(filename, n = 20):
+	with open(filename, "rb") as f:
+		rawdata = b"".join([f.readline() for _ in range(n)])
+	return chardet.detect(rawdata)["encoding"]
+
 def str_reverse(text):
 	rtext = ""
 	n = len(text)
 	for i in range(n):
 		rtext += text[n-i-1]
 	return rtext
-
-
-
-# 01234 l=5
-# 567   l=3
-# len(sublines)=2, x=5
-# i=0, vpos = -1, cpos = 0
-
-# w=10
-# 0 (35):= 0, 1, 2, 3 {4}, cl=0		0,1,2,3
-# 1 (11):= 0, 1		  {2}, cl=4		4,5
-# 2 (5) := 0		  {1}, cl=6		6
-# 3 (25):= 0, 1, 2	  {3}, cl=7		7,8,9
-# what is the y-pos of 3? = cl[y] = cl[3] = 7+0 or 7+1 or 7+2
 
 def approx_bsearch(num_list, sval):
 	lb = 0

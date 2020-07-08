@@ -217,13 +217,13 @@ class LayoutManager:
 		if(index >= ec):
 			self.win.app.show_error("Selected editor does not exist")
 			return None
-		
+				
 		# if already active, return
-		if(aei == index): 
+		if(aei == index):
 			if(new_bid != None and new_buffer != None): 
 				self.win.editors[index].set_buffer(new_bid, new_buffer)
 			return
-
+		
 		# set active editor
 		self.win.active_editor_index = index
 

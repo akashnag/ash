@@ -224,25 +224,67 @@ class EditorUtility:
 
 	# finds all text in the given document
 	def find_all(self, s):
+		self.ed.find_mode = True
 		self.ed.highlighted_text = s
 		self.ed.repaint()
 
 	# cancels all highlights if any
 	def cancel_find(self):
+		self.ed.find_mode = False
 		if(self.ed.highlighted_text != None):
 			self.ed.highlighted_text = None
 			self.ed.repaint()
 
 	# moves cursor to next match
 	def find_next(self, s):
-		pass
+		self.find_all(s)
+		n = len(s)
+		
+		for y in range(self.ed.curpos.y, len(self.ed.buffer.lines)):
+			start = 0
+			if(y == self.ed.curpos.y): start = self.ed.curpos.x + 1
+			x = self.ed.buffer.lines[y].find(s, start)
+			if(x > -1):
+				self.ed.curpos.y = y
+				self.ed.curpos.x = x
+				return
+
+		for y in range(0, self.ed.curpos.y + 1):
+			x = self.ed.buffer.lines[y].find(s)
+			if(x > -1):
+				self.ed.curpos.y = y
+				self.ed.curpos.x = x
+				return
 
 	# moves cursor to previous match
 	def find_previous(self, s):
-		pass
+		log("called find_prev")
+		self.find_all(s)
+		n = len(s)
+		
+		for y in range(self.ed.curpos.y, -1, -1):
+			if(y == self.ed.curpos.y):
+				x = self.ed.buffer.lines[y][0:self.ed.curpos.x].rfind(s)
+			else:
+				x = self.ed.buffer.lines[y].rfind(s)
 
+			if(x > -1):
+				self.ed.curpos.y = y
+				self.ed.curpos.x = x
+				return
+
+		for y in range(len(self.ed.buffer.lines) - 1, self.ed.curpos.y - 1, -1):
+			if(y == self.ed.curpos.y):
+				x = self.ed.buffer.lines[y][0:self.ed.curpos.x].rfind(s)
+			else:
+				x = self.ed.buffer.lines[y].rfind(s)
+			if(x > -1):
+				self.ed.curpos.y = y
+				self.ed.curpos.x = x
+				return
+		
 	# replaces the first occurrence (after last find/replace operation)
-	def replace(self, sfind, srep):
+	def replace_next(self, sfind, srep):
 		pass
 
 	def replace_all(self, sfind, srep):

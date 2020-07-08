@@ -442,7 +442,6 @@ class EditorKeyHandler:
 			self.ed.curpos = copy.copy(hdata.curpos)
 
 	def handle_save(self):
-		log("Ctrl+S pressed")
 		if(not self.ed.buffer.save_status):
 			if(self.ed.buffer.filename != None):
 				self.ed.buffer.write_to_disk()

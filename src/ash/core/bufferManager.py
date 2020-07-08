@@ -30,7 +30,6 @@ class Buffer:
 			self.lines = list()
 			self.lines.append("")
 			self.save_status = False
-			log("buffer:init()")
 			self.backup_file = None
 			self.display_name = "untitled-" + str(self.id + 1)
 			self.formatter = SyntaxHighlighter(self.display_name)
@@ -73,7 +72,6 @@ class Buffer:
 
 	def update(self, curpos, caller):			# must be called after every edit made
 		self.save_status = False
-		log("buffer:update()")
 		new_data_size = sys.getsizeof(self.lines)
 		if(self.backup_file != None and abs(new_data_size - self.old_data_size) >= BACKUP_FREQUENCY_SIZE):
 			self.make_backup()		
@@ -166,7 +164,6 @@ class Buffer:
 			self.save_status = True
 		else:
 			self.save_status = False
-			log("buffer:read_from_disk")
 
 	def render_data_to_lines(self, text):
 		self.lines = list()

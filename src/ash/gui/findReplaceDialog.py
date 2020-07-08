@@ -18,12 +18,16 @@ class FindReplaceDialog(Window):
 		self.parent = parent
 		self.theme = gc("outer-border")
 		self.win = None
-		self.text = str(self.ed)
-
+		self.ed.find_mode = True
+		
 		init_text = ""
 		if(ed.selection_mode): init_text = ed.get_selected_text().replace("\n", "")
-		self.add_widget("txtFind", TextField(self, 3, 2, 26, init_text))
-		if(replace): self.add_widget("txtReplace", TextField(self, 5, 2, 26))
+				
+		self.txtFind = TextField(self, 3, 2, 26, init_text)
+		self.txtReplace = TextField(self, 5, 2, 26)
+
+		self.add_widget("txtFind", self.txtFind)
+		if(replace): self.add_widget("txtReplace", self.txtReplace)
 
 	# show the window and start the event-loop
 	def show(self):
@@ -73,35 +77,37 @@ class FindReplaceDialog(Window):
 			replace_text = str(self.get_widget("txtReplace"))
 
 			if(is_ctrl(ch, "Q")):
+				self.ed.cancel_find()
 				self.hide()
 				self.parent.repaint()
+				self.ed.focus()
 				return
-			elif(is_newline(ch)):						# F6: next
+			elif(is_newline(ch)):						# Enter: next
 				self.handle_find_next_match(search_text)
 			elif(is_func(ch, 7)):						# F7: previous
 				self.handle_find_previous_match(search_text)
 			elif(is_func(ch, 8)):						# F8: replace
 				self.handle_replace(search_text, replace_text)
-			elif(is_func(ch, 32)):						# Ctrl+F8: replace all			
+			elif(is_func(ch, 32)):						# Ctrl+F8: replace all
 				self.handle_replace_all(search_text, replace_text)
 			elif(self.active_widget_index > -1):
 				self.get_active_widget().perform_action(ch)
-
+				self.ed.find_all(str(self.txtFind))
+				
 			self.repaint()
+			self.parent.win.refresh()
 		
 	def handle_find_next_match(self, search_text):
-		#lin_curpos = self.ed.get_linear_curpos()
-		#find_pos = self.text.find(search_text, lin_curpos)
-		pass
+		self.ed.find_next(search_text)
 
-	def handle_find_previous_match(self):
-		pass
+	def handle_find_previous_match(self, search_text):
+		self.ed.find_previous(search_text)
 
-	def handle_replace(self):
-		pass
+	def handle_replace(self, search_text, replace_text):
+		self.ed.replace_next(search_text, replace_text)
 
-	def handle_replace_all(self):
-		pass
+	def handle_replace_all(self, search_text, replace_text):
+		self.ed.replace_all(search_text, replace_text)
 
 	# draw the window
 	def repaint(self):

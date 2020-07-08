@@ -143,6 +143,7 @@ class Editor(Widget):
 
 	# when focus received
 	def focus(self):
+		curses.curs_set(False)
 		self.is_in_focus = True
 		self.repaint()
 
@@ -275,7 +276,7 @@ class Editor(Widget):
 			self.parent.addstr(offset_y, offset_x, vtext[0:vendx], gc("selection"))			
 		else:
 			self.parent.addstr(offset_y, offset_x, vtext, gc("selection"))
-		
+				
 		if(offset_y == self.vcurpos[0] and self.vcurpos[1] >= offset_x and self.vcurpos[1] <= offset_x + len(vtext)):
 			char_pos = self.vcurpos[1] - offset_x
 			if(char_pos >= len(vtext)):
@@ -363,6 +364,7 @@ class Editor(Widget):
 			self.highlighted_text = None
 
 		last_line_number_printed = 0
+		
 		for i in range(self.line_start, self.line_end):
 			if(i >= nlines): break
 
@@ -389,21 +391,24 @@ class Editor(Widget):
 				self.print_selection(i)
 			else:
 				self.print_formatted(i, vtext)
+
+		
 		
 	def print_formatted(self, i, vtext, off_y = 0, off_x = 0):
 		format = self.buffer.format_code(vtext)
 		n = len(format)
 		offset_y = self.y + i - self.line_start + off_y
-		offset_x = self.x + self.line_number_width + 1 + off_x
-		
+		init_offset_x = self.x + self.line_number_width + 1 + off_x
+		offset_x = init_offset_x
+
 		char_under_cursor = None
+				
 		for i in range(n):
 			index, text, style = format[i]
 			tlen = len(text)
 
 			self.parent.addstr(offset_y, offset_x, text, style)
-			self.highlight(offset_y, offset_x, vtext)
-			
+						
 			if(offset_y == self.vcurpos[0] and self.vcurpos[1] >= offset_x and self.vcurpos[1] <= offset_x + len(text)):
 				char_pos = self.vcurpos[1] - offset_x
 				if(char_pos >= len(text)):
@@ -413,16 +418,24 @@ class Editor(Widget):
 				
 			offset_x += tlen
 		
+		self.highlight(offset_y, init_offset_x, vtext)
+
 		if(char_under_cursor != None):			
 			self.parent.addstr(offset_y, self.vcurpos[1], char_under_cursor, gc("cursor") if self.is_in_focus else gc())
-			
+		else:
+			if(offset_y == self.vcurpos[0] and n==0):
+				self.parent.addstr(offset_y, self.vcurpos[1], " ", gc("cursor") if self.is_in_focus else gc())
+
 
 	def highlight(self, offset_y, offset_x, vtext):
-		if(self.highlighted_text == None or not self.is_in_focus): return
-		pos = vtext.find(self.highlighted_text)
-		if(pos < 0): return
-		n = len(self.highlighted_text)
-		self.parent.addstr(offset_y, offset_x + pos, self.highlighted_text, gc("highlight"))
+		if(self.highlighted_text == None): return
+		
+		pos = -1
+		while(True):
+			pos = vtext.find(self.highlighted_text, pos + 1)
+			if(pos < 0): return
+			n = len(self.highlighted_text)
+			self.parent.addstr(offset_y, offset_x + pos, self.highlighted_text, gc("highlight"))
 
 	# <-------------------------------------------------------------------------------------->
 
@@ -504,3 +517,31 @@ class Editor(Widget):
 	# get file size
 	def get_file_size(self):
 		return self.utility.get_file_size()
+
+	# highlights all instances
+	def find_all(self, search_text):
+		self.utility.find_all(search_text)
+		self.repaint()
+
+	# cancels the find mode
+	def cancel_find(self):
+		self.utility.cancel_find()
+		self.repaint()
+
+	# find next match
+	def find_next(self, search_text):
+		self.utility.find_next(search_text)
+		self.repaint()
+
+	# find previous match
+	def find_previous(self, search_text):
+		self.utility.find_previous(search_text)
+		self.repaint()
+
+	# replace next instance
+	def replace_next(self, search_text, replace_text):
+		return self.utility.replace_next(search_text, replace_text)
+
+	# replace all instances
+	def replace_all(self, search_text, replace_text):
+		return self.utility.replace_all(search_text, replace_text)

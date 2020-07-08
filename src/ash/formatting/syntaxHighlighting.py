@@ -38,6 +38,7 @@ class SyntaxHighlighter:
 	def reset_file(self, filename):
 		try:
 			self.lexer = pygments.lexers.get_lexer_for_filename(filename)
+			if(filename.lower().endswith(".txt")): self.lexer = None
 		except:
 			self.lexer = None
 

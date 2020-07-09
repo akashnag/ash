@@ -326,6 +326,7 @@ class Editor(Widget):
 		if(self.curpos.x < 0 or self.curpos.y < 0): return
 		if(self.line_start < 0 or self.line_end <= self.line_start): return
 		if(self.col_start < 0 or self.col_end <= self.col_start): return
+		if(self.buffer == None): return
 
 		if(self.word_wrap):
 			self.wrap_all()

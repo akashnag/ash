@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------------------------
-#  Copyright (c) Akash Nag, and Susmita Guha. All rights reserved.
+#  Copyright (c) Akash Nag. All rights reserved.
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
@@ -26,45 +26,76 @@ LAYOUT_2HT_1B			= 10
 # note: editor_count order must match the order of the layout values
 EDITOR_COUNTS = [ 1, 2, 3, 4, 2, 4, 6, 3, 3, 3, 3 ]
 
+APP_MODE_FILE		= 1		# if ash is invoked with zero or more file names
+APP_MODE_PROJECT	= 2		# if ash is invoked with a single directory name
+
 class LayoutManager:
 	def __init__(self, win):
 		self.win = win
 
 	# draw the line divisions between editors
 	def draw_layout_borders(self):
+		half_width_right = self.win.width - (self.win.width // 2)
+
 		if(self.win.layout_type == LAYOUT_SINGLE): 
+			# a single pane (no borders)
 			return		
 		elif(self.win.layout_type == LAYOUT_VERTICAL_2):
-			self.win.addstr(self.win.height//2, 0, BORDER_HORIZONTAL * self.win.width, gc("inner-border"))
+			# two panes stacked on top of each other
+			self.win.addstr(self.win.height // 2, 0, BORDER_HORIZONTAL * self.win.width, gc("inner-border"))
 		elif(self.win.layout_type == LAYOUT_HORIZONTAL_2):
+			# two panes side by side
 			for row in range(1, self.win.height-1):
-				self.win.addstr(row, self.win.width//2, BORDER_VERTICAL, gc("inner-border"))
+				self.win.addstr(row, self.win.width // 2, BORDER_VERTICAL, gc("inner-border"))
 		elif(self.win.layout_type == LAYOUT_HORIZONTAL_3):
+			# three panes side by side
 			for row in range(1, self.win.height-1):
-				self.win.addstr(row, self.win.width//3, BORDER_VERTICAL, gc("inner-border"))
-				self.win.addstr(row, (self.win.width*2)//3, BORDER_VERTICAL, gc("inner-border"))
+				self.win.addstr(row, self.win.width // 3, BORDER_VERTICAL, gc("inner-border"))
+				self.win.addstr(row, (self.win.width * 2) // 3, BORDER_VERTICAL, gc("inner-border"))
 		elif(self.win.layout_type == LAYOUT_HORIZONTAL_4):
+			# four panes side by side
 			for row in range(1, self.win.height-1):
-				self.win.addstr(row, self.win.width//4, BORDER_VERTICAL, gc("inner-border"))
-				self.win.addstr(row, self.win.width//2, BORDER_VERTICAL, gc("inner-border"))
-				self.win.addstr(row, (self.win.width*3)//4, BORDER_VERTICAL, gc("inner-border"))
+				self.win.addstr(row, self.win.width // 4, BORDER_VERTICAL, gc("inner-border"))
+				self.win.addstr(row, self.win.width // 2, BORDER_VERTICAL, gc("inner-border"))
+				self.win.addstr(row, (self.win.width * 3) // 4, BORDER_VERTICAL, gc("inner-border"))
 		elif(self.win.layout_type == LAYOUT_2X2):
-			for row in range(1, self.win.height//2):
-				self.win.addstr(row, self.win.width//2, BORDER_VERTICAL, gc("inner-border"))
-			self.win.addstr(self.win.height//2, 0, BORDER_HORIZONTAL * self.win.width, gc("inner-border"))
-			self.win.addstr(self.win.height//2, self.win.width//2, BORDER_CROSSROADS, gc("inner-border"))
-			for row in range(self.win.height//2 + 1, self.win.height-1):
-				self.win.addstr(row, self.win.width//2, BORDER_VERTICAL, gc("inner-border"))
+			# four panes in a grid
+			for row in range(1, self.win.height-1):
+				self.win.addstr(row, self.win.width // 2, BORDER_VERTICAL, gc("inner-border"))
+			self.win.addstr(self.win.height // 2, 0, BORDER_HORIZONTAL * self.win.width, gc("inner-border"))
+			self.win.addstr(self.win.height // 2, self.win.width//2, BORDER_CROSSROADS, gc("inner-border"))
 		elif(self.win.layout_type == LAYOUT_2X3):
-			pass
+			# three panes side by side above another three panes side by side
+			self.win.addstr(self.win.height // 2, 0, BORDER_HORIZONTAL * self.win.width, gc("inner-border"))
+			for row in range(1, self.win.height-1):
+				self.win.addstr(row, self.win.width // 3, BORDER_VERTICAL, gc("inner-border"))
+				self.win.addstr(row, (self.win.width * 2) // 3, BORDER_VERTICAL, gc("inner-border"))
+			self.win.addstr(self.win.height // 2, self.win.width // 3, BORDER_CROSSROADS, gc("inner-border"))
+			self.win.addstr(self.win.height // 2, (self.win.width * 2) // 3, BORDER_CROSSROADS, gc("inner-border"))
 		elif(self.win.layout_type == LAYOUT_1L_2VR):
-			pass
+			# one pane to the left, two panes (stacked on top of each other) on the right
+			for row in range(1, self.win.height-1):
+				self.win.addstr(row, self.win.width // 2, BORDER_VERTICAL, gc("inner-border"))
+			self.win.addstr(self.win.height // 2, self.win.width // 2, BORDER_HORIZONTAL * half_width_right, gc("inner-border"))
+			self.win.addstr(self.win.height // 2, self.win.width // 2, BORDER_SPLIT_RIGHT, gc("inner-border"))
 		elif(self.win.layout_type == LAYOUT_2VL_1R):
-			pass
+			# one pane to the right, two panes (stacked on top of each other) on the left
+			for row in range(1, self.win.height-1):
+				self.win.addstr(row, self.win.width // 2, BORDER_VERTICAL, gc("inner-border"))
+			self.win.addstr(self.win.height // 2, 0, BORDER_HORIZONTAL * (self.win.width // 2), gc("inner-border"))
+			self.win.addstr(self.win.height // 2, self.win.width // 2, BORDER_SPLIT_LEFT, gc("inner-border"))
 		elif(self.win.layout_type == LAYOUT_1T_2HB):
-			pass
+			# one pane to the top spanning the entire width, two panes (side by side) on the bottom
+			self.win.addstr(self.win.height // 2, 0, BORDER_HORIZONTAL * self.win.width, gc("inner-border"))
+			for row in range(self.win.height // 2, self.win.height-1):
+				self.win.addstr(row, self.win.width // 2, BORDER_VERTICAL, gc("inner-border"))
+			self.win.addstr(self.win.height // 2, self.win.width // 2, BORDER_SPLIT_BOTTOM, gc("inner-border"))
 		elif(self.win.layout_type == LAYOUT_2HT_1B):
-			pass
+			# one pane at the bottom spanning the entire width, two panes (side by side) on the top
+			self.win.addstr(self.win.height // 2, 0, BORDER_HORIZONTAL * self.win.width, gc("inner-border"))
+			for row in range(1, self.win.height // 2):
+				self.win.addstr(row, self.win.width // 2, BORDER_VERTICAL, gc("inner-border"))
+			self.win.addstr(self.win.height // 2, self.win.width // 2, BORDER_SPLIT_TOP, gc("inner-border"))
 	
 
 	# check if terminal window has been resized, if so, readjust
@@ -93,12 +124,12 @@ class LayoutManager:
 		# Note: editor repaint must be done after self.__addstr() to correctly
 		# reposition cursor inside the editor
 		for i in range(ec):
-			if(not self.editor_exists(i)):
+			if(self.win.editors[i] == None):
 				y, x, w = self.get_center_of_area(dim[i])
 				self.__addstr(y, x, w)
 
 		for i in range(ec):
-			if(self.editor_exists(i) and i != self.win.active_editor_index): 
+			if(self.editor_exists(i) and i != self.win.active_editor_index):
 				self.win.editors[i].repaint()
 				
 		if(aed != None): aed.repaint()
@@ -132,64 +163,210 @@ class LayoutManager:
 				"width": self.win.width
 			}])
 		elif(self.win.layout_type == LAYOUT_VERTICAL_2):
-			# H=10[1-8]: 1-->4, b=5, 6-->8 ; 11[1-9] 1-->4, b=5, 6-->9
-			return([{
+			# H=24: 1-11 |12| 13-22
+			# H=23: 1-11 |12| 13-23
+			return([{	#1
 				"y": 1,
 				"x": 0,
 				"height": (self.win.height-2) // 2,
 				"width": self.win.width
-			}, {
+			}, {		#2
 				"y": ((self.win.height-2) // 2) + 2,
 				"x": 0,
 				"height": ((self.win.height-2) // 2) - (1 - (self.win.height % 2)),
 				"width": self.win.width
 			}])
 		elif(self.win.layout_type == LAYOUT_HORIZONTAL_2):
-			# W=10[0-9]: 0-->4, b=5, 6-->9 ; 11[0-10] 0-->4, b=5, 6-->10
-			return([{
+			# W=100: 0-49 |50| 51-99
+			# W=101: 0-49 |50| 51-100
+			return([{	#1
 				"y": 1,
 				"x": 0,
 				"height": self.win.height-2,
 				"width": (self.win.width // 2)
-			}, {
+			}, {		#2
 				"y": 1,
 				"x": (self.win.width // 2) + 1,
 				"height": self.win.height-2,
 				"width": (self.win.width // 2) - (1 - (self.win.width % 2))
 			}])
 		elif(self.win.layout_type == LAYOUT_HORIZONTAL_3):
-			# W=100[0-99]: 0-->32, b1=33, 34-->65, b2=66, 67-->99 ; 
-			# W=101[0-100] 0-->32, b1=33, 34-->66, b2=67, 68-->100 ;
-			return([{
+			# W=100: 0-32 |33| 34-65 |66| 67-99
+			# W=101: 0-32 |33| 34-65 |66| 67-100
+			return([{	#1
 				"y": 1,
 				"x": 0,
 				"height": self.win.height-2,
 				"width": (self.win.width // 3)
-			}, {
+			}, {		#2
 				"y": 1,
 				"x": (self.win.width // 3) + 1,
 				"height": self.win.height-2,
-				"width": (self.win.width // 3) - (1 - (self.win.width % 2))
-			}, {
+				"width": (self.win.width // 3) - 1
+			}, {		#3
 				"y": 1,
 				"x": ((self.win.width * 2) // 3) + 1,
 				"height": self.win.height-2,
-				"width": (self.win.width // 3)
+				"width": (self.win.width // 3) + (self.win.width % 2)
 			}])
 		elif(self.win.layout_type == LAYOUT_HORIZONTAL_4):
-			pass
+			# 100: 0-24 |25| 26-49 |50| 51-74 |75| 76-99
+			# 101: 0-24 |25| 26-49 |50| 51-74 |75| 76-100
+			return([{	#1
+				"y": 1,
+				"x": 0,
+				"height": self.win.height-2,
+				"width": (self.win.width // 4)
+			}, {		#2
+				"y": 1,
+				"x": (self.win.width // 4) + 1,
+				"height": self.win.height-2,
+				"width": (self.win.width // 4) - 1
+			}, {		#3
+				"y": 1,
+				"x": (self.win.width // 2) + 1,
+				"height": self.win.height-2,
+				"width": (self.win.width // 4) - 1
+			}, {		#4
+				"y": 1,
+				"x": ((self.win.width * 3) // 4) + 1,
+				"height": self.win.height-2,
+				"width": (self.win.width // 4) - (1 - (self.win.width % 2))
+			}])
 		elif(self.win.layout_type == LAYOUT_2X2):
-			pass
+			# width=100: x: 0-49 |50| 51-99; height=24: y: 1-11 |12| 13-22
+			# width=101: x: 0-49 |50| 51-100; height=25: y: 1-11 |12| 13-23
+			return([{	#1
+				"y": 1,
+				"x": 0,
+				"height": (self.win.height-2) // 2,
+				"width": (self.win.width // 2)
+			}, {		#2
+				"y": 1,
+				"x": (self.win.width // 2) + 1,
+				"height": (self.win.height-2) // 2,
+				"width": (self.win.width // 2) - (1 - (self.win.width % 2))
+			}, {		#3
+				"y": (self.win.height // 2) + 1,
+				"x": 0,
+				"height": ((self.win.height-2) // 2) - (1 - (self.win.height % 2)),
+				"width": (self.win.width // 2)
+			}, {		#4
+				"y": (self.win.height // 2) + 1,
+				"x": (self.win.width // 2) + 1,
+				"height": ((self.win.height-2) // 2) - (1 - (self.win.height % 2)),
+				"width": (self.win.width // 2) - (1 - (self.win.width % 2))
+			}])
 		elif(self.win.layout_type == LAYOUT_2X3):
-			pass
+			# width=100: x: 0-32 |33| 34-65 |66| 67-99 ; height=24: y: 1-11 |12| 13-22
+			# width=101: x: 0-32 |33| 34-65 |66| 67-100; height=25: y: 1-11 |12| 13-23
+			return([{	#1
+				"y": 1,
+				"x": 0,
+				"height": (self.win.height-2) // 2,
+				"width": (self.win.width // 3)
+			}, {		#2
+				"y": 1,
+				"x": (self.win.width // 3) + 1,
+				"height": (self.win.height-2) // 2,
+				"width": (self.win.width // 3) - 1
+			}, {		#3
+				"y": 1,
+				"x": ((self.win.width * 2) // 3) + 1,
+				"height": (self.win.height-2) // 2,
+				"width": (self.win.width // 3) + (self.win.width % 2)
+			}, {		#4
+				"y": (self.win.height // 2) + 1,
+				"x": 0,
+				"height": ((self.win.height-2) // 2) - (1 - (self.win.height % 2)),
+				"width": (self.win.width // 3)
+			}, {		#5
+				"y": (self.win.height // 2) + 1,
+				"x": (self.win.width // 3) + 1,
+				"height": ((self.win.height-2) // 2) - (1 - (self.win.height % 2)),
+				"width": (self.win.width // 3) - 1
+			}, {		#6
+				"y": (self.win.height // 2) + 1,
+				"x": ((self.win.width * 2) // 3) + 1,
+				"height": ((self.win.height-2) // 2) - (1 - (self.win.height % 2)),
+				"width": (self.win.width // 3) + (self.win.width % 2)
+			}])
 		elif(self.win.layout_type == LAYOUT_1L_2VR):
-			pass
+			# width=100: x: 0-49 |50| 51-99 ; height=24: y: (1-22) & (1-11 |12| 13-22)
+			# width=101: x: 0-49 |50| 51-100; height=25: y: (1-23) & (1-11 |12| 13-23)
+			return([{	#1
+				"y": 1,
+				"x": 0,
+				"height": (self.win.height-2),
+				"width": (self.win.width // 2)
+			}, {		#2
+				"y": 1,
+				"x": (self.win.width // 2) + 1,
+				"height": (self.win.height-2) // 2,
+				"width": (self.win.width // 2) - (1 - (self.win.width % 2))
+			}, {		#3
+				"y": (self.win.height // 2) + 1,
+				"x": (self.win.width // 2) + 1,
+				"height": (self.win.height-2) // 2 - (1 - (self.win.height % 2)),
+				"width": (self.win.width // 2) - (1 - (self.win.width % 2))
+			}])
 		elif(self.win.layout_type == LAYOUT_2VL_1R):
-			pass
+			# width=100: x: 0-49 |50| 51-99 ; height=24: y: (1-11 |12| 13-22) & (1-22)
+			# width=101: x: 0-49 |50| 51-100; height=25: y: (1-11 |12| 13-23) & (1-23)
+			return([{	#1
+				"y": 1,
+				"x": 0,
+				"height": (self.win.height-2) // 2,
+				"width": (self.win.width // 2)
+			}, {		#2
+				"y": (self.win.height // 2) + 1,
+				"x": 0,
+				"height": ((self.win.height-2) // 2) - (1 - (self.win.height % 2)),
+				"width": (self.win.width // 2)
+			}, {		#3
+				"y": 1,
+				"x": (self.win.width // 2) + 1,
+				"height": (self.win.height-2),
+				"width": (self.win.width // 2) - (1 - (self.win.width % 2))
+			}])
 		elif(self.win.layout_type == LAYOUT_1T_2HB):
-			pass
+			# width=100: x: (0-99) & (0-49 |50| 51-99) ; height=24: y: 1-11 |12| 13-22
+			# width=101: x: (0-100) & (0-49 |50| 51-100); height=25: y: 1-11 |12| 13-23
+			return([{	#1
+				"y": 1,
+				"x": 0,
+				"height": (self.win.height-2) // 2,
+				"width": self.win.width
+			}, {		#2
+				"y": (self.win.height // 2) + 1,
+				"x": 0,
+				"height": ((self.win.height-2) // 2) - (1 - (self.win.height % 2)),
+				"width": (self.win.width // 2)
+			}, {		#3
+				"y": (self.win.height // 2) + 1,
+				"x": (self.win.width // 2) + 1,
+				"height": ((self.win.height-2) // 2) - (1 - (self.win.height % 2)),
+				"width": (self.win.width // 2) - (1 - (self.win.width % 2))
+			}])
 		elif(self.win.layout_type == LAYOUT_2HT_1B):
-			pass
+			# width=100: x: (0-49 |50| 51-99) & (0-99) ; height=24: y: 1-11 |12| 13-22
+			# width=101: x: (0-49 |50| 51-100) & (0-100); height=25: y: 1-11 |12| 13-23
+			return([{	#1
+				"y": 1,
+				"x": 0,
+				"height": (self.win.height-2) // 2,
+				"width": (self.win.width // 2)
+			}, {		#2
+				"y": 1,
+				"x": (self.win.width // 2) + 1,
+				"height": (self.win.height-2) // 2,
+				"width": (self.win.width // 2) - (1 - (self.win.width % 2))
+			}, {		#3
+				"y": (self.win.height // 2) + 1,
+				"x": 0,
+				"height": ((self.win.height-2) // 2) - (1 - (self.win.height % 2)),
+				"width": self.win.width
+			}])
 
 	# changes the current layout: add code to attach/detach editors
 	def set_layout(self, layout_type):
@@ -218,38 +395,31 @@ class LayoutManager:
 			self.win.app.show_error("Selected editor does not exist")
 			return None
 				
-		# if no active editor, create one
-		if(aei == -1 and len(self.win.editors)==0):
-			ed = Editor(self.win)
-			if(new_bid == None): new_bid, new_buffer = self.win.app.buffers.create_new_buffer()
-			ed.set_buffer(new_bid, new_buffer)
-			self.win.add_editor(ed)
-			aei = 0
-			if(index < 0): index = 0
-			self.readjust(True)
-			self.repaint_editors()
-			self.win.repaint()
-			ed.repaint()
-			return
-
 		# if already active, return		
 		if(aei == index):
 			if(new_bid != None and new_buffer != None): 
 				self.win.editors[index].set_buffer(new_bid, new_buffer)
 			return
-		
+				
+		if(self.win.editors[index] == None):
+			if(new_bid != None and new_buffer != None):
+				self.win.editors[index] = Editor(self.win)
+				self.win.editors[index].set_buffer(new_bid, new_buffer)
+			else:
+				if(self.win.app.app_mode == APP_MODE_FILE):
+					if(self.win.app.ask_question("SELECT FILE", "Select YES to open a blank-buffer, or NO to open a file")):
+						new_bid, new_buffer = self.win.app.buffers.create_new_buffer()
+						self.win.editors[index] = Editor(self.win)
+						self.win.editors[index].set_buffer(new_bid, new_buffer)
+					else:
+						self.win.app.dialog_handler.invoke_file_open(index)						
+				else:
+					self.win.app.dialog_handler.invoke_project_explorer(index)				
+				if(self.win.editors[index] == None or self.win.editors[index].buffer == None): return
+
 		# set active editor
 		self.win.active_editor_index = index
 
-		if(self.win.editors[index] == None):
-			self.win.editors[index] = Editor(self.win)
-			if(new_bid != None and new_buffer != None):
-				self.win.editors[index].set_buffer(new_bid, new_buffer)
-			else:
-				# add code to invoke open_file, for now: add a blank buffer
-				new_bid, new_buffer = self.win.app.buffers.create_new_buffer()
-				self.win.editors[index].set_buffer(new_bid, new_buffer)				
-				
 		self.readjust(True)
 		self.win.repaint()
 		

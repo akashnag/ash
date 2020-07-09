@@ -21,10 +21,11 @@ class TopLevelWindow(Window):
 		self.app = app
 		self.win = stdscr
 		self.handler_func = handler_func
-		self.editors = list()
-		self.active_editor_index = -1
 		self.layout_type = LAYOUT_SINGLE
 		self.app_name = self.app.get_app_name()
+		self.active_editor_index = -1
+		self.editors = list()
+		for i in range(6): self.add_editor(None)
 	
 	# adds an editor to the workspace
 	def add_editor(self, ed):
@@ -74,7 +75,7 @@ class TopLevelWindow(Window):
 				break
 
 		# repaint
-		self.repaint()		
+		self.repaint()
 
 	def update_status(self):
 		aed = self.get_active_editor()
@@ -132,7 +133,7 @@ class TopLevelWindow(Window):
 		self.win.timeout(0)
 		self.repaint()
 
-		if(len(self.editors) > 0): self.editors[0].focus()
+		if(self.editors[0] != None): self.editors[0].focus()
 
 		while(True):
 			ch = self.win.getch()
@@ -153,6 +154,7 @@ class TopLevelWindow(Window):
 	
 	# draws the window
 	def repaint(self):
+		curses.curs_set(False)
 		if(self.win == None): return
 		
 		self.update_status()

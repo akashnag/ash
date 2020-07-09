@@ -66,7 +66,7 @@ class EditorUtility:
 		else:
 			sel_text = self.ed.buffer.lines[start.y][start.x:] + self.ed.buffer.newline
 			for row in range(start.y+1, end.y):
-				sel_text = self.ed.buffer.lines[row] + self.ed.buffer.newline
+				sel_text += self.ed.buffer.lines[row] + self.ed.buffer.newline
 			sel_text += self.ed.buffer.lines[end.y][0:end.x]
 
 		return sel_text

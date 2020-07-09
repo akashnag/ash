@@ -127,15 +127,19 @@ class AshEditorApp:
 		# *status (8), *file-type (11), encoding(7), sloc (20), file-size (10), 
 		# *unsaved-file-count (4), *tab-size (1), cursor-position (6+1+6+3+8=24)
 		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 13, 9, 22, 12, 6, 3, -1 ]))
+				
+		self.main_window.layout_manager.readjust(True)
+
+		if(self.app_mode == APP_MODE_FILE):
+			if(len(self.buffers) > 0):
+				bid = 0
+				buffer = self.buffers.get_buffer_by_id(bid)
+				self.main_window.layout_manager.invoke_activate_editor(0, bid, buffer)
+			elif(len(self.buffers) == 0):
+				# comment the following 2 lines if you want to start ash with no buffers opened
+				bid, buffer = self.buffers.create_new_buffer()
+				self.main_window.layout_manager.invoke_activate_editor(0, bid, buffer)
 		
-		if(len(self.buffers) > 0 and self.app_mode != APP_MODE_PROJECT):
-			bid = 0
-			buffer = self.buffers.get_buffer_by_id(bid)
-			editor = Editor(self.main_window)
-			editor.set_buffer(bid, buffer)			
-			self.main_window.add_editor(editor)
-		
-		self.main_window.layout_manager.readjust(True)		
 		self.main_window.show()		# this call returns when main_window() is closed
 		self.__destroy()
 		return 0

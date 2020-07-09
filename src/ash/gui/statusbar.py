@@ -71,5 +71,8 @@ class StatusBar(Widget):
 				win.addstr(y, x + cumw, s, gc("status-" + str(i)))
 				return
 				
-			win.addstr(y, x + cumw, s, gc("status-" + str(i)))
+			try:
+				win.addstr(y, x + cumw, s, gc("status-" + str(i)))
+			except:
+				pass
 			cumw += w

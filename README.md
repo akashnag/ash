@@ -72,6 +72,7 @@ $ sudo apt install git
 $ sudo apt install xclip
 $ sudo apt install python3
 $ sudo apt install python3-pip
+$ sudo pip3 install pyperclip
 $ sudo pip3 install pygments
 $ sudo pip3 install chardet
 $ sudo pip3 install Send2Trash
@@ -97,10 +98,6 @@ Then append `:~/ash/bin` to the `PATH` variable. You are now ready to run **ash*
 ### Prebuilt binaries
 
 Since **ash** is still under development, prebuilt binaries are not yet available.
-
-### Clipboard support
-
-On Linux, clipboard support requires the `xclip` command. If you do not have this installed on your system, **ash** will use an internal clipboard for clipboard operations, but the data will not be available in external applications.
 
 ### Colors
 

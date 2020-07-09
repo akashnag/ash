@@ -487,6 +487,7 @@ class EditorKeyHandler:
 	def handle_copy(self):
 		if(not self.ed.selection_mode): return
 		sel_text = self.ed.get_selected_text()
+		log(f"copied: {sel_text}")
 		clipboard.copy(sel_text)
 
 	def handle_cut(self):

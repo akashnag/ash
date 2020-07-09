@@ -211,16 +211,17 @@ class DialogHandler:
 		
 	# <----------------------------------- File Open --------------------------------->
 
-	def invoke_project_explorer(self):
+	def invoke_project_explorer(self, target_ed_index = -1):
 		self.app.readjust()
 		y, x = get_center_coords(self.app, 20, 60)
 		self.app.dlgProjectExplorer = ModalDialog(self.app.main_window, y, x, 20, 60, "PROJECT EXPLORER", self.project_explorer_key_handler)
 		lstFiles = TreeView(self.app.dlgProjectExplorer, 3, 2, 56, 16, self.app.buffers, self.app.project_dir)
-		self.app.dlgProjectExplorer.add_widget("lstFiles", lstFiles)	
+		self.app.dlgProjectExplorer.add_widget("lstFiles", lstFiles)
+		self.app.target_open_ed_index = target_ed_index
 		self.app.dlgProjectExplorer.show()
 
 	def project_explorer_key_handler(self, ch):
-		lstFiles = self.app.dlgProjectExplorer.get_widget("lstFiles")		
+		lstFiles = self.app.dlgProjectExplorer.get_widget("lstFiles")
 		
 		mw = self.app.main_window
 		aed = mw.get_active_editor()
@@ -246,7 +247,14 @@ class DialogHandler:
 			sel_buffer = self.app.buffers.get_buffer_by_filename(filename)
 			
 			self.app.dlgProjectExplorer.hide()
-							
+
+			# if target editor supplied
+			if(self.app.target_open_ed_index > -1):
+				mw.layout_manager.invoke_activate_editor(self.app.target_open_ed_index, sel_buffer.id, sel_buffer)
+				mw.repaint()
+				return -1
+			
+			# if target editor not supplied
 			if(aed == None):
 				ffedi = mw.get_first_free_editor_index()
 				aed = mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
@@ -263,7 +271,7 @@ class DialogHandler:
 		
 		return ch
 
-	def invoke_file_open(self):
+	def invoke_file_open(self, target_ed_index = -1):
 		self.app.readjust()
 		y, x = get_center_coords(self.app, 14, 60)
 		self.app.dlgFileOpen = ModalDialog(self.app.main_window, y, x, 14, 60, "OPEN FILE", self.file_open_key_handler)
@@ -286,7 +294,7 @@ class DialogHandler:
 		self.app.dlgFileOpen.add_widget("txtFileName", txtFileName)
 		self.app.dlgFileOpen.add_widget("lstActiveFiles", lstActiveFiles)
 		self.app.dlgFileOpen.add_widget("lstEncodings", lstEncodings)
-		
+		self.app.target_open_ed_index = target_ed_index
 		self.app.dlgFileOpen.show()
 
 	def file_open_key_handler(self, ch):
@@ -303,12 +311,13 @@ class DialogHandler:
 		
 		if(is_ctrl(ch, "Q")):
 			self.app.dlgFileOpen.hide()
+			mw.repaint()
 			return -1
 		elif(is_newline(ch)):
 			is_buffer = False
 			sel_buffer = None
 
-			if(lstActiveFiles.is_in_focus and sel_index > -1): 
+			if(lstActiveFiles.is_in_focus and sel_index > -1):
 				sel_buffer = self.app.buffers.get_buffer_by_id(sel_bid)
 				is_buffer = True
 				filename = sel_buffer.filename
@@ -335,7 +344,15 @@ class DialogHandler:
 					backup_status = BufferManager.backup_exists(filename)
 					sel_bid, sel_buffer = self.app.buffers.create_new_buffer(filename=filename, encoding=sel_encoding, has_backup=backup_status)
 				
-			# at this point, buffer exists in sel_buffer			
+			# at this point, buffer exists in sel_buffer
+			
+			# if target-editor already supplied
+			if(self.app.target_open_ed_index > -1):
+				mw.layout_manager.invoke_activate_editor(self.app.target_open_ed_index, sel_buffer.id, sel_buffer)
+				mw.repaint()
+				return -1
+			
+			# if target-editor not supplied
 			if(aed == None):
 				ffedi = mw.get_first_free_editor_index()
 				aed = mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
@@ -347,7 +364,7 @@ class DialogHandler:
 					else:
 						return -1
 				mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
-				mw.repaint()			
+				mw.repaint()
 			return -1
 		
 		return ch

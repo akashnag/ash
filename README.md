@@ -71,7 +71,10 @@ You need certain packages and Python 3 itself to download and run the developmen
 $ sudo apt install git
 $ sudo apt install xclip
 $ sudo apt install python3
+$ sudo apt install python3-pip
 $ sudo pip3 install pygments
+$ sudo pip3 install chardet
+$ sudo pip3 install Send2Trash
 ```
 
 #### Downloading and setting up ash

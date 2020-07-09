@@ -3,55 +3,39 @@
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
-# This module implements the MessageBox window
+# This module implements the InputBox window
 
 from ash.gui import *
 from ash.gui.window import *
 from ash.core.utils import *
 from ash.formatting.colors import *
+from ash.gui.textfield import *
 
-MSGBOX_OK		= 1
-MSGBOX_CANCEL	= 2
-MSGBOX_YES		= 3
-MSGBOX_NO		= 4
-
-MSGBOX_TYPE_OK				= 0
-MSGBOX_TYPE_OK_CANCEL		= 1
-MSGBOX_TYPE_YES_NO			= 2
-MSGBOX_TYPE_YES_NO_CANCEL	= 3
-
-class MessageBox(Window):
-	def __init__(self, parent, title, message, type = MSGBOX_TYPE_OK):
-		msg_lines, msg_len = get_message_dimensions(message)
+class InputBox(Window):
+	def __init__(self, parent, title, prompt, default = ""):
+		msg_lines, msg_len = get_message_dimensions(prompt)
 		msg_len = max([msg_len, len(title), len("Y(ES) | N(O) | (C)ANCEL")])
 		y, x = get_center_coords(parent, msg_lines + 5, msg_len + 4)
 
 		super().__init__(y, x, msg_lines + 5, msg_len + 4, title)
 		self.type = type
 		self.parent = parent.stdscr
-		self.border_theme = gc("messagebox-border")
-		self.theme = gc("messagebox-background")
-		self.message = message
+		self.border_theme = gc("outer-border")
+		self.theme = gc("outer-border")
+		self.prompt = prompt
 		self.title = title
-		self.win = None
-
-		if(self.type == MSGBOX_TYPE_OK):
-			self.message += "\n" + "(O)K".center(self.width-3)
-		elif(self.type == MSGBOX_TYPE_OK_CANCEL):
-			self.message += "\n" + "(O)K | (C)ANCEL".center(self.width-3)
-		elif(self.type == MSGBOX_TYPE_YES_NO):
-			self.message += "\n" + "(Y)ES | (N)O".center(self.width-3)
-		elif(self.type == MSGBOX_TYPE_YES_NO_CANCEL):
-			self.message += "\n" + "(Y)ES | (N)O | (C)ANCEL".center(self.width-3)
+		self.default = default
+		self.win = curses.newwin(self.height, self.width, self.y, self.x)
+		self.add_widget("txtInput", TextField(self, self.height-2, 2, self.width-4, self.default))
+		
 
 	# show the window and start the event-loop
 	def show(self):
-		self.win = curses.newwin(self.height, self.width, self.y, self.x)
+		#self.win = curses.newwin(self.height, self.width, self.y, self.x)
 		
 		curses.curs_set(False)
 		self.win.keypad(True)
-		self.win.timeout(0)
-		
+		self.win.timeout(0)		
 		self.repaint()
 
 		# start of the event loop	
@@ -59,11 +43,12 @@ class MessageBox(Window):
 			ch = self.win.getch()
 			if(ch > -1): 
 				response = self.check_response(ch)
-				if(response > 0):
+				if(response == 0):
 					self.win.clear()
-					return self.check_response(ch)
-				else:
-					beep()
+					return ""
+				elif(response != None):
+					self.win.clear()
+					return response				
 		
 	# draw the window
 	def repaint(self):
@@ -81,26 +66,24 @@ class MessageBox(Window):
 		self.win.addstr(2, 1, BORDER_HORIZONTAL * (self.width-2), self.theme)
 		self.win.addstr(1, 2, self.title, curses.A_BOLD | self.theme)
 		
-		lines = self.message.splitlines()
+		lines = self.prompt.splitlines()
 		i = 3
 		n = len(lines)
 		for k in range(n):
 			self.win.addstr(i, 2, lines[k], (self.theme if k < n-1 else curses.A_BOLD | self.theme))
 			i += 1
 
-		self.win.attroff(self.theme)		
+		self.win.attroff(self.theme)
+		for w in self.widgets:
+			w.repaint()
 		self.win.refresh()
 
 	# check the response
 	def check_response(self, ch):
-		s = str(chr(ch)).lower()
-		if(s == "y" and (self.type == MSGBOX_TYPE_YES_NO or self.type == MSGBOX_TYPE_YES_NO_CANCEL)):
-			return MSGBOX_YES
-		elif(s == "n" and (self.type == MSGBOX_TYPE_YES_NO or self.type == MSGBOX_TYPE_YES_NO_CANCEL)):
-			return MSGBOX_NO
-		elif((s == "o" or is_newline(ch)) and (self.type == MSGBOX_TYPE_OK or self.type == MSGBOX_TYPE_OK_CANCEL)):
-			return MSGBOX_OK
-		elif(s == "c" and (self.type == MSGBOX_TYPE_YES_NO_CANCEL or self.type == MSGBOX_TYPE_OK_CANCEL)):
-			return MSGBOX_CANCEL
+		if(is_newline(ch)):
+			return str(self.get_widget("txtInput"))
+		elif(is_ctrl(ch, "Q")):
+			return 0
 		else:
-			return -1
+			self.get_widget("txtInput").perform_action(ch)
+			return None

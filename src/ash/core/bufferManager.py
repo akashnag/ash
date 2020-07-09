@@ -7,12 +7,12 @@
 
 from ash.core import *
 from ash.core.logger import *
-
+from ash.core.utils import *
 from ash.gui.cursorPosition import *
-from ash.core.dataUtils import *
 from ash.core.editHistory import *
-
 from ash.formatting.syntaxHighlighting import *
+
+import mimetypes
 
 BACKUP_FREQUENCY_SIZE	= 32		# backup after every 32 bytes changed
 HISTORY_FREQUENCY_SIZE	= 8			# every >=8-character edit can be undone
@@ -25,7 +25,7 @@ class Buffer:
 		self.encoding = encoding
 		self.editors = list()
 		self.display_name = None
-
+		
 		if(self.filename == None):
 			self.lines = list()
 			self.lines.append("")
@@ -92,7 +92,7 @@ class Buffer:
 	def write_to_disk(self, filename = None):
 		if(self.filename == None and filename == None): raise(Exception("Error 1: buffer.write_to_disk()"))
 		if(filename != None): self.filename = filename		# update filename even if filename has changed
-
+		
 		self.formatter = SyntaxHighlighter(self.filename)
 		self.display_name = None
 
@@ -162,6 +162,9 @@ class Buffer:
 
 	def read_file_from_disk(self, read_from_backup = False):
 		filename = (self.backup_file if read_from_backup else self.filename)
+
+		if(self.manager.is_binary(filename)): raise(Exception("Error: buffer: attempting to read binary file"))
+
 		textFile = codecs.open(filename, "r", self.encoding)
 		text = textFile.read()
 		textFile.close()
@@ -172,6 +175,7 @@ class Buffer:
 			self.save_status = True
 		else:
 			self.save_status = False
+		return 0
 
 	def render_data_to_lines(self, text):
 		self.lines = list()
@@ -182,8 +186,6 @@ class Buffer:
 			for line in lines:
 				self.lines.append(line)
 			if(text.endswith("\n")): self.lines.append("")
-
-		
 
 
 class BufferManager:
@@ -324,3 +326,11 @@ class BufferManager:
 			return True
 		else:
 			return False
+
+	@staticmethod
+	def is_binary(filename):
+		mt = str(mimetypes.guess_type(filename, strict=False)[0]).lower()
+		if(mt.startswith("text/")):
+			return False
+		else:
+			return True

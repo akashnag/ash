@@ -7,7 +7,6 @@ import curses
 import copy
 import sys
 import os
-import pathlib
 import select
 
 from ash.core.logger import *

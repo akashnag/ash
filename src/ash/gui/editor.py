@@ -14,7 +14,6 @@ from ash.formatting.colors import *
 
 from ash.core.utils import *
 from ash.core.editHistory import *
-from ash.core.dataUtils import *
 
 PREFERRED_LINE_NUMBER_WIDTH = 6
 

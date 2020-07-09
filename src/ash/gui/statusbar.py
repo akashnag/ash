@@ -57,7 +57,7 @@ class StatusBar(Widget):
 		for i in range(n):
 			w = self.section_widths[i]
 			if(w < 0): w = width - cumw
-			s = " " + self.sections[i] + " "
+			s = " " + ("" if self.sections[i] == None else str(self.sections[i])) + " "
 
 			if(self.alignments[i] == "left"):
 				s = s.ljust(w)
@@ -66,5 +66,10 @@ class StatusBar(Widget):
 			elif(self.alignments[i] == "right"):
 				s = s.rjust(w)
 
+			if(cumw + w > width): 
+				s = s[0:width-cumw]
+				win.addstr(y, x + cumw, s, gc("status-" + str(i)))
+				return
+				
 			win.addstr(y, x + cumw, s, gc("status-" + str(i)))
 			cumw += w

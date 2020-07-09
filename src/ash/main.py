@@ -10,7 +10,6 @@ from ash import *
 from ash.core.bufferManager import *
 from ash.core.logger import *
 from ash.core.utils import *
-from ash.core.dataUtils import *
 
 from ash.formatting.colors import *
 from ash.formatting.formatting import *
@@ -19,6 +18,7 @@ from ash.gui.topLevelWindow import *
 from ash.gui.editor import *
 from ash.gui.statusbar import *
 from ash.gui.msgBox import *
+from ash.gui.inputBox import *
 from ash.gui.dialogHandler import *
 
 APP_VERSION			= "0.1.0-dev"
@@ -26,6 +26,9 @@ UNSAVED_BULLET		= "\u2022"
 
 APP_MODE_FILE		= 1		# if ash is invoked with zero or more file names
 APP_MODE_PROJECT	= 2		# if ash is invoked with a single directory name
+
+MIN_WIDTH			= 102
+MIN_HEIGHT			= 22
 
 class AshEditorApp:
 	def __init__(self, ash_dir, args):
@@ -39,9 +42,7 @@ class AshEditorApp:
 			self.ignore_screen_size = True
 			self.args.pop(1)
 			self.argc -= 1
-
-		log_init()
-		read_file_associations(self)
+		log_init()		
 		
 	def run(self):
 		self.buffers = BufferManager()
@@ -49,10 +50,11 @@ class AshEditorApp:
 		if(self.argc == 1):
 			self.app_mode = APP_MODE_FILE
 		elif(self.argc == 2 and os.path.isdir(self.args[1])):
-			self.app_mode = APP_MODE_PROJECT			
-			self.project_dir = str(pathlib.Path(self.args[1]).absolute())
+			self.app_mode = APP_MODE_PROJECT
+			self.project_dir = str(os.path.abspath(self.args[1]))
 			all_files = glob.glob(self.project_dir + "/**/*.*", recursive=True)
 			for f in all_files:
+				if(BufferManager.is_binary(f)): continue
 				has_backup = BufferManager.backup_exists(f)
 				self.buffers.create_new_buffer(filename=f, has_backup=has_backup)
 		else:
@@ -61,15 +63,17 @@ class AshEditorApp:
 				if(os.path.isdir(self.args[i])):
 					print("ERROR: cannot open more than 1 project")
 					return
-				filePath = str(pathlib.Path(self.args[i]).absolute())
+				filePath = str(os.path.abspath(self.args[i]))
+				if(BufferManager.is_binary(filePath)): continue
 				has_backup = BufferManager.backup_exists(filePath)
 				self.buffers.create_new_buffer(filename=filePath, has_backup=has_backup)
 		
 		# invoke the GUI initialization routine
 		ret_code = curses.wrapper(self.app_main)
 		if(ret_code == -1):
-			print("Error: screen-size insufficient, required at least: 102 x 20")
+			print(f"Error: screen-size insufficient, required at least: {MIN_WIDTH} x {MIN_HEIGHT}")
 			print("To ignore screen limitations: restart with --i as the first argument")
+			print("Doing so may cause the application to crash")
 
 	# recalculates screen dimensions
 	def readjust(self):
@@ -98,7 +102,10 @@ class AshEditorApp:
 		if(self.app_mode == APP_MODE_FILE):
 			app_title = get_file_title(active_editor.buffer.get_name())
 		elif(self.app_mode == APP_MODE_PROJECT):
-			app_title = get_relative_file_title(self.project_dir, active_editor.buffer.filename)
+			if(active_editor.buffer.filename == None):
+				app_title = active_editor.buffer.get_name()
+			else:
+				app_title = get_relative_file_title(self.project_dir, active_editor.buffer.filename)
 		
 		app_title = ("  " if active_editor.buffer.save_status else UNSAVED_BULLET + " ") + app_title
 		return app_title
@@ -108,7 +115,7 @@ class AshEditorApp:
 		self.stdscr = stdscr
 		self.readjust()
 
-		if(not self.ignore_screen_size and (self.screen_width < 102 or self.screen_height < 20)):
+		if(not self.ignore_screen_size and (self.screen_width < MIN_WIDTH or self.screen_height < MIN_HEIGHT)):
 			return -1
 		
 		init_colors()
@@ -121,17 +128,14 @@ class AshEditorApp:
 		# *unsaved-file-count (4), *tab-size (1), cursor-position (6+1+6+3+8=24)
 		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 13, 9, 22, 12, 6, 3, -1 ]))
 		
-		editor = Editor(self.main_window)
-		if(len(self.buffers) == 0): 
-			bid, buffer = self.buffers.create_new_buffer()
-		else:
+		if(len(self.buffers) > 0 and self.app_mode != APP_MODE_PROJECT):
 			bid = 0
 			buffer = self.buffers.get_buffer_by_id(bid)
-							
-		editor.set_buffer(bid, buffer)			
-		self.main_window.add_editor(editor)
-		self.main_window.layout_manager.readjust(True)
+			editor = Editor(self.main_window)
+			editor.set_buffer(bid, buffer)			
+			self.main_window.add_editor(editor)
 		
+		self.main_window.layout_manager.readjust(True)		
 		self.main_window.show()		# this call returns when main_window() is closed
 		self.__destroy()
 		return 0
@@ -160,8 +164,10 @@ class AshEditorApp:
 			# quits the active editor or the app
 			self.dialog_handler.invoke_quit()
 			return -1
-		elif(ch == curses.KEY_RESIZE):
+		elif(is_func(ch, 11) or ch == curses.KEY_RESIZE):
+			self.readjust()
 			self.main_window.repaint()
+			return -1
 		elif(is_ctrl(ch, "L")):
 			# adjust layout
 			self.dialog_handler.invoke_switch_layout()
@@ -223,6 +229,13 @@ class AshEditorApp:
 				self.main_window.repaint()
 				return None
 			beep()
+
+	# displays an inputbox
+	def prompt(self, title, prompt, default = ""):
+		self.inputBox = InputBox(self, title, prompt, default)
+		response = self.inputBox.show()
+		self.main_window.repaint()
+		return response
 
 	# checks if buffer is up-to-date with file on disk
 	def is_file_already_loaded(self, filename):

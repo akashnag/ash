@@ -5,7 +5,6 @@
 
 import curses
 import os
-import pathlib
 import sys
 import copy
 import glob

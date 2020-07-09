@@ -8,7 +8,6 @@
 from ash.gui import *
 from ash.formatting.formatting import *
 from ash.core.utils import *
-from ash.core.dataUtils import *
 
 class EditorUtility:
 	def __init__(self, ed):
@@ -258,7 +257,6 @@ class EditorUtility:
 
 	# moves cursor to previous match
 	def find_previous(self, s):
-		log("called find_prev")
 		self.find_all(s)
 		n = len(s)
 		

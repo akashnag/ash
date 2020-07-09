@@ -11,6 +11,7 @@ from ash.gui.window import *
 from ash.core.utils import *
 from ash.formatting.formatting import *
 from ash.gui.layoutManager import *
+from ash.core.bufferManager import *
 
 # <-------------------- class declaration --------------->
 class TopLevelWindow(Window):
@@ -93,8 +94,9 @@ class TopLevelWindow(Window):
 			
 			if(aed.buffer.filename != None):
 				if(os.path.isfile(aed.buffer.filename)): file_size = aed.buffer.get_file_size()
-				language = get_file_type(aed.buffer.filename)
-				if(language == None): language = "unknown"
+				
+				language = get_textfile_mimetype(aed.buffer.filename)
+				
 				if(aed.buffer.save_status):
 					editor_state = "saved"
 				else:

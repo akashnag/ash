@@ -14,6 +14,14 @@ from ash.core.bufferManager import *
 
 import glob
 import os
+from send2trash import send2trash
+
+UNSAVED_BULLET	= "\u2022"
+LINE_VERTICAL 	= "\u2502"
+LINE_EDGE 		= "\u2514"
+LINE_SPLIT 		= "\u251c"
+LINE_HORIZONTAL = "\u2500"
+INDENT_SIZE		= 4
 
 class TreeNode:
 	def __init__(self, parent, path):
@@ -65,16 +73,19 @@ class TreeView(Widget):
 		self.is_in_focus = False		
 		self.refresh()
 
-	def refresh(self):
+	def refresh(self, maintain_selindex = False):
 		self.refresh_glob()
 		self.ensure_files_have_buffers()
 		self.tree_root = self.form_tree()
 		self.form_list_items()
-		self.sel_index = 0
+		if(not maintain_selindex): self.sel_index = 0
+		self.start = 0
+		self.end = min([self.row_count, len(self.items)])
 		self.repaint()
 
 	def ensure_files_have_buffers(self):		
 		for f in self.files:
+			if(BufferManager.is_binary(f)): continue
 			has_backup = BufferManager.backup_exists(f)
 			if(not self.buffer_manager.does_file_have_its_own_buffer(f)):
 				self.buffer_manager.create_new_buffer(filename=f, has_backup=has_backup)
@@ -85,8 +96,11 @@ class TreeView(Widget):
 		all_files = glob.glob(self.project_dir + "/**/*.*", recursive=True)
 		for f in all_files:
 			self.files.append(f)
-			dir = get_file_directory(f)
-			if(dir not in self.dirs): self.dirs.append(dir)
+			dir_list = get_relative_subdirectories(self.project_dir, f)
+			for d in dir_list:
+				if(d not in self.dirs): self.dirs.append(d)
+		for d in os.walk(self.project_dir):
+			if(d[0] not in self.dirs): self.dirs.append(d[0])
 	
 	def form_tree(self):
 		root_node = TreeNode(None, self.project_dir)
@@ -111,16 +125,26 @@ class TreeView(Widget):
 		self.tags = list()		
 		self.items.append( (str(self.tree_root), self.tree_root) )
 		self.tags.append(self.tree_root.type + ":" + self.tree_root.path)
-		if(self.tree_root.expanded): self.form_sublist_items(self.tree_root, 0);
+		if(self.tree_root.expanded): 
+			self.form_sublist_items(self.tree_root, 0, " " * INDENT_SIZE)
 	
-	def form_sublist_items(self, root_node, root_level):
+	def form_sublist_items(self, root_node, root_level, space):
 		if(root_node.children == None): return
-		space = " " * (4 * (1 + root_level))
-		for c in root_node.children:
-			if(not c.is_dir()): extra_space = " " * 4
+		n = len(root_node.children)
+		for index, c in enumerate(root_node.children):
+			marker = LINE_EDGE if index == n-1 else LINE_SPLIT
+			extra_space = marker
+			if(not c.is_dir()): 
+				if(not BufferManager.is_binary(c.path)):
+					buffer = self.buffer_manager.get_buffer_by_filename(c.path)
+					save_status = buffer.save_status
+					extra_space += (LINE_HORIZONTAL * (INDENT_SIZE-3)) + " " + (" " if save_status else UNSAVED_BULLET) + " "
+				else:
+					extra_space += (LINE_HORIZONTAL * (INDENT_SIZE-3)) + "   "
 			self.items.append( (space + extra_space + str(c), c) )
 			self.tags.append(c.type + ":" + c.path)
-			if(c.is_dir() and c.expanded): self.form_sublist_items(c, root_level + 1);
+			if(c.is_dir() and c.expanded): 
+				self.form_sublist_items(c, root_level + 1, space + (LINE_VERTICAL if marker == LINE_SPLIT else " ") + (" " * (INDENT_SIZE-1)))
 
 	# when focus received
 	def focus(self):
@@ -148,24 +172,22 @@ class TreeView(Widget):
 		if(self.is_in_focus): curses.curs_set(False)
 		
 		count = len(self.items)
-		start = 0
-		end = min([self.row_count, count])
-
+		
 		if(count <= self.row_count):
-			start = 0
-			end = count
+			self.start = 0
+			self.end = count
 		elif(self.sel_index == -1):
-			start = 0
-			end = self.row_count
+			self.start = 0
+			self.end = self.row_count
 		else:
-			if(self.sel_index < start):
-				start = self.sel_index
-				end = min([start + self.row_count, count])
-			elif(self.sel_index >= end):
-				end = self.sel_index + 1
-				start = max([end - self.row_count, 0])
+			if(self.sel_index < self.start):
+				self.start = self.sel_index
+				self.end = min([self.start + self.row_count, count])
+			elif(self.sel_index >= self.end):
+				self.end = self.sel_index + 1
+				self.start = max([self.end - self.row_count, 0])
 			
-		for i in range(start, end):
+		for i in range(self.start, self.end):
 			disp_text, node_obj = self.items[i]
 
 			n = 2 + len(disp_text)
@@ -176,11 +198,11 @@ class TreeView(Widget):
 
 			if(i == self.sel_index):
 				if(self.is_in_focus):
-					self.parent.addstr(self.y + i - start, self.x, text, self.focus_theme)
+					self.parent.addstr(self.y + i - self.start, self.x, text, self.focus_theme)
 				else:
-					self.parent.addstr(self.y + i - start, self.x, text, self.sel_blur_theme)
+					self.parent.addstr(self.y + i - self.start, self.x, text, self.sel_blur_theme)
 			else:				
-				self.parent.addstr(self.y + i - start, self.x, text, self.theme)
+				self.parent.addstr(self.y + i - self.start, self.x, text, self.theme)
 
 		
 	# handle key presses
@@ -191,27 +213,86 @@ class TreeView(Widget):
 		sel_item_obj = self.items[self.sel_index][1]
 
 		if(ch == curses.KEY_UP):
-			if(self.sel_index == -1):
-				self.sel_index = n-1
+			if(self.sel_index <= 0):
+				self.sel_index = 0
 			else:
 				self.sel_index = (self.sel_index - 1) % n
 		elif(ch == curses.KEY_DOWN):
-			self.sel_index = (self.sel_index + 1) % n
+			if(self.sel_index < n-1):
+				self.sel_index = (self.sel_index + 1) % n
+		elif(ch == curses.KEY_PPAGE):		# PgUp
+			if(self.sel_index > self.row_count):
+				self.sel_index -= self.row_count
+			else:
+				self.sel_index = 0
+		elif(ch == curses.KEY_NPAGE):		# PgDown
+			if(self.sel_index < len(self.items) - self.row_count):
+				self.sel_index += min([self.row_count, len(self.items)-1])
+			else:
+				self.sel_index = len(self.items)-1
 		elif(str(chr(ch)) == "+" and sel_item_obj.is_dir() and sel_item_obj.expanded):
 			sel_item_obj.collapse()
 			self.form_list_items()
-			self.sel_index = 0
 		elif(str(chr(ch)) == "-" and sel_item_obj.is_dir() and not sel_item_obj.expanded):
 			sel_item_obj.expand()
 			self.form_list_items()
-			self.sel_index = 0
 		elif(is_ctrl(ch, "R")):
 			self.refresh()
 			return
+		elif(is_ctrl(ch, "D")):
+			self.create_new_directory()
+		elif(is_ctrl(ch, "N")):
+			self.create_new_file()
+		elif(ch == curses.KEY_DC):
+			self.delete_sel_item()
 		else:
 			beep()
 
 		self.repaint()
+
+	def create_new_directory(self):
+		parent_dir = self.get_sel_filepath()
+		if(os.path.isfile(parent_dir)): parent_dir = get_file_directory(parent_dir)
+		fn = self.parent.parent.app.prompt("CREATE DIRECTORY", "Enter a new directory name: ")
+		if(fn != None and len(fn) > 0):
+			filename = parent_dir + "/" + fn
+			if(os.path.isfile(filename) or os.path.isdir(filename)):
+				self.parent.parent.app.show_error("The file already exists!")
+			else:
+				try:
+					os.makedirs(filename)
+				except:
+					self.parent.parent.app.show_error("An error occurred while creating directory")
+				self.refresh(True)
+	
+	def create_new_file(self):
+		parent_dir = self.get_sel_filepath()
+		if(os.path.isfile(parent_dir)): parent_dir = get_file_directory(parent_dir)
+		fn = self.parent.parent.app.prompt("CREATE FILE", "Enter a new filename: ")
+		if(fn != None and len(fn) > 0):
+			filename = parent_dir + "/" + fn
+			if(os.path.isfile(filename)):
+				self.parent.parent.app.show_error("The file already exists!")
+				return
+			try:
+				fp = open(filename, "wt")
+				fp.close()
+			except:
+				self.parent.parent.app.show_error("An error occurred while creating file")
+			self.refresh(True)		
+
+	def delete_sel_item(self):
+		fp = self.get_sel_filepath()
+		if(self.parent.parent.app.ask_question("DELETE", "Are you sure you want to delete this item?")):
+			try:
+				send2trash(fp)
+				self.refresh()
+			except:
+				self.parent.parent.app.show_error("An error occurred while deleting item")
+		
+		#p = self.parent.parent.app.prompt("Age", "Enter your age: ")
+		#self.parent.parent.app.show_error("You entered: " + p)
+			
 
 	# returns the text of the selected item
 	def __str__(self):

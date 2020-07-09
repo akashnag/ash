@@ -9,7 +9,6 @@ from ash.gui import *
 
 from ash.core.bufferManager import *
 from ash.core.utils import *
-from ash.core.dataUtils import *
 from ash.gui.modalDialog import *
 from ash.gui.findReplaceDialog import *
 from ash.gui.checkbox import *
@@ -19,6 +18,9 @@ from ash.gui.treeview import TreeView
 
 UNSAVED_BULLET		= "\u2022"
 TICK_MARK			= "\u2713"
+
+APP_MODE_FILE		= 1		# if ash is invoked with zero or more file names
+APP_MODE_PROJECT	= 2		# if ash is invoked with a single directory name
 
 SUPPORTED_ENCODINGS = [ "utf-8", "ascii", "utf-7", "utf-16", "utf-32", "latin-1" ]
 
@@ -100,12 +102,15 @@ class DialogHandler:
 		mw = self.app.main_window
 		lm = mw.layout_manager
 		aed = mw.get_active_editor()
+		am = self.app.app_mode
 
 		unsaved_count = self.app.buffers.get_true_unsaved_count()
 		editor_count = mw.get_visible_editor_count()
 		
 		if(unsaved_count == 0):
-			if(editor_count <= 1):
+			if(editor_count <= 1 and am == APP_MODE_FILE):				
+				mw.hide()
+			elif(editor_count == 0 and am == APP_MODE_PROJECT):
 				mw.hide()
 			else:
 				mw.close_active_editor()
@@ -232,8 +237,14 @@ class DialogHandler:
 			filename = tag[2:]
 			if(file_type == "d"): return -1
 
+			if(BufferManager.is_binary(filename)):
+				self.app.show_error("Cannot open binary file!")
+				mw.repaint()
+				self.app.dlgProjectExplorer.repaint()
+				return -1
 
 			sel_buffer = self.app.buffers.get_buffer_by_filename(filename)
+			
 			self.app.dlgProjectExplorer.hide()
 							
 			if(aed == None):
@@ -304,6 +315,10 @@ class DialogHandler:
 			else:							
 				filename = str(txtFileName)
 
+			if(BufferManager.is_binary(filename)):
+				self.app.show_error("Cannot open binary file!")
+				return -1
+			
 			sel_encoding = str(lstEncodings)
 			self.app.dlgFileOpen.hide()
 			
@@ -389,7 +404,7 @@ class DialogHandler:
 		y, x = get_center_coords(self.app, 5, 60)
 		self.app.dlgSaveAs = ModalDialog(self.app.main_window, y, x, 5, 60, "SAVE AS", self.file_save_as_key_handler)
 		if(buffer.filename == None): 
-			filename = str(os.getcwd()) + "/" + buffer.get_name()
+			filename = str( self.app.project_dir if self.app.app_mode == APP_MODE_PROJECT else os.getcwd() ) + "/" + buffer.get_name()
 		else:
 			filename = buffer.filename
 		txtFileName = TextField(self.app.dlgSaveAs, 3, 2, 56, filename)
@@ -400,15 +415,22 @@ class DialogHandler:
 	def file_save_as_key_handler(self, ch):
 		if(is_ctrl(ch, "Q")): 
 			self.app.dlgSaveAs.hide()
+			return -1
 		elif(is_newline(ch)):
 			buffer = self.app.dlgSaveAs_Buffer
 			self.app.dlgSaveAs.hide()
 			txtFileName = self.app.dlgSaveAs.get_widget("txtFileName")
 			filename = str(txtFileName)
+
+			if(BufferManager.is_binary(filename)):
+				self.app.show_error("Cannot write to binary file!")
+				return -1
+
 			if(not os.path.isfile(filename)):
 				buffer.write_to_disk(filename)
 			else:
 				if(self.app.ask_question("REPLACE FILE", "File already exists, replace?")):
 					buffer.write_to_disk(filename)
+			return -1
 					
 		return ch

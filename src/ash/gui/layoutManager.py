@@ -218,7 +218,21 @@ class LayoutManager:
 			self.win.app.show_error("Selected editor does not exist")
 			return None
 				
-		# if already active, return
+		# if no active editor, create one
+		if(aei == -1 and len(self.win.editors)==0):
+			ed = Editor(self.win)
+			if(new_bid == None): new_bid, new_buffer = self.win.app.buffers.create_new_buffer()
+			ed.set_buffer(new_bid, new_buffer)
+			self.win.add_editor(ed)
+			aei = 0
+			if(index < 0): index = 0
+			self.readjust(True)
+			self.repaint_editors()
+			self.win.repaint()
+			ed.repaint()
+			return
+
+		# if already active, return		
 		if(aei == index):
 			if(new_bid != None and new_buffer != None): 
 				self.win.editors[index].set_buffer(new_bid, new_buffer)

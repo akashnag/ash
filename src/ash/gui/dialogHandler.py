@@ -299,6 +299,8 @@ class DialogHandler:
 				return -1
 
 			sel_buffer = self.app.buffers.get_buffer_by_filename(filename)
+			if(sel_buffer == None):
+				sel_bid, sel_buffer = self.app.buffers.create_new_buffer(filename=filename, has_backup=BufferManager.backup_exists(filename))
 			
 			self.app.dlgProjectExplorer.hide()
 

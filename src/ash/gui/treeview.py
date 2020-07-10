@@ -281,8 +281,9 @@ class TreeView(Widget):
 				self.parent.parent.app.show_error("The file already exists!")
 				return
 			try:
-				fp = open(filename, "wt")
-				fp.close()
+				f = codecs.open(filename, "w", "utf-8")
+				f.write("")
+				f.close()
 				self.refresh(True)
 			except:
 				self.parent.parent.app.show_error("An error occurred while creating file")

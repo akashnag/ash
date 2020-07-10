@@ -44,7 +44,8 @@ class Buffer:
 			self.formatter = SyntaxHighlighter(self.filename)
 		
 		self.history = EditHistory(self.lines, CursorPosition(0,0))
-		self.newline = newline		
+		self.newline = newline
+		if(self.encoding == None): self.encoding = "utf-8"
 
 	def set_encoding(self, encoding):
 		self.encoding = encoding
@@ -200,6 +201,10 @@ class Buffer:
 		filename = (self.backup_file if read_from_backup else self.filename)
 
 		if(self.manager.is_binary(filename)): raise(Exception("Error: buffer: attempting to read binary file"))
+
+		if(not os.path.isfile(filename)):
+			textFile = codecs.open(filename, "w", self.encoding)
+			textFile.close()
 
 		textFile = codecs.open(filename, "r", self.encoding)
 		text = textFile.read()

@@ -7,6 +7,8 @@
 
 from ash import *
 
+import time
+
 from ash.core.bufferManager import *
 from ash.core.logger import *
 
@@ -251,3 +253,5 @@ class AshEditorApp:
 
 	def warn_insufficient_screen_space(self):
 		self.main_window.repaint(f"error: insufficient screen space (minimum reqd.: {MIN_WIDTH}x{MIN_HEIGHT} ), ash may crash unexpectedly")
+		beep()
+		time.sleep(1)

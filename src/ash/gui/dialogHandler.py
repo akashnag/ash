@@ -32,7 +32,7 @@ class DialogHandler:
 		try:
 			y, x = get_center_coords(self.app, 5, 30)
 		except:
-			self.warn_insufficient_screen_space()
+			self.app.warn_insufficient_screen_space()			
 			return
 
 		self.app.dlgFind = FindReplaceDialog(mw, y, x, ed)
@@ -47,7 +47,7 @@ class DialogHandler:
 		try:
 			y, x = get_center_coords(self.app, 7, 30)
 		except:
-			self.warn_insufficient_screen_space()
+			self.app.warn_insufficient_screen_space()
 			return
 
 		self.app.dlgReplace = FindReplaceDialog(mw, y, x, ed, True)
@@ -62,7 +62,7 @@ class DialogHandler:
 		try:
 			y, x = get_center_coords(self.app, 5, 14)
 		except:
-			self.warn_insufficient_screen_space()
+			self.app.warn_insufficient_screen_space()
 			return
 
 		self.app.dlgGoTo = ModalDialog(self.app.main_window, y, x, 5, 14, "GO TO LINE", self.go_to_key_handler)
@@ -148,7 +148,7 @@ class DialogHandler:
 		try:
 			y, x = get_center_coords(self.app, 16, 30)
 		except:
-			self.warn_insufficient_screen_space()
+			self.app.warn_insufficient_screen_space()
 			return
 
 		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 16, 30, "PREFERENCES", self.preferences_key_handler)
@@ -235,7 +235,7 @@ class DialogHandler:
 		try:
 			y, x = get_center_coords(self.app, 20, 80)
 		except:
-			self.warn_insufficient_screen_space()
+			self.app.warn_insufficient_screen_space()
 			return
 
 		self.app.dlgHelpKeyBindings = ModalDialog(self.app.main_window, y, x, 20, 80, "HELP: KEY BINDINGS", self.help_key_bindings_key_handler)
@@ -265,7 +265,7 @@ class DialogHandler:
 		try:
 			y, x = get_center_coords(self.app, 20, 60)
 		except:
-			self.warn_insufficient_screen_space()
+			self.app.warn_insufficient_screen_space()
 			return
 
 		self.app.dlgProjectExplorer = ModalDialog(self.app.main_window, y, x, 20, 60, "PROJECT EXPLORER", self.project_explorer_key_handler)
@@ -333,7 +333,7 @@ class DialogHandler:
 		try:
 			y, x = get_center_coords(self.app, 14, 60)
 		except:
-			self.warn_insufficient_screen_space()
+			self.app.warn_insufficient_screen_space()
 			return
 
 		self.app.dlgFileOpen = ModalDialog(self.app.main_window, y, x, 14, 60, "OPEN FILE", self.file_open_key_handler)
@@ -451,7 +451,7 @@ class DialogHandler:
 		try:
 			y, x = get_center_coords(self.app, 9, 40)
 		except:
-			self.warn_insufficient_screen_space()
+			self.app.warn_insufficient_screen_space()
 			return
 
 		self.app.dlgSwitchLayout = ModalDialog(self.app.main_window, y, x, 9, 40, "SWITCH LAYOUT", self.switch_layout_key_handler)
@@ -500,7 +500,7 @@ class DialogHandler:
 		try:
 			y, x = get_center_coords(self.app, 5, 60)
 		except:
-			self.warn_insufficient_screen_space()
+			self.app.warn_insufficient_screen_space()
 			return
 			
 		self.app.dlgSaveAs = ModalDialog(self.app.main_window, y, x, 5, 60, "SAVE AS", self.file_save_as_key_handler)

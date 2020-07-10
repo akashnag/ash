@@ -6,6 +6,7 @@
 # This module is a helper class for Editor
 
 from ash.gui import *
+from ash.gui.cursorPosition import *
 
 class EditorUtility:
 	def __init__(self, ed):

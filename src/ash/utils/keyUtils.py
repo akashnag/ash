@@ -7,11 +7,27 @@
 
 from ash.utils import *
 
+ARROW_LEFT		= "\u2190"
+ARROW_UP		= "\u2191"
+ARROW_RIGHT		= "\u2192"
+ARROW_DOWN		= "\u2193"
+
 ASH_KEY_BINDINGS = [
 	("GROUP:", "GENERAL COMMANDS"),
 	("------", "--------------------------------------------"),
 	("Ctrl + Q", "Close the active window"),
 	("Ctrl + @", "Discard any unsaved changes and close ash"),
+	("Tab", "Moves focus to the next element in the active window"),
+	("Shift + Tab", "Moves focus to the previous element in the active window"),
+	("Ctrl + N", "Opens a new blank buffer for editing"),
+	("Ctrl + O", "Shows the File-Open window"),
+	(f"{ARROW_UP} {ARROW_DOWN}", "Changes the selected item in a list"),
+	(f"Ctrl + {ARROW_LEFT} {ARROW_UP} {ARROW_DOWN} {ARROW_RIGHT}", "Moves the active window around"),
+	(f"{ARROW_LEFT} {ARROW_RIGHT}", "Moves the cursor in a textfield"),
+	("Del", "Deletes the character under the cursor"),
+	("Backspace", "Deletes the character to the left of the cursor"),
+	("Ctrl + L", "Opens the Layout switcher window"),
+	("Ctrl + E", "Opens the project explorer (if in directory mode)"),
 	("F1", "Activate the 1st editor in the layout"),
 	("F2", "Activate the 2nd editor in the layout"),
 	("F3", "Activate the 3rd editor in the layout"),
@@ -19,9 +35,53 @@ ASH_KEY_BINDINGS = [
 	("F5", "Activate the 5th editor in the layout"),
 	("F6", "Activate the 6th editor in the layout"),
 	("F11", "Resize window"),
-	("F12", "Show this help"),
+	("F12", "Show this help"),	
 	("", ""),			# blank line
 	
+	("GROUP:", "PROJECT EXPLORER"),
+	("------", "--------------------------------------------"),
+	("Ctrl + R", "Refresh the directory tree"),
+	("Ctrl + N", "Create a new file under the selected directory"),
+	("Ctrl + D", "Create a new directory under the selected directory"),
+	("+", "Collapse the selected directory"),
+	("-", "Expand the selected directory"),
+	("F4", "Activate the 4th editor in the layout"),
+	("F5", "Activate the 5th editor in the layout"),
+	("F6", "Activate the 6th editor in the layout"),
+	("F11", "Resize window"),
+	("F12", "Show this help"),
+	("", ""),			# blank line
+
+	("GROUP:", "EDITOR COMMANDS"),
+	("------", "--------------------------------------------"),
+	(f"{ARROW_LEFT} {ARROW_UP} {ARROW_DOWN} {ARROW_RIGHT}", "Moves the cursor"),
+	(f"Shift + {ARROW_LEFT} {ARROW_UP} {ARROW_DOWN} {ARROW_RIGHT}", "Select text"),
+	("Home", "Move cursor to the beginning of the current line"),
+	("End", "Move cursor to the end of the current line"),
+	("Ctrl + Home", "Move cursor to the beginning of the current document"),
+	("Ctrl + End", "Move cursor to the end of the current document"),
+	("PgUp", "Moves the cursor up one screenful at a time"),
+	("PgDown", "Moves the cursor down one screenful at a time"),
+	("Shift + PgUp", "Selects text upwards one screenful at a time"),
+	("Shift + PgDown", "Selects text downwards one screenful at a time"),
+	("Ctrl + A", "Selects the entire document"),
+
+	("Del", "Deletes the character under the cursor"),
+	("Backspace", "Deletes the character to the left of the cursor"),
+
+	("Ctrl + S", "Save"),
+	("Ctrl + X", "Cut"),
+	("Ctrl + C", "Copy"),
+	("Ctrl + V", "Paste"),
+	("Ctrl + Z", "Undo"),
+	("Ctrl + Y", "Redo"),
+	("Ctrl + P", "Opens the preferences window"),
+	("Ctrl + G", "Opens the Go-To-Line window"),
+	("Ctrl + F", "Opens the find window"),
+	("Ctrl + H", "Opens the find and replace window"),
+	#("", ""),			# blank line
+
+	("", "")
 ]
 
 def get_ash_key_bindings():

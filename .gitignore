@@ -7,3 +7,4 @@ src/ash/gui/__pycache__
 src/ash/utils/__pycache__
 *.pyc
 *.txt
+!/requirements.txt

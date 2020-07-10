@@ -301,7 +301,7 @@ class DialogHandler:
 		blist = self.app.buffers.get_list()
 		for (bid, save_status, bname) in blist:
 			lstActiveFiles.add_item((" " if save_status else UNSAVED_BULLET) + " " + get_file_title(bname), tag=bid)
-		
+			
 		# add the encodings
 		for enc in SUPPORTED_ENCODINGS:
 			lstEncodings.add_item(enc)
@@ -343,17 +343,18 @@ class DialogHandler:
 			else:							
 				filename = str(txtFileName)
 
-			if(os.path.isdir(filename)):
-				self.app.show_error("Cannot open directory, relaunch with the directory-name as\nthe first argument to ash.")
-				mw.repaint()
-				self.app.dlgFileOpen.repaint()
-				return -1
+			if(filename != None):
+				if(os.path.isdir(filename)):
+					self.app.show_error("Cannot open directory, relaunch with the directory-name as\nthe first argument to ash.")
+					mw.repaint()
+					self.app.dlgFileOpen.repaint()
+					return -1
 
-			if(BufferManager.is_binary(filename)):
-				self.app.show_error("Cannot open binary file!")
-				mw.repaint()
-				self.app.dlgFileOpen.repaint()
-				return -1
+				if(BufferManager.is_binary(filename)):
+					self.app.show_error("Cannot open binary file!")
+					mw.repaint()
+					self.app.dlgFileOpen.repaint()
+					return -1
 			
 			sel_encoding = str(lstEncodings)
 			self.app.dlgFileOpen.hide()

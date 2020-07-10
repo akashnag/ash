@@ -19,6 +19,7 @@ Here is a picture of **ash** editing this README file (syntax highlighting is no
   - [Colors](#colors)
   - [Usage](#usage)
 - [Contributing](#contributing)
+- [Screenshots](#screenshots)
 - [License](#license)
 
 - - -
@@ -72,10 +73,6 @@ $ sudo apt install git
 $ sudo apt install xclip
 $ sudo apt install python3
 $ sudo apt install python3-pip
-$ sudo pip3 install pyperclip
-$ sudo pip3 install pygments
-$ sudo pip3 install chardet
-$ sudo pip3 install Send2Trash
 ```
 
 #### Downloading and setting up ash
@@ -85,6 +82,8 @@ $ cd ~
 $ git clone --depth 1 -b master https://github.com/akashnag/ash.git
 $ cd ash/bin
 $ sudo chmod +x ash
+$ cd ..
+$ sudo pip3 install -r requirements.txt
 ```
 
 To be able to launch **ash** from anywhere, you need to add `~/ash/bin` to your path by editing your `.bashrc` file:
@@ -105,7 +104,7 @@ If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM
 
 ## Usage
 
-Once you have downloaded the **ash** source code, and set it up as detailed above, you are ready to use it (Note: it may take some time to load for the first time):
+Once you have downloaded the **ash** source code, and set it up as detailed above, you are ready to use it (it may take some time to load for the first time) **NOTE: if you have not updated your path variable, you must specify the full path to the ash binary.**
 
 ```bash
 $ ash path/to/file.txt
@@ -123,7 +122,7 @@ or, to open a project (directory):
 $ ash path/to/directory
 ```
 
-See the [key-bindings](KEYBINDINGS.md) for help on how to navigate in ash.
+See the [Key Bindings](KEYBINDINGS.md) for help on how to navigate in ash.
 
 ## Contributing
 
@@ -132,6 +131,14 @@ If you find any bugs, please report them. I am also happy to accept pull request
 You can use the [GitHub issue tracker](https://github.com/akashnag/ash/issues) to report bugs, ask questions, or suggest new features.
 
 For discussions related to the development roadmap and the **ash** editor in general, you can join the [Gitter chat](https://gitter.im/akashnag/ash).
+
+## Screenshots
+
+![Screenshot](./assets/ss1.png)
+![Screenshot](./assets/ss2.png)
+![Screenshot](./assets/ss3.png)
+![Screenshot](./assets/ss4.png)
+![Screenshot](./assets/ss5.png)
 
 ## License
 

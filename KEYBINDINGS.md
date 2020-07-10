@@ -6,9 +6,9 @@ The following is a list of key bindings for **ash**. Please note that these bind
 
 These key combinations can be used even if no editor is currently active.
 
-<kbd>Ctrl</kbd> + <kbd>Q</kbd> &nbsp;&nbsp;Closes the active editor/dialog-box or the application
+<kbd>Ctrl</kbd> + <kbd>Q</kbd> &nbsp;&nbsp;Closes the active window
 
-<kbd>Ctrl</kbd> + <kbd>@</kbd> &nbsp;&nbsp;Force-quits the application
+<kbd>Ctrl</kbd> + <kbd>@</kbd> &nbsp;&nbsp;Force-quits the application, discarding all changes
 
 <kbd>Tab</kbd> &nbsp;&nbsp;Moves focus to the next widget in the active dialog-box (if any)
 
@@ -25,6 +25,9 @@ These key combinations can be used even if no editor is currently active.
 <kbd>Ctrl</kbd> + <kbd>E</kbd> &nbsp;&nbsp;Opens project explorer (if directory has been opened)
 
 <kbd>F1</kbd> - <kbd>F6</kbd> &nbsp;&nbsp;&nbsp;&nbsp;Activates the corresponding editor (if exists in the current layout)
+
+<kbd>F12</kbd>&nbsp;&nbsp;&nbsp;&nbsp;Shows this list of key-bindings
+
 
 ### Editor commands
 
@@ -76,14 +79,6 @@ These key combinations work only if an editor is currently active.
 
 <kbd>Ctrl</kbd> + <kbd>H</kbd> &nbsp;&nbsp;Replace
 
-### Not yet implemented
-
-The following key bindings have not yet been implemented but will be in the final release.
-
-<kbd>Ctrl</kbd> + <kbd>R</kbd> &nbsp;&nbsp;Open recent files list
-
-<kbd>Ctrl</kbd> + <kbd>T</kbd> &nbsp;&nbsp;Print
-
 ### Commands for find and replace operations
 
 These key combinations work when the Find/Replace dialog box is active:
@@ -101,6 +96,10 @@ These key combinations work when the Find/Replace dialog box is active:
 These key combinations work when the Project Explorer dialog-box is active:
 
 <kbd>Ctrl</kbd> + <kbd>R</kbd> &nbsp;&nbsp;Refresh file tree
+
+<kbd>Ctrl</kbd> + <kbd>N</kbd> &nbsp;&nbsp;Create a new file under the selected directory
+
+<kbd>Ctrl</kbd> + <kbd>D</kbd> &nbsp;&nbsp;Create a new directory under the selected directory
 
 <kbd>+</kbd> &nbsp;&nbsp;Collapse the current selected directory
 

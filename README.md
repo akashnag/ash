@@ -4,7 +4,7 @@
 
 **ash** is a simple and clean terminal-based text editor for Linux and macOS, that aims to be easy to use with modern key-bindings. It is fully capable of handling multiple files simultaneously and hopes to provide a wide array of features when it is released.
 
-Here is a picture of **ash** editing this README file (syntax highlighting is not yet implemented):
+Here is a picture of **ash** editing this README file:
 
 ![Screenshot](./assets/ash-default.png)
 
@@ -44,7 +44,7 @@ The following is a list of features available in **ash**; some of which have alr
 - Project mode (opening a directory instead of individual files)
 - Support for splits/windows
 - Support for various text-encodings
-- Syntax highlighting
+- Syntax highlighting (partially implemented)
 - Selection highlighting (highlights text under selection wherever they occur in the document)
 - Color scheme customization
 

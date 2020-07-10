@@ -38,6 +38,8 @@ class EditorKeyHandler:
 			self.handle_redo()
 		elif(is_ctrl(ch, "P")):
 			self.ed.parent.app.dialog_handler.invoke_set_preferences()
+		elif(is_func(ch, 9)):
+			self.ed.parent.app.dialog_handler.invoke_file_save_as(self.ed.buffer)
 
 		return False
 
@@ -47,6 +49,7 @@ class EditorKeyHandler:
 		col = self.ed.curpos.x
 		clen = len(self.ed.buffer.lines[row])
 		nlen = len(self.ed.buffer.lines)
+		nwlen = len(self.ed.rendered_lines)
 		
 		if(ch == curses.KEY_LEFT):
 			if(row == 0 and col == 0):
@@ -72,21 +75,25 @@ class EditorKeyHandler:
 					self.ed.curpos.y = end.y
 					self.ed.curpos.x = end.x
 		elif(ch == curses.KEY_DOWN):
-			if(row == nlen-1):
+			if(not self.ed.word_wrap and row == nlen-1):
+				beep()
+			elif(self.ed.word_wrap and self.ed.rendered_curpos.y == nwlen - 1):
 				beep()
 			else:
 				if(self.ed.word_wrap):
 					if(self.ed.col_spans[self.ed.rendered_curpos.y + 1][0] == 0):
 						self.ed.curpos.y += 1
-					else:
-						self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y + 1][0]
+					
+					self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y + 1][0]
 				else:
 					if(self.ed.curpos.x > len(self.ed.buffer.lines[row+1])):
 						# cannot preserve column, so move to end
 						self.ed.curpos.x = len(self.ed.buffer.lines[row+1])
 					self.ed.curpos.y += 1
 		elif(ch == curses.KEY_UP):
-			if(row == 0):
+			if(not self.ed.word_wrap and row == 0):
+				beep()
+			elif(self.ed.word_wrap and self.ed.rendered_curpos.y == 0):
 				beep()
 			else:
 				if(self.ed.word_wrap):
@@ -141,6 +148,7 @@ class EditorKeyHandler:
 		col = self.ed.curpos.x
 		nlen = len(self.ed.buffer.lines)
 		clen = len(self.ed.buffer.lines[row])
+		nwlen = len(self.ed.rendered_lines)
 
 		if(not self.ed.selection_mode):
 			self.ed.selection_mode = True
@@ -163,21 +171,25 @@ class EditorKeyHandler:
 			else:
 				self.ed.curpos.x += 1
 		elif(ch == curses.KEY_SF):			# down
-			if(row == nlen-1):
+			if(not self.ed.word_wrap and row == nlen-1):
+				beep()
+			elif(self.ed.word_wrap and self.ed.rendered_curpos.y == nwlen - 1):
 				beep()
 			else:
 				if(self.ed.word_wrap):
 					if(self.ed.col_spans[self.ed.rendered_curpos.y + 1][0] == 0):
 						self.ed.curpos.y += 1
-					else:
-						self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y + 1][0]
+					
+					self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y + 1][0]
 				else:
 					if(self.ed.curpos.x > len(self.ed.buffer.lines[row+1])):
 						# cannot preserve column
 						self.ed.curpos.x = len(self.ed.buffer.lines[row+1])
 					self.ed.curpos.y += 1
 		elif(ch == curses.KEY_SR):			# up
-			if(row == 0):
+			if(not self.ed.word_wrap and row == 0):
+				beep()
+			elif(self.ed.word_wrap and self.ed.rendered_curpos.y == 0):
 				beep()
 			else:
 				if(self.ed.word_wrap):
@@ -202,7 +214,7 @@ class EditorKeyHandler:
 	# of the cursor, or deletes the selected text
 	def handle_delete_key(self, ch):
 		if(self.ed.selection_mode):
-			self.ed.delete_selected_text()
+			self.ed.utility.delete_selected_text()
 			return True
 		
 		text = self.ed.buffer.lines[self.ed.curpos.y]
@@ -228,7 +240,7 @@ class EditorKeyHandler:
 	# cursor, or deletes the selected text
 	def handle_backspace_key(self, ch):
 		if(self.ed.selection_mode):
-			self.ed.delete_selected_text()						
+			self.ed.utility.delete_selected_text()						
 			return True		
 
 		text = self.ed.buffer.lines[self.ed.curpos.y]
@@ -260,7 +272,9 @@ class EditorKeyHandler:
 			if(ch == curses.KEY_HOME):
 				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][0]
 			elif(ch == curses.KEY_END):
-				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][1]
+				extra = 0
+				if(self.ed.rendered_curpos.y == len(self.ed.col_spans)-1 or self.ed.col_spans[self.ed.rendered_curpos.y + 1][0] == 0): extra = 1
+				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][1] + extra
 		else:
 			if(ch == curses.KEY_HOME):
 				# toggle between beginning of line and beginning of indented-code
@@ -324,7 +338,7 @@ class EditorKeyHandler:
 		
 	# handles ENTER / Ctrl+J
 	def handle_newline(self, ch):
-		if(self.ed.selection_mode): self.ed.delete_selected_text()
+		if(self.ed.selection_mode): self.ed.utility.delete_selected_text()
 
 		text = self.ed.buffer.lines[self.ed.curpos.y]
 		col = self.ed.curpos.x
@@ -350,7 +364,7 @@ class EditorKeyHandler:
 		sch = str(chr(ch))
 		
 		if(self.ed.selection_mode): 
-			del_text = self.ed.delete_selected_text()
+			del_text = self.ed.utility.delete_selected_text()
 
 			# if parenthesis or quotes, put selected-text in between them
 			open = "([{\'\"\`"
@@ -481,7 +495,7 @@ class EditorKeyHandler:
 
 	def handle_cut(self):
 		if(not self.ed.selection_mode): return False
-		del_text = self.ed.delete_selected_text()
+		del_text = self.ed.utility.delete_selected_text()
 		clipboard.copy(del_text)
 		return True
 			
@@ -490,7 +504,7 @@ class EditorKeyHandler:
 		if(len(whole) == 0): return False
 
 		data = whole.splitlines()
-		if(self.ed.selection_mode): self.ed.delete_selected_text()
+		if(self.ed.selection_mode): self.ed.utility.delete_selected_text()
 		
 		n = len(data)
 		row = self.ed.curpos.y

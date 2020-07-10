@@ -28,7 +28,13 @@ class DialogHandler:
 		mw = self.app.main_window
 		ed = mw.get_active_editor()
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 5, 30)
+
+		try:
+			y, x = get_center_coords(self.app, 5, 30)
+		except:
+			self.warn_insufficient_screen_space()
+			return
+
 		self.app.dlgFind = FindReplaceDialog(mw, y, x, ed)
 		self.app.dlgFind.show()
 		mw.repaint()
@@ -37,7 +43,13 @@ class DialogHandler:
 		mw = self.app.main_window
 		ed = mw.get_active_editor()
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 7, 30)
+
+		try:
+			y, x = get_center_coords(self.app, 7, 30)
+		except:
+			self.warn_insufficient_screen_space()
+			return
+
 		self.app.dlgReplace = FindReplaceDialog(mw, y, x, ed, True)
 		self.app.dlgReplace.show()
 		mw.repaint()
@@ -46,7 +58,13 @@ class DialogHandler:
 
 	def invoke_go_to_line(self):
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 5, 14)
+		
+		try:
+			y, x = get_center_coords(self.app, 5, 14)
+		except:
+			self.warn_insufficient_screen_space()
+			return
+
 		self.app.dlgGoTo = ModalDialog(self.app.main_window, y, x, 5, 14, "GO TO LINE", self.go_to_key_handler)
 		currentLine = str(self.app.main_window.get_active_editor().curpos.y + 1)
 		txtLineNumber = TextField(self.app.dlgGoTo, 3, 2, 10, currentLine, True)
@@ -126,7 +144,13 @@ class DialogHandler:
 		if(aed == None): return
 
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 16, 30)
+		
+		try:
+			y, x = get_center_coords(self.app, 16, 30)
+		except:
+			self.warn_insufficient_screen_space()
+			return
+
 		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 16, 30, "PREFERENCES", self.preferences_key_handler)
 		current_tab_size = str(aed.tab_size)
 		txtTabSize = TextField(self.app.dlgPreferences, 3, 2, 26, current_tab_size, True)
@@ -207,7 +231,13 @@ class DialogHandler:
 
 	def invoke_help_key_bindings(self):
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 20, 80)
+
+		try:
+			y, x = get_center_coords(self.app, 20, 80)
+		except:
+			self.warn_insufficient_screen_space()
+			return
+
 		self.app.dlgHelpKeyBindings = ModalDialog(self.app.main_window, y, x, 20, 80, "HELP: KEY BINDINGS", self.help_key_bindings_key_handler)
 		lstKeys = ListBox(self.app.dlgHelpKeyBindings, 3, 2, 76, 16)
 
@@ -231,7 +261,13 @@ class DialogHandler:
 
 	def invoke_project_explorer(self, target_ed_index = -1):
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 20, 60)
+
+		try:
+			y, x = get_center_coords(self.app, 20, 60)
+		except:
+			self.warn_insufficient_screen_space()
+			return
+
 		self.app.dlgProjectExplorer = ModalDialog(self.app.main_window, y, x, 20, 60, "PROJECT EXPLORER", self.project_explorer_key_handler)
 		lstFiles = TreeView(self.app.dlgProjectExplorer, 3, 2, 56, 16, self.app.buffers, self.app.project_dir)
 		self.app.dlgProjectExplorer.add_widget("lstFiles", lstFiles)
@@ -291,7 +327,13 @@ class DialogHandler:
 
 	def invoke_file_open(self, target_ed_index = -1):
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 14, 60)
+
+		try:
+			y, x = get_center_coords(self.app, 14, 60)
+		except:
+			self.warn_insufficient_screen_space()
+			return
+
 		self.app.dlgFileOpen = ModalDialog(self.app.main_window, y, x, 14, 60, "OPEN FILE", self.file_open_key_handler)
 		txtFileName = TextField(self.app.dlgFileOpen, 3, 2, 56, str(os.getcwd()) + "/")
 		lstActiveFiles = ListBox(self.app.dlgFileOpen, 5, 2, 56, 6, "(No active files)")
@@ -403,7 +445,13 @@ class DialogHandler:
 
 	def invoke_switch_layout(self):
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 9, 40)
+
+		try:
+			y, x = get_center_coords(self.app, 9, 40)
+		except:
+			self.warn_insufficient_screen_space()
+			return
+
 		self.app.dlgSwitchLayout = ModalDialog(self.app.main_window, y, x, 9, 40, "SWITCH LAYOUT", self.switch_layout_key_handler)
 		
 		lstLayouts = ListBox(self.app.dlgSwitchLayout, 3, 2, 36, 5)
@@ -446,12 +494,18 @@ class DialogHandler:
 
 	def invoke_file_save_as(self, buffer):
 		self.app.readjust()
-		y, x = get_center_coords(self.app, 5, 60)
+
+		try:
+			y, x = get_center_coords(self.app, 5, 60)
+		except:
+			self.warn_insufficient_screen_space()
+			return
+			
 		self.app.dlgSaveAs = ModalDialog(self.app.main_window, y, x, 5, 60, "SAVE AS", self.file_save_as_key_handler)
 		if(buffer.filename == None): 
 			filename = str( self.app.project_dir if self.app.app_mode == APP_MODE_PROJECT else os.getcwd() ) + "/" + buffer.get_name()
 		else:
-			filename = buffer.filename
+			filename = get_copy_filename(buffer.filename)
 		txtFileName = TextField(self.app.dlgSaveAs, 3, 2, 56, filename)
 		self.app.dlgSaveAs_Buffer = buffer
 		self.app.dlgSaveAs.add_widget("txtFileName", txtFileName)

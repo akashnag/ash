@@ -17,6 +17,9 @@ def is_start_before_end(start, end):
 	return False
 
 def get_center_coords(app, elem_height, elem_width):
+	if(elem_height > (app.screen_height-2) or elem_width > (app.screen_width-1)):
+		raise(Exception("Dialog exceeds screen dimensions"))
+		
 	return ((app.screen_height - elem_height) // 2, (app.screen_width - elem_width) // 2)
 
 def beep():

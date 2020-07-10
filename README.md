@@ -2,22 +2,21 @@
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/akashnag/ash/blob/master/LICENSE.md) ![Downloads](https://img.shields.io/github/downloads/akashnag/ash/total)
 
-**ash** is a simple and clean terminal-based text editor for Linux and macOS, that aims to be easy to use with modern key-bindings. It is fully capable of handling multiple files simultaneously and hopes to provide a wide array of features when it is released.
-
-Here is a picture of **ash** editing this README file:
+**ash** is a simple and clean terminal-based text editor, that aims to be easy to use with modern key-bindings. It is capable of handling multiple files simultaneously and has a wide array of modern features. Here is a picture of **ash** editing this README file:
 
 ![Screenshot](./assets/ash-default.png)
 
-**ash** is written in Python 3.8 using the curses library. It is a work-in-progress and hopefully the first release will be out there soon.
+**ash** is written in Python 3.8 using the curses library.
 
 ## Table of Contents
 
 - [Design Goals](#design-goals)
 - [Installation](#installation)
-  - [Prebuilt binaries](#prebuilt-binaries)
-  - [Clipboard support](#clipboard-support)
-  - [Colors](#colors)
-  - [Usage](#usage)
+  - Prerequisites
+  - Downloading and setting up **ash**
+- [Prebuilt binaries](#prebuilt-binaries)  
+- [Colors](#colors)
+- [Usage](#usage)
 - [Contributing](#contributing)
 - [Screenshots](#screenshots)
 - [License](#license)
@@ -64,7 +63,7 @@ The following is a list of features available in **ash**; some of which have alr
 
 As **ash** is still in development, there are no prebuilt binaries available for download. However, if you have python 3.8 installed on your system, you can download and run a developmental build for **ash**. For Linux users, follow the following steps to get **ash** on your system:
 
-#### Prerequisites
+### Prerequisites
 
 You need certain packages and Python 3 itself to download and run the developmental build:
 
@@ -75,7 +74,7 @@ $ sudo apt install python3
 $ sudo apt install python3-pip
 ```
 
-#### Downloading and setting up ash
+### Downloading and setting up ash
 
 ```bash
 $ cd ~
@@ -94,17 +93,23 @@ $ sudo nano ~/.bashrc
 
 Then append `:~/ash/bin` to the `PATH` variable. You are now ready to run **ash** from the terminal. See [Usage](#usage) for details.
 
-### Prebuilt binaries
+## Prebuilt binaries
 
-Since **ash** is still under development, prebuilt binaries are not yet available.
+Since **ash** is still under development, prebuilt binaries are not yet available. You can use PyInstaller or similar tools to build one for your system.
 
-### Colors
+## Colors
 
 If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `.ashrc` file inside your home directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.ashrc`.
 
 ## Usage
 
-Once you have downloaded the **ash** source code, and set it up as detailed above, you are ready to use it (it may take some time to load for the first time) **NOTE: if you have not updated your path variable, you must specify the full path to the ash binary.**
+Once you have downloaded the **ash** source code, and set it up as detailed above, you are ready to use it. 
+
+**NOTES:**
+1. If you have not updated your path variable, you must specify the full path to the ash binary.
+1. Your terminal resolution should be at least 102 (width) x 22 (height). Opening the editor in a lower resolution may unexpectedly crash the application. This requirement is necessary to properly display the dialog-boxes.
+
+To run **ash**:
 
 ```bash
 $ ash path/to/file.txt

@@ -1,6 +1,6 @@
 # Key Bindings for ash
 
-The following is a list of key bindings for **ash**. Please note that these bindings may change as the project develops.
+The following is a list of key bindings for **ash**.
 
 ### Global key combinations
 
@@ -15,6 +15,10 @@ These key combinations can be used even if no editor is currently active.
 <kbd>Shift</kbd> + <kbd>Tab</kbd> &nbsp;&nbsp;Moves focus to the previous widget in the active dialog-box
 
 <kbd>Ctrl</kbd> + <kbd>&#8592;</kbd> <kbd>&#8593;</kbd> <kbd>&#8594;</kbd> <kbd>&#8595;</kbd> &nbsp;&nbsp;Moves the active dialog-box (if any) around the screen
+
+<kbd>Space</kbd> &nbsp;&nbsp;Checks/Unchecks a selected checkbox
+
+<kbd>Enter</kbd> &nbsp;&nbsp;Saves changes and closes the current dialog box
 
 <kbd>Ctrl</kbd> + <kbd>L</kbd> &nbsp;&nbsp;Changes the layout of splits
 
@@ -101,10 +105,12 @@ These key combinations work when the Project Explorer dialog-box is active:
 
 <kbd>Ctrl</kbd> + <kbd>D</kbd> &nbsp;&nbsp;Create a new directory under the selected directory
 
+<kbd>F2</kbd>&nbsp;&nbsp;Rename the selected file/directory
+
 <kbd>+</kbd> &nbsp;&nbsp;Collapse the current selected directory
 
 <kbd>-</kbd> &nbsp;&nbsp;Expand the current selected directory
 
 ## Other features
 
-**ash** also provides certain shortcuts for helping in editing code. It has support for auto-indentation when the previous line is indented. Also, pressing any of theese keys: <kbd>\`</kbd> <kbd>\'</kbd> <kbd>\"</kbd> <kbd>\(</kbd> <kbd>\{</kbd> <kbd>\[</kbd> while some text is selected, will cause **ash** to enclose the selected text within the pair of opening/closing quote/brackets.
+**ash** also provides certain shortcuts for helping in editing code. It has support for auto-indentation when the previous line is indented. Also, pressing any of theese keys: <kbd>\`</kbd> <kbd>\'</kbd> <kbd>\"</kbd> <kbd>\(</kbd> <kbd>\{</kbd> <kbd>\[</kbd> while some text is selected, will cause **ash** to enclose the selected text within the pair of matching quotes/brackets.

@@ -42,7 +42,15 @@ def get_relative_subdirectories(project_dir, filename):		# filename must be a fi
 		if(core[i] == "/"): subdir_list.append(project_dir + "/" + core[0:i])
 	return subdir_list
 
-
+def get_copy_filename(filename):
+	pos1 = filename.rfind("/")
+	dir = filename[0:pos1+1]
+	ft = filename[pos1+1:]
+	pos2 = ft.rfind(".")
+	if(pos2 < 0):
+		return filename + "-copy"
+	else:
+		return dir + ft[0:pos2] + "-copy" + ft[pos2:]
 
 def predict_file_encoding(filename, n = 20):
 	with open(filename, "rb") as f:

@@ -22,15 +22,10 @@ class TopLevelWindow(Window):
 		self.layout_type = LAYOUT_SINGLE
 		self.app_name = self.app.get_app_name()
 		self.active_editor_index = -1
-		self.editors = list()
-		for i in range(6): self.add_editor(None)
-	
-	# adds an editor to the workspace
-	def add_editor(self, ed):
-		if(len(self.editors) == 6): return
-		self.editors.append(ed)
-		if(self.active_editor_index < 0 and ed != None): self.active_editor_index = 0
 
+		self.editors = list()
+		for i in range(6): self.editors.append(None)
+	
 	# sets layout
 	def set_layout(self, layout_type):
 		self.layout_manager.set_layout(layout_type)
@@ -125,11 +120,11 @@ class TopLevelWindow(Window):
 			self.set_title(self.app.get_app_title())
 	
 	# shows the window and starts the event-loop
-	def show(self):
+	def show(self, welcome_msg = None):
 		curses.curs_set(False)
 		self.win.keypad(True)
 		self.win.timeout(0)
-		self.repaint()
+		self.repaint(welcome_msg)
 
 		if(self.editors[0] != None): self.editors[0].focus()
 
@@ -148,10 +143,9 @@ class TopLevelWindow(Window):
 				self.get_active_editor().perform_action(ch)
 
 			self.repaint()
-			
-	
+		
 	# draws the window
-	def repaint(self):
+	def repaint(self, error_msg = None):
 		curses.curs_set(False)
 		if(self.win == None): return
 		
@@ -159,18 +153,26 @@ class TopLevelWindow(Window):
 		self.layout_manager.readjust()
 		self.win.clear()
 
-		if(self.status != None): self.status.repaint(self.win, self.width-1, self.height-1, 0)
-		
-		if(len(self.title) == 0):
-			self.win.addstr(0, 0, self.app_name.center(self.width), curses.A_BOLD | gc("titlebar"))
+		if(error_msg == None):
+			if(self.status != None): self.status.repaint(self.win, self.width-1, self.height-1, 0)
 		else:
-			title_text = self.title + " - " + self.app_name		
-			ts = (self.width - len(title_text)) // 2
-			self.win.addstr(0, ts, self.title + " - ", gc("titlebar"))
-			self.win.addstr(0, ts + len(self.title + " - "), self.app_name, curses.A_BOLD | gc("titlebar"))
+			log(f"{self.app.screen_height} {self.app.screen_width} {self.height} {self.width}")
+			if(len(error_msg) + 1 > self.width - 1): error_msg = error_msg[0:self.width-2]
+			self.win.addstr(self.height-1, 0, (" " + error_msg).ljust(self.width-1), gc("messagebox-background"))
+		
+		try:
+			if(len(self.title) == 0):
+				self.win.addstr(0, 0, self.app_name.center(self.width), curses.A_BOLD | gc("titlebar"))
+			else:
+				title_text = self.title + " - " + self.app_name		
+				ts = (self.width - len(title_text)) // 2
+				self.win.addstr(0, ts, self.title + " - ", gc("titlebar"))
+				self.win.addstr(0, ts + len(self.title + " - "), self.app_name, curses.A_BOLD | gc("titlebar"))
 
-		self.layout_manager.draw_layout_borders()
-		self.layout_manager.repaint_editors()
+			self.layout_manager.draw_layout_borders()
+			self.layout_manager.repaint_editors()
+		except:
+			pass
 		
 		self.win.refresh()
 

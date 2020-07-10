@@ -19,6 +19,8 @@ ASH_KEY_BINDINGS = [
 	("Ctrl + @", "Discard any unsaved changes and close ash"),
 	("Tab", "Moves focus to the next element in the active window"),
 	("Shift + Tab", "Moves focus to the previous element in the active window"),
+	("Space", "Checks/Unchecks selected checkbox"),
+	("Enter", "Saves changes and closes the active dialog box"),
 	("Ctrl + N", "Opens a new blank buffer for editing"),
 	("Ctrl + O", "Shows the File-Open window"),
 	(f"{ARROW_UP} {ARROW_DOWN}", "Changes the selected item in a list"),
@@ -45,11 +47,7 @@ ASH_KEY_BINDINGS = [
 	("Ctrl + D", "Create a new directory under the selected directory"),
 	("+", "Collapse the selected directory"),
 	("-", "Expand the selected directory"),
-	("F4", "Activate the 4th editor in the layout"),
-	("F5", "Activate the 5th editor in the layout"),
-	("F6", "Activate the 6th editor in the layout"),
-	("F11", "Resize window"),
-	("F12", "Show this help"),
+	("F2", "Rename the selected file/directory"),
 	("", ""),			# blank line
 
 	("GROUP:", "EDITOR COMMANDS"),
@@ -60,6 +58,8 @@ ASH_KEY_BINDINGS = [
 	("End", "Move cursor to the end of the current line"),
 	("Ctrl + Home", "Move cursor to the beginning of the current document"),
 	("Ctrl + End", "Move cursor to the end of the current document"),
+	("Shift + Home", "Selects up to the beginning of the current line"),
+	("Shift + End", "Selects up to the end of the current line"),
 	("PgUp", "Moves the cursor up one screenful at a time"),
 	("PgDown", "Moves the cursor down one screenful at a time"),
 	("Shift + PgUp", "Selects text upwards one screenful at a time"),
@@ -79,9 +79,10 @@ ASH_KEY_BINDINGS = [
 	("Ctrl + G", "Opens the Go-To-Line window"),
 	("Ctrl + F", "Opens the find window"),
 	("Ctrl + H", "Opens the find and replace window"),
-	#("", ""),			# blank line
+	("F9", "Save As"),
+	("", ""),			# blank line
 
-	("", "")
+	("For more, visit", "https://github.com/akashnag/ash")
 ]
 
 def get_ash_key_bindings():

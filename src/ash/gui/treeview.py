@@ -225,10 +225,10 @@ class TreeView(Widget):
 				self.sel_index = len(self.items)-1
 		elif(str(chr(ch)) == "+" and sel_item_obj.is_dir() and sel_item_obj.expanded):
 			sel_item_obj.collapse()
-			self.form_list_items()
+			self.mini_refresh()
 		elif(str(chr(ch)) == "-" and sel_item_obj.is_dir() and not sel_item_obj.expanded):
 			sel_item_obj.expand()
-			self.form_list_items()
+			self.mini_refresh()
 		elif(is_ctrl(ch, "R")):
 			self.refresh()
 			return
@@ -237,11 +237,24 @@ class TreeView(Widget):
 		elif(is_ctrl(ch, "N")):
 			self.create_new_file()
 		elif(ch == curses.KEY_DC):
-			self.delete_sel_item()
+			if(self.sel_index == 0):
+				self.parent.parent.app.show_error("Cannot delete project root")
+			else:
+				self.delete_sel_item()
+		elif(is_func(ch, 2)):
+			if(self.sel_index == 0):
+				self.parent.parent.app.show_error("Cannot rename project root")
+			else:
+				self.rename_sel_item()
 		else:
 			beep()
 
 		self.repaint()
+
+	def mini_refresh(self):
+		self.form_list_items()
+		self.start = 0
+		self.end = min([self.row_count, len(self.items)])
 
 	def create_new_directory(self):
 		parent_dir = self.get_sel_filepath()
@@ -254,9 +267,9 @@ class TreeView(Widget):
 			else:
 				try:
 					os.makedirs(filename)
+					self.refresh(True)
 				except:
-					self.parent.parent.app.show_error("An error occurred while creating directory")
-				self.refresh(True)
+					self.parent.parent.app.show_error("An error occurred while creating directory")				
 	
 	def create_new_file(self):
 		parent_dir = self.get_sel_filepath()
@@ -270,9 +283,10 @@ class TreeView(Widget):
 			try:
 				fp = open(filename, "wt")
 				fp.close()
+				self.refresh(True)
 			except:
 				self.parent.parent.app.show_error("An error occurred while creating file")
-			self.refresh(True)		
+				
 
 	def delete_sel_item(self):
 		fp = self.get_sel_filepath()
@@ -282,10 +296,24 @@ class TreeView(Widget):
 				self.refresh()
 			except:
 				self.parent.parent.app.show_error("An error occurred while deleting item")
-		
-		#p = self.parent.parent.app.prompt("Age", "Enter your age: ")
-		#self.parent.parent.app.show_error("You entered: " + p)
-			
+	
+	def rename_sel_item(self):
+		fp = self.get_sel_filepath()
+		new_name = self.parent.parent.app.prompt("RENAME", "Enter a new name: ", get_file_title(fp))
+		if(new_name == get_file_title(fp)): return
+
+		dir = get_file_directory(fp)
+		new_fp = dir + "/" + new_name
+
+		if(os.path.isfile(new_fp) or os.path.isdir(new_fp)):
+			self.parent.parent.app.show_error("The selected file/directory already exists")
+		else:
+			try:
+				os.rename(fp, new_fp)
+				self.refresh()
+			except:
+				self.parent.parent.app.show_error("An error occurred during renaming")
+
 
 	# returns the text of the selected item
 	def __str__(self):

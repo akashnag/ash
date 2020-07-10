@@ -33,12 +33,6 @@ class AshEditorApp:
 		self.args = args
 		self.argc = len(args)
 		self.dialog_handler = DialogHandler(self)
-
-		self.ignore_screen_size = False
-		if(self.argc > 1 and self.args[1] == "--i"):
-			self.ignore_screen_size = True
-			self.args.pop(1)
-			self.argc -= 1
 		log_init()		
 		
 	def run(self):
@@ -66,11 +60,7 @@ class AshEditorApp:
 				self.buffers.create_new_buffer(filename=filePath, has_backup=has_backup)
 		
 		# invoke the GUI initialization routine
-		ret_code = curses.wrapper(self.app_main)
-		if(ret_code == -1):
-			print(f"Error: screen-size insufficient, required at least: {MIN_WIDTH} x {MIN_HEIGHT}")
-			print("To ignore screen limitations: restart with --i as the first argument")
-			print("Doing so may cause the application to crash")
+		ret_code = curses.wrapper(self.app_main)		
 
 	# recalculates screen dimensions
 	def readjust(self):
@@ -111,10 +101,7 @@ class AshEditorApp:
 	def app_main(self, stdscr):
 		self.stdscr = stdscr
 		self.readjust()
-
-		if(not self.ignore_screen_size and (self.screen_width < MIN_WIDTH or self.screen_height < MIN_HEIGHT)):
-			return -1
-		
+				
 		init_colors()
 		curses.raw()
 		
@@ -137,7 +124,14 @@ class AshEditorApp:
 				bid, buffer = self.buffers.create_new_buffer()
 				self.main_window.layout_manager.invoke_activate_editor(0, bid, buffer)
 		
-		self.main_window.show()		# this call returns when main_window() is closed
+		welcome_msg = f"ash-{APP_VERSION} | F12: Help"
+		if(self.screen_width < MIN_WIDTH or self.screen_height < MIN_HEIGHT):
+			welcome_msg = f"insufficient screen space, ash may crash unexpectedly; reqd.: {MIN_WIDTH}x{MIN_HEIGHT}"
+
+		self.readjust()
+		self.main_window.layout_manager.readjust(True)
+		self.main_window.show(welcome_msg)		# this call returns when main_window() is closed
+		
 		self.__destroy()
 		return 0
 	
@@ -196,18 +190,21 @@ class AshEditorApp:
 			
 			if(ned >=0 and ned <= 5):
 				self.main_window.layout_manager.invoke_activate_editor(ned)
-			elif(fn == 9):
-				pass
+				return -1
 			elif(fn == 12):
 				self.dialog_handler.invoke_help_key_bindings()
-				
-			return -1
+				return -1
 
 		return ch
 
 	# displays an error message
 	def show_error(self, msg, error=True):
-		self.msgBox = MessageBox(self, ("ERROR" if error else "INFORMATION"), msg)
+		try:
+			self.msgBox = MessageBox(self, ("ERROR" if error else "INFORMATION"), msg)
+		except:
+			self.warn_insufficient_screen_space()
+			raise
+
 		while(True):
 			response = self.msgBox.show()
 			if(response == MSGBOX_OK): 
@@ -217,7 +214,12 @@ class AshEditorApp:
 
 	# displays a question
 	def ask_question(self, title, question, hasCancel=False):
-		self.msgBox = MessageBox(self, title, question, (MSGBOX_TYPE_YES_NO_CANCEL if hasCancel else MSGBOX_TYPE_YES_NO))
+		try:
+			self.msgBox = MessageBox(self, title, question, (MSGBOX_TYPE_YES_NO_CANCEL if hasCancel else MSGBOX_TYPE_YES_NO))
+		except:
+			self.warn_insufficient_screen_space()
+			raise
+
 		while(True):
 			response = self.msgBox.show()
 			if(response == MSGBOX_YES): 
@@ -233,7 +235,12 @@ class AshEditorApp:
 
 	# displays an inputbox
 	def prompt(self, title, prompt, default = ""):
-		self.inputBox = InputBox(self, title, prompt, default)
+		try:
+			self.inputBox = InputBox(self, title, prompt, default)
+		except:
+			self.warn_insufficient_screen_space()
+			raise
+
 		response = self.inputBox.show()
 		self.main_window.repaint()
 		return response
@@ -241,3 +248,6 @@ class AshEditorApp:
 	# checks if buffer is up-to-date with file on disk
 	def is_file_already_loaded(self, filename):
 		return self.buffers.does_file_have_its_own_buffer(filename)
+
+	def warn_insufficient_screen_space(self):
+		self.main_window.repaint(f"error: insufficient screen space (minimum reqd.: {MIN_WIDTH}x{MIN_HEIGHT} ), ash may crash unexpectedly")

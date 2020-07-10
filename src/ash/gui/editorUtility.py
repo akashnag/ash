@@ -20,7 +20,8 @@ class EditorUtility:
 		if(start.y == end.y):
 			sel_len = end.x - start.x
 			del_text = self.ed.buffer.lines[start.y][start.x:end.x]
-			self.ed.buffer.lines[start.y] = self.ed.buffer.lines[start.y][0:start.x] + self.ed.buffer.lines[start.y][end.x:]			
+			self.ed.buffer.lines[start.y] = self.ed.buffer.lines[start.y][0:start.x] + self.ed.buffer.lines[start.y][end.x:]
+			self.ed.curpos.x -= len(del_text)
 		else:
 			del_text = self.ed.buffer.lines[start.y][start.x:] + self.ed.buffer.newline
 						
@@ -49,9 +50,6 @@ class EditorUtility:
 		
 		# turn off selection mode
 		self.ed.selection_mode = False
-		self.ed.curpos.x = max(self.ed.curpos.x, 0)
-		self.ed.curpos.x = min(self.ed.curpos.x, len(self.ed.buffer.lines[self.ed.curpos.y]))
-		
 		return del_text
 
 	# returns the selected text
@@ -211,14 +209,23 @@ class EditorUtility:
 
 		return (vpos, cpos)
 
-	# returns the position of the cursor on screen given its actual position in the document
-	def get_rendered_pos(self, lines, width, hard_wrap, orig_pos, cum_lengths):
-		wrapped_current_line = self.soft_wrap(lines[orig_pos.y], width, hard_wrap)
-		offset_y, offset_x = self.get_wrapped_curpos(wrapped_current_line, orig_pos.x)
-		y = cum_lengths[orig_pos.y] + offset_y
-		x = offset_x
-		rendered_curpos = CursorPosition(y, x)	
-		return rendered_curpos
+	def get_rendered_pos(self, orig_pos):
+		colspans = self.ed.grouped_colspans[orig_pos.y]
+		cumlength = self.ed.cum_sub_line_lengths[orig_pos.y]
+		y = cumlength
+		x = 0
+		found = False
+		for i, cs in enumerate(colspans):
+			if(orig_pos.x >= cs[0] and orig_pos.x <= cs[1]):
+				found = True
+				y += i
+				x = (orig_pos.x - cs[0])
+				break
+		if(not found):
+			y += len(colspans) - 1
+			x = colspans[len(colspans)-1][1] + 1
+		rendered_pos = CursorPosition(y,x)
+		return rendered_pos
 
 	# finds all text in the given document
 	def find_all(self, s):

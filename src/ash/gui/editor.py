@@ -100,17 +100,21 @@ class Editor(Widget):
 
 		self.sub_lines = list()
 		self.cum_sub_line_lengths = list()
+		self.grouped_colspans = dict()
 		self.col_spans = list()
 
 		total = 0
-		for line in self.buffer.lines:
+		for line_index, line in enumerate(self.buffer.lines):
 			wline = self.utility.wrapped(line, self.width, self.word_wrap, self.hard_wrap)
 
 			cumx = 0
+			colspan_list = list()
 			for sl in wline:
-				self.col_spans.append( (cumx, cumx + len(sl)-1) )
+				colspan_list.append( (cumx, cumx + len(sl)-1) )
 				cumx += len(sl)
 
+			self.col_spans.extend(colspan_list)
+			self.grouped_colspans[line_index] = list(colspan_list)
 			self.sub_lines.extend(wline)
 			self.cum_sub_line_lengths.append(total)
 			total += len(wline)
@@ -327,11 +331,10 @@ class Editor(Widget):
 		if(self.word_wrap):
 			self.wrap_all()
 			self.rendered_lines = self.sub_lines
-			self.rendered_curpos = self.utility.get_rendered_pos(self.buffer.lines, self.width, self.hard_wrap, self.curpos, self.cum_sub_line_lengths)
-			
+			self.rendered_curpos = self.utility.get_rendered_pos(self.curpos)
 			if(self.selection_mode):
-				self.rendered_sel_start = self.utility.get_rendered_pos(self.buffer.lines, self.width, self.hard_wrap, self.sel_start, self.cum_sub_line_lengths)
-				self.rendered_sel_end = self.utility.get_rendered_pos(self.buffer.lines, self.width, self.hard_wrap, self.sel_end, self.cum_sub_line_lengths)
+				self.rendered_sel_start = self.utility.get_rendered_pos(self.sel_start)
+				self.rendered_sel_end = self.utility.get_rendered_pos(self.sel_end)
 		else:
 			self.rendered_lines = self.buffer.lines
 			self.rendered_curpos = self.curpos

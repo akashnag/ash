@@ -98,16 +98,28 @@ class ListBox(Widget):
 	def perform_action(self, ch):
 		self.focus()
 		n = len(self.items)
+
 		if(n == 0):
 			self.sel_index = -1
 			beep()
 		elif(ch == curses.KEY_UP):
-			if(self.sel_index == -1):
-				self.sel_index = n-1
+			if(self.sel_index <= 0):
+				self.sel_index = 0
 			else:
 				self.sel_index = (self.sel_index - 1) % n
 		elif(ch == curses.KEY_DOWN):
-			self.sel_index = (self.sel_index + 1) % n
+			if(self.sel_index < n-1):
+				self.sel_index = (self.sel_index + 1) % n
+		elif(ch == curses.KEY_PPAGE):		# PgUp
+			if(self.sel_index > self.row_count):
+				self.sel_index -= self.row_count
+			else:
+				self.sel_index = 0
+		elif(ch == curses.KEY_NPAGE):		# PgDown
+			if(self.sel_index < len(self.items) - self.row_count):
+				self.sel_index += min([self.row_count, len(self.items)-1])
+			else:
+				self.sel_index = len(self.items)-1
 		else:
 			beep()
 		self.repaint()

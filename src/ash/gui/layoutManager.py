@@ -368,17 +368,6 @@ class LayoutManager:
 
 	# changes the current layout: add code to attach/detach editors
 	def set_layout(self, layout_type):
-		old_ec = EDITOR_COUNTS[self.win.layout_type]
-		new_ec = EDITOR_COUNTS[layout_type]
-
-		if(new_ec >= old_ec):						# increase the no. of editors
-			for i in range(old_ec, new_ec):
-				self.win.editors.append(None)
-		else:										# decrease the no. of editors
-			for i in range(new_ec, old_ec):
-				self.win.editors[new_ec].destroy()
-				self.win.editors.pop(new_ec)
-
 		self.win.layout_type = layout_type			
 		self.readjust(True)
 		self.win.repaint()

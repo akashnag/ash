@@ -6,7 +6,6 @@
 # This module implements the TextArea widget
 
 from ash.gui import *
-from ash.core.utils import *
 
 class TextArea(Widget):
 	def __init__(self, parent, y, x, height, width, theme, focus_theme = None, maxlen = -1):

@@ -7,8 +7,6 @@
 
 from ash.gui import *
 from ash.gui.window import *
-from ash.core.utils import *
-from ash.formatting.colors import *
 from ash.gui.textfield import *
 
 class InputBox(Window):

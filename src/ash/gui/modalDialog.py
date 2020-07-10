@@ -7,8 +7,6 @@
 
 from ash.gui import *
 from ash.gui.window import *
-from ash.core.utils import *
-from ash.formatting.colors import *
 
 class ModalDialog(Window):
 	def __init__(self, parent, y, x, height, width, title, handler_func):

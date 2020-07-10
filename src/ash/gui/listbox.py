@@ -6,8 +6,6 @@
 # This module implements the ListBox widget
 
 from ash.gui import *
-from ash.formatting.colors import *
-from ash.core.utils import *
 
 class ListBox(Widget):
 	def __init__(self, parent, y, x, width, row_count, placeholder_text = None):

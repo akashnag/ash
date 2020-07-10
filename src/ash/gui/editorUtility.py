@@ -6,8 +6,6 @@
 # This module is a helper class for Editor
 
 from ash.gui import *
-from ash.formatting.formatting import *
-from ash.core.utils import *
 
 class EditorUtility:
 	def __init__(self, ed):

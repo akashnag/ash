@@ -6,8 +6,6 @@
 # This module implements the TextField widget
 
 from ash.gui import *
-from ash.formatting.colors import *
-from ash.core.utils import *
 
 class TextField(Widget):
 	def __init__(self, parent, y, x, width, initial_text = "", numeric = False, maxlen = -1):

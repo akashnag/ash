@@ -9,6 +9,7 @@ import pygments
 import pygments.lexers
 
 from pygments.token import Token
+from ash.formatting import *
 from ash.formatting.colors import *
 
 # <------------------- style mapping ---------------------->
@@ -44,7 +45,7 @@ class SyntaxHighlighter:
 
 	def format_code(self, line):
 		# return a list of tuples (index, text, style)
-		# style = gc(SOMETHING)
+		# style = gc(SOME_COLOR_PAIR)
 		styles = list()
 		
 		if(self.lexer == None):

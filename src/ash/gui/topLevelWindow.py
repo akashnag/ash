@@ -8,8 +8,6 @@
 
 from ash.gui import *
 from ash.gui.window import *
-from ash.core.utils import *
-from ash.formatting.formatting import *
 from ash.gui.layoutManager import *
 from ash.core.bufferManager import *
 
@@ -179,8 +177,11 @@ class TopLevelWindow(Window):
 	# <------------------------ called from dialogbox handlers -------------------------------->
 	def get_first_free_editor_index(self, barring = -1):
 		n = len(self.editors)
+		ec = EDITOR_COUNTS[self.layout_type]
+
 		for i in range(n):
-			if(i != barring and self.editors[i] == None): return i		
+			if(i >= ec): continue
+			if(i != barring and self.editors[i] == None): return i
 		return -1
 
 	def get_visible_editor_count(self):

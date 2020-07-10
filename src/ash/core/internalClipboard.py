@@ -3,7 +3,7 @@
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
-# This module implements the internal clipboard if pyperclip/xsel is unavailable
+# This module implements the internal clipboard if pyperclip/xclip is unavailable
 
 class InternalClipboard:
 	clipboard_buffer = ""

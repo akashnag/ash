@@ -6,7 +6,6 @@
 # This module implements the Password widget
 
 from ash.gui import *
-from ash.core.utils import *
 
 class Password(Widget):
 	def __init__(self, parent, y, x, width, theme, focus_theme = None, strict_numeric = False, maxlen = -1):

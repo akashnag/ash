@@ -7,8 +7,6 @@
 
 from ash.gui import *
 from ash.gui.window import *
-from ash.core.utils import *
-from ash.formatting.colors import *
 
 MSGBOX_OK		= 1
 MSGBOX_CANCEL	= 2

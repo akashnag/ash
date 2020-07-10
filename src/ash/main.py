@@ -9,7 +9,10 @@ from ash import *
 
 from ash.core.bufferManager import *
 from ash.core.logger import *
-from ash.core.utils import *
+
+from ash.utils.utils import *
+from ash.utils.keyUtils import *
+from ash.utils.fileUtils import *
 
 from ash.formatting.colors import *
 from ash.formatting.formatting import *
@@ -20,12 +23,6 @@ from ash.gui.statusbar import *
 from ash.gui.msgBox import *
 from ash.gui.inputBox import *
 from ash.gui.dialogHandler import *
-
-APP_VERSION			= "0.1.0-dev"
-UNSAVED_BULLET		= "\u2022"
-
-APP_MODE_FILE		= 1		# if ash is invoked with zero or more file names
-APP_MODE_PROJECT	= 2		# if ash is invoked with a single directory name
 
 MIN_WIDTH			= 102
 MIN_HEIGHT			= 22
@@ -190,19 +187,19 @@ class AshEditorApp:
 			return -1		
 		elif(is_func(ch)):
 			# F1 - F6 to select an active editor
+			# F7 - find previous
+			# F8 - replace
+			# Ctrl+F8 - replace all
+
 			fn = get_func_key(ch)
 			ned = fn - 1
 			
 			if(ned >=0 and ned <= 5):
 				self.main_window.layout_manager.invoke_activate_editor(ned)
-			elif(fn == 7):
-				pass
-			elif(fn == 8):
-				pass
 			elif(fn == 9):
 				pass
 			elif(fn == 12):
-				pass
+				self.dialog_handler.invoke_help_key_bindings()
 				
 			return -1
 

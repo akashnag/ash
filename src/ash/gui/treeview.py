@@ -5,22 +5,15 @@
 
 # This module implements the TreeView widget
 
+from ash import *
 from ash.gui import *
 from ash.gui.listbox import *
-from ash.formatting.colors import *
-
-from ash.core.utils import *
 from ash.core.bufferManager import *
 
 import glob
 import os
 from send2trash import send2trash
 
-UNSAVED_BULLET	= "\u2022"
-LINE_VERTICAL 	= "\u2502"
-LINE_EDGE 		= "\u2514"
-LINE_SPLIT 		= "\u251c"
-LINE_HORIZONTAL = "\u2500"
 INDENT_SIZE		= 4
 
 class TreeNode:

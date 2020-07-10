@@ -8,8 +8,6 @@
 from ash.gui import *
 from ash.gui.window import *
 from ash.gui.textfield import *
-from ash.core.utils import *
-from ash.formatting.colors import *
 
 class FindReplaceDialog(Window):
 	def __init__(self, parent, y, x, ed, replace = False):

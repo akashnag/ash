@@ -6,8 +6,6 @@
 # This module is a helper class for TopLevelWindow
 
 from ash.gui import *
-from ash.formatting.formatting import *
-from ash.core.utils import *
 from ash.gui.editor import *
 
 # note: layout values must begin at 0

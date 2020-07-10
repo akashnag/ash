@@ -6,7 +6,6 @@
 # This module implements the StatusBar widget
 
 from ash.gui import *
-from ash.formatting.colors import *
 
 class StatusBar(Widget):
 	def __init__(self, parent, section_widths):

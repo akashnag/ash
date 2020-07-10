@@ -11,6 +11,14 @@ import select
 
 from ash.core.logger import *
 
+from ash.utils.utils import *
+from ash.utils.keyUtils import *
+from ash.utils.fileUtils import *
+
+from ash.formatting.colors import *
+from ash.formatting.formatting import *
+from ash.formatting.syntaxHighlighting import *
+
 clipboard = None
 
 # Check if xsel/pyperclip is present, then use it, else use internal-clipboard
@@ -19,6 +27,13 @@ try:
 	clipboard.paste()
 except:
 	from ash.core.internalClipboard import InternalClipboard as clipboard
+
+# <------------------ line constants ----------------------->
+
+LINE_VERTICAL 			= "\u2502"
+LINE_EDGE 				= "\u2514"
+LINE_SPLIT 				= "\u251c"
+LINE_HORIZONTAL 		= "\u2500"
 
 # <------------------- border constants -------------------->
 BORDER_HORIZONTAL		= "\u2500"		# _

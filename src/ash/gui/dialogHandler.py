@@ -5,22 +5,16 @@
 
 # This is a helper module to assist with various dialogs
 
+from ash import *
 from ash.gui import *
 
 from ash.core.bufferManager import *
-from ash.core.utils import *
 from ash.gui.modalDialog import *
 from ash.gui.findReplaceDialog import *
 from ash.gui.checkbox import *
 from ash.gui.listbox import *
 from ash.gui.textfield import *
 from ash.gui.treeview import TreeView
-
-UNSAVED_BULLET		= "\u2022"
-TICK_MARK			= "\u2713"
-
-APP_MODE_FILE		= 1		# if ash is invoked with zero or more file names
-APP_MODE_PROJECT	= 2		# if ash is invoked with a single directory name
 
 SUPPORTED_ENCODINGS = [ "utf-8", "ascii", "utf-7", "utf-16", "utf-32", "latin-1" ]
 
@@ -208,8 +202,32 @@ class DialogHandler:
 			mw.layout_manager.invoke_activate_editor(aedi, new_bid, new_buffer)
 
 		mw.repaint()
-		
-	# <----------------------------------- File Open --------------------------------->
+
+	# <------------------------------------ Help --------------------------------------------->
+
+	def invoke_help_key_bindings(self):
+		self.app.readjust()
+		y, x = get_center_coords(self.app, 20, 80)
+		self.app.dlgHelpKeyBindings = ModalDialog(self.app.main_window, y, x, 20, 80, "HELP: KEY BINDINGS", self.help_key_bindings_key_handler)
+		lstKeys = ListBox(self.app.dlgHelpKeyBindings, 3, 2, 76, 16)
+
+		kbs = get_ash_key_bindings()
+		for kb in kbs:
+			key = kb[0].ljust(16)
+			desc = kb[1]
+			lstKeys.add_item(key + desc)
+
+		self.app.dlgHelpKeyBindings.add_widget("lstKeys", lstKeys)
+		self.app.dlgHelpKeyBindings.show()
+
+	def help_key_bindings_key_handler(self, ch):
+		if(is_ctrl(ch, "Q")):
+			self.app.dlgHelpKeyBindings.hide()
+			self.app.main_window.repaint()
+			return -1
+		return ch
+
+	# <------------------------ File Open / Project Explorer --------------------------------->
 
 	def invoke_project_explorer(self, target_ed_index = -1):
 		self.app.readjust()
@@ -237,7 +255,7 @@ class DialogHandler:
 			file_type = tag[0].lower()
 			filename = tag[2:]
 			if(file_type == "d"): return -1
-
+						
 			if(BufferManager.is_binary(filename)):
 				self.app.show_error("Cannot open binary file!")
 				mw.repaint()
@@ -294,6 +312,7 @@ class DialogHandler:
 		self.app.dlgFileOpen.add_widget("txtFileName", txtFileName)
 		self.app.dlgFileOpen.add_widget("lstActiveFiles", lstActiveFiles)
 		self.app.dlgFileOpen.add_widget("lstEncodings", lstEncodings)
+		
 		self.app.target_open_ed_index = target_ed_index
 		self.app.dlgFileOpen.show()
 
@@ -324,8 +343,16 @@ class DialogHandler:
 			else:							
 				filename = str(txtFileName)
 
+			if(os.path.isdir(filename)):
+				self.app.show_error("Cannot open directory, relaunch with the directory-name as\nthe first argument to ash.")
+				mw.repaint()
+				self.app.dlgFileOpen.repaint()
+				return -1
+
 			if(BufferManager.is_binary(filename)):
 				self.app.show_error("Cannot open binary file!")
+				mw.repaint()
+				self.app.dlgFileOpen.repaint()
 				return -1
 			
 			sel_encoding = str(lstEncodings)

@@ -6,8 +6,6 @@
 # This module implements the key bindings for the text-editor widget
 
 from ash.gui import *
-from ash.formatting.formatting import *
-from ash.core.utils import *
 
 class EditorKeyHandler:
 	def __init__(self, ed):
@@ -374,7 +372,7 @@ class EditorKeyHandler:
 		self.ed.buffer.lines[self.ed.curpos.y] = left + sch + right
 		self.ed.curpos.x += 1		
 
-		return (True if sch in self.ed.separators else False)
+		return True
 			
 	# handles the PGUP and PGDOWN keys
 	def handle_page_navigation_keys(self, ch):
@@ -454,20 +452,12 @@ class EditorKeyHandler:
 			self.ed.sel_end = copy.copy(self.ed.curpos)
 		
 	def handle_undo(self):
-		hdata = self.ed.buffer.history.undo()
-		if(hdata == None):
-			beep()
-		else:
-			self.ed.buffer.lines = copy.copy(hdata.data)
-			self.ed.curpos = copy.copy(hdata.curpos)
+		self.ed.buffer.do_undo()
+		self.ed.parent.repaint()
 
 	def handle_redo(self):
-		hdata = self.ed.buffer.history.redo()
-		if(hdata == None):
-			beep()
-		else:
-			self.ed.buffer.lines = copy.copy(hdata.data)
-			self.ed.curpos = copy.copy(hdata.curpos)
+		self.ed.buffer.do_redo()
+		self.ed.parent.repaint()
 
 	def handle_save(self):
 		if(not self.ed.buffer.save_status):
@@ -487,7 +477,6 @@ class EditorKeyHandler:
 	def handle_copy(self):
 		if(not self.ed.selection_mode): return
 		sel_text = self.ed.get_selected_text()
-		log(f"copied: {sel_text}")
 		clipboard.copy(sel_text)
 
 	def handle_cut(self):

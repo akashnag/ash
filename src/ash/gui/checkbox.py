@@ -6,8 +6,6 @@
 # This module implements the CheckBox widget
 
 from ash.gui import *
-from ash.formatting.colors import *
-from ash.core.utils import *
 
 class CheckBox(Widget):
 	def __init__(self, parent, y, x, text):

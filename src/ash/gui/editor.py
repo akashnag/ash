@@ -9,10 +9,6 @@ from ash.gui import *
 from ash.gui.editorKeyHandler import *
 from ash.gui.editorUtility import *
 from ash.gui.cursorPosition import *
-
-from ash.formatting.colors import *
-
-from ash.core.utils import *
 from ash.core.editHistory import *
 
 PREFERRED_LINE_NUMBER_WIDTH = 6

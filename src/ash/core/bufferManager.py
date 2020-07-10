@@ -7,15 +7,12 @@
 
 from ash.core import *
 from ash.core.logger import *
-from ash.core.utils import *
 from ash.gui.cursorPosition import *
 from ash.core.editHistory import *
 from ash.formatting.syntaxHighlighting import *
 
-import mimetypes
-
-BACKUP_FREQUENCY_SIZE	= 32		# backup after every 32 bytes changed
-HISTORY_FREQUENCY_SIZE	= 8			# every >=8-character edit can be undone
+BACKUP_FREQUENCY_SIZE	= 16		# backup after every 16 edits
+HISTORY_FREQUENCY_SIZE	= 8			# undo: every 8 edit operations
 
 class Buffer:
 	def __init__(self, manager, id, filename = None, encoding = "utf-8", newline = "\n", has_backup = False):
@@ -25,6 +22,11 @@ class Buffer:
 		self.encoding = encoding
 		self.editors = list()
 		self.display_name = None
+
+		self.backup_edit_count = 0
+		self.undo_edit_count = 0
+		self.last_curpos = CursorPosition(0,0)
+		self.last_called = None
 		
 		if(self.filename == None):
 			self.lines = list()
@@ -42,8 +44,7 @@ class Buffer:
 			self.formatter = SyntaxHighlighter(self.filename)
 		
 		self.history = EditHistory(self.lines, CursorPosition(0,0))
-		self.newline = newline
-		self.old_data_size = sys.getsizeof(self.lines)
+		self.newline = newline		
 
 	def set_encoding(self, encoding):
 		self.encoding = encoding
@@ -60,34 +61,65 @@ class Buffer:
 	def has_file(self):
 		return (False if self.filename == None else True)
 
-	def undo(self):
-		data = self.history.undo()			# alias function
-		if(data != None): self.save_status = False
-		return data
+	def do_undo(self):
+		if(self.undo_edit_count > 0): 		# add the latest change forcefully
+			self.history.add_change(self.lines, self.last_curpos)
+			self.undo_edit_count = 0
 
-	def redo(self):
-		data = self.history.redo()			# alias function
-		if(data != None): self.save_status = False
-		return data
+		hdata = self.history.undo()
+		if(hdata == None):
+			beep()
+		else:
+			self.lines = copy.copy(hdata.data)
+			for ed in self.editors:
+				ed.curpos = copy.copy(hdata.curpos)
+
+	def do_redo(self):
+		hdata = self.history.redo()
+		if(hdata == None):
+			beep()
+		else:
+			self.lines = copy.copy(hdata.data)
+			for ed in self.editors:
+				ed.curpos = copy.copy(hdata.curpos)
 
 	def update(self, curpos, caller):			# must be called after every edit made
 		self.save_status = False
-		new_data_size = sys.getsizeof(self.lines)
-		if(self.backup_file != None and abs(new_data_size - self.old_data_size) >= BACKUP_FREQUENCY_SIZE):
-			self.make_backup()		
-		if(abs(new_data_size - self.old_data_size) >= HISTORY_FREQUENCY_SIZE):
+		
+		if(self.backup_file != None and self.backup_edit_count >= BACKUP_FREQUENCY_SIZE):
+			self.make_backup()
+			self.backup_edit_count = 0
+		else:
+			self.backup_edit_count += 1
+
+		if(self.undo_edit_count >= HISTORY_FREQUENCY_SIZE):
 			self.history.add_change(self.lines, curpos)
-		self.old_data_size = new_data_size
+			self.undo_edit_count = 0
+		else:
+			self.undo_edit_count += 1
+		
 		for ed in self.editors:
 			if(ed != caller): ed.notify_update()
 
+		self.last_curpos = curpos
+		self.last_caller = caller
+
 	def major_update(self, curpos, caller, make_backup = False):
-		self.save_status = False		
-		if(make_backup): self.make_backup()
-		self.history.add_change(self.lines, curpos)		
-		self.old_data_size = sys.getsizeof(self.lines)
+		self.save_status = False
+		if(make_backup): 
+			self.make_backup()
+			self.backup_edit_count = 0
+		else:
+			self.backup_edit_count += 1
+		
+		self.history.add_change(self.lines, curpos)
+		self.undo_edit_count = 0
+		
 		for ed in self.editors:
 			if(ed != caller): ed.notify_update()
+
+		self.last_curpos = curpos
+		self.last_caller = caller
 	
 	def write_to_disk(self, filename = None):
 		if(self.filename == None and filename == None): raise(Exception("Error 1: buffer.write_to_disk()"))
@@ -102,6 +134,10 @@ class Buffer:
 		textFile.close()
 		self.save_status = True
 		self.backup_file = get_file_directory(self.filename) + "/.ash.b-" + get_file_title(self.filename)
+
+		self.backup_edit_count = 0
+		self.undo_edit_count = 0
+
 		return self.manager.merge_if_required(self.id)
 
 	def is_editor_attached(self, editor):
@@ -175,6 +211,10 @@ class Buffer:
 			self.save_status = True
 		else:
 			self.save_status = False
+
+		self.backup_edit_count = 0
+		self.undo_edit_count = 0
+		
 		return 0
 
 	def render_data_to_lines(self, text):

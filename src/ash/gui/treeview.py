@@ -86,14 +86,20 @@ class TreeView(Widget):
 	def refresh_glob(self):
 		self.files = list()
 		self.dirs = list()				
-		all_files = glob.glob(self.project_dir + "/**/*.*", recursive=True)
+		all_files = glob.glob(self.project_dir + "/**/*", recursive=True)
+		
 		for f in all_files:
+			if(not os.path.isfile(f)): continue
 			self.files.append(f)
 			dir_list = get_relative_subdirectories(self.project_dir, f)
+
 			for d in dir_list:
-				if(d not in self.dirs): self.dirs.append(d)
+				if(d not in self.dirs and not should_ignore_directory(d)):
+					self.dirs.append(d)
+		
 		for d in os.walk(self.project_dir):
-			if(d[0] not in self.dirs): self.dirs.append(d[0])
+			if(d[0] not in self.dirs and not should_ignore_directory(d[0])):
+				self.dirs.append(d[0])
 	
 	def form_tree(self):
 		root_node = TreeNode(None, self.project_dir)

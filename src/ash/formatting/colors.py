@@ -6,15 +6,13 @@
 # This module handles all color formatting for the application
 
 from ash.formatting import *
-from ash.core.logger import *
 
-import os
-
-# name of the config file
-CONFIG_FILE					= os.path.expanduser("~/.ashrc")
-MULTIPLIER					= 3.90625
+# multiplier constant for translation to/from RGB
+MULTIPLIER					= 1000 / 256
 
 # <----------------------- color formatting functions ----------------->
+
+# sets the default color theme for ash
 def get_default_colors():
 	colors = dict()
 	element_colors = dict()
@@ -73,6 +71,7 @@ def get_default_colors():
 	
 	return (colors, element_colors)
 
+# returns the index for a specified color name
 def get_color_index(color_name):
 	colnames = ( "darkgray", "lightgray", "dimwhite", "white", 
 				 "red", "green", "blue", "yellow", "cyan", "magenta",
@@ -83,6 +82,7 @@ def get_color_index(color_name):
 	except:
 		return -1
 
+# returns the index for a specified colorable element-name
 def get_element_color_index(element_name):
 	element_names = ( 	"null",
 						"titlebar", "outer-border", "line-number", "highlighted-line-number",
@@ -101,6 +101,7 @@ def get_element_color_index(element_name):
 	except:
 		return -1
 
+# writes the current color scheme to the configuration file
 def write_to_config(colors, element_colors):
 	configFile = open(CONFIG_FILE, "wt")
 	for name, rgb in colors.items():
@@ -109,6 +110,7 @@ def write_to_config(colors, element_colors):
 		configFile.write("color-" + name + " = (" + pair[0] + ", " + pair[1] + ")\n")
 	configFile.close()
 
+# loads color scheme from the configuration file
 def load_config(colors = None, element_colors = None):
 	if(not os.path.isfile(CONFIG_FILE)):
 		return (colors, element_colors)
@@ -121,8 +123,7 @@ def load_config(colors = None, element_colors = None):
 	configFile.close()
 
 	for line in config:
-		# syntax:
-		# magenta=rgb(113,154,132)
+		# syntax: 'magenta=rgb(113,154,132)'
 		line = line.strip().lower().replace(" ", "")
 		pos1 = line.find("=rgb(")
 		pos2 = line.find("=(")
@@ -144,16 +145,7 @@ def load_config(colors = None, element_colors = None):
 
 	return (colors, element_colors)
 
-def init_colors():
-	colors, element_colors = get_default_colors()
-
-	if(not os.path.isfile(CONFIG_FILE)):
-		write_to_config(colors, element_colors)
-		set_colors(colors, element_colors)
-	else:
-		colors, element_colors = load_config(colors, element_colors)
-		set_colors(colors, element_colors)
-
+# records color pairs into curses color-pair palette
 def set_colors(colors, element_colors):
 	for colname, rgb in colors.items():
 		index = get_color_index(colname)
@@ -173,3 +165,14 @@ def set_colors(colors, element_colors):
 # retrieve a curses.color_pair() object for a given color combination
 def gc(cp = "global-default"):
 	return curses.color_pair(get_element_color_index(cp))
+
+# initializes color scheme: called on startup
+def init_colors():
+	colors, element_colors = get_default_colors()
+
+	if(not os.path.isfile(CONFIG_FILE)):
+		write_to_config(colors, element_colors)
+		set_colors(colors, element_colors)
+	else:
+		colors, element_colors = load_config(colors, element_colors)
+		set_colors(colors, element_colors)

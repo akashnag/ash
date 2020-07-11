@@ -6,6 +6,7 @@
 # This module handles all file related functions
 
 from ash.utils import *
+from ash.utils.utils import *
 
 def get_file_title(filename):
 	pos = filename.rfind("/")
@@ -53,6 +54,9 @@ def get_copy_filename(filename):
 		return dir + ft[0:pos2] + "-copy" + ft[pos2:]
 
 def predict_file_encoding(filename, n = 20):
+	if(not os.path.isfile(filename)): return None
+	fs = int(os.stat(filename).st_size)
+	n = min([fs, n])
 	with open(filename, "rb") as f:
 		rawdata = b"".join([f.readline() for _ in range(n)])
 	return chardet.detect(rawdata)["encoding"]
@@ -89,3 +93,18 @@ def get_textfile_mimetype(filename):
 		return "unknown"
 	else:
 		return mt[pos+1:]
+
+def should_ignore_file(filename):
+	positions = get_delim_positions(filename[1:], "/")
+	last_pos = -1
+	for pos in positions:
+		dir = filename[last_pos+1:pos].lower()
+		last_pos = pos
+		if(dir in IGNORED_DIRECTORIES): return True
+	return False
+
+def should_ignore_directory(dirname):
+	if(get_file_title(dirname).lower() not in IGNORED_DIRECTORIES):
+		return False
+	else:
+		return True

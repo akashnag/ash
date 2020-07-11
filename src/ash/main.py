@@ -26,9 +26,6 @@ from ash.gui.msgBox import *
 from ash.gui.inputBox import *
 from ash.gui.dialogHandler import *
 
-MIN_WIDTH			= 102
-MIN_HEIGHT			= 22
-
 class AshEditorApp:
 	def __init__(self, ash_dir, args):
 		self.ash_dir = ash_dir
@@ -45,8 +42,11 @@ class AshEditorApp:
 		elif(self.argc == 2 and os.path.isdir(self.args[1])):
 			self.app_mode = APP_MODE_PROJECT
 			self.project_dir = str(os.path.abspath(self.args[1]))
-			all_files = glob.glob(self.project_dir + "/**/*.*", recursive=True)
+			all_files = glob.glob(self.project_dir + "/**/*", recursive=True)
+
 			for f in all_files:
+				if(not os.path.isfile(f)): continue
+				if(should_ignore_file(f)): continue
 				if(BufferManager.is_binary(f)): continue
 				has_backup = BufferManager.backup_exists(f)
 				self.buffers.create_new_buffer(filename=f, has_backup=has_backup)

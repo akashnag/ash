@@ -101,3 +101,14 @@ def should_highlight(cur_row, line_num, cum_lengths, last_printed):
 		return True
 	else:
 		return False
+
+def get_delim_positions(string, delim):
+	if(delim == None or string == None): return None
+	n = len(string)
+	l = len(delim)
+	if(n == 0 or l == 0): return None
+	pos = list()
+	for i in range(n-l+1):
+		if(string[i:i+l] == delim):
+			pos.append(i)
+	return pos

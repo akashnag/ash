@@ -5,12 +5,12 @@
 
 # This module handles all syntax highlighting
 
-import pygments
-import pygments.lexers
-
-from pygments.token import Token
 from ash.formatting import *
 from ash.formatting.colors import *
+
+import pygments
+import pygments.lexers
+from pygments.token import Token
 
 # <------------------- style mapping ---------------------->
 style_map = dict()
@@ -31,11 +31,14 @@ style_map[Token.Name.Builtin] = "global-builtin-function"
 style_map[Token.Name.Builtin.Pseudo] = "global-builtin-constant"
 style_map[Token.Name.Namespace] = "global-namespace"
 style_map[Token.Keyword.Namespace] = "global-keyword"
+# <----------------------------------------------------------------->
 
+# SyntaxHighlighter class: stylizes text according to its language
 class SyntaxHighlighter:
 	def __init__(self, filename):
 		self.reset_file(filename)
 
+	# sets filename and initializes lexer
 	def reset_file(self, filename):
 		try:
 			self.lexer = pygments.lexers.get_lexer_for_filename(filename)
@@ -43,9 +46,9 @@ class SyntaxHighlighter:
 		except:
 			self.lexer = None
 
-	def format_code(self, line):
-		# return a list of tuples (index, text, style)
-		# style = gc(SOME_COLOR_PAIR)
+	# return a list of tuples (index, text, style)
+	# style = gc(SOME_COLOR_PAIR)
+	def format_code(self, line):		
 		styles = list()
 		
 		if(self.lexer == None):
@@ -58,6 +61,7 @@ class SyntaxHighlighter:
 
 		return styles
 
+	# returns the assigned style for a particular token-type
 	def get_style(self, token_type):
 		style = style_map.get(token_type)
 		if(style == None):		

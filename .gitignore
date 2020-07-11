@@ -1,4 +1,5 @@
 bin/*.py
+bin/*
 src/__pycache__
 src/ash/__pycache__
 src/ash/core/__pycache__
@@ -8,3 +9,4 @@ src/ash/utils/__pycache__
 *.pyc
 *.txt
 !/requirements.txt
+!/bin/ash

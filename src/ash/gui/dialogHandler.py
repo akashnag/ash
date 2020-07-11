@@ -16,8 +16,6 @@ from ash.gui.listbox import *
 from ash.gui.textfield import *
 from ash.gui.treeview import TreeView
 
-SUPPORTED_ENCODINGS = [ "utf-8", "ascii", "utf-7", "utf-16", "utf-32", "latin-1" ]
-
 class DialogHandler:
 	def __init__(self, app):
 		self.app = app

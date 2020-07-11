@@ -3,13 +3,17 @@
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
-# This module handles all logging functions
+# This module handles all logging functions for diagnostic purposes
 
+from ash import *
+
+# creates the log file: must be called at startup
 def log_init():
-	logFile = open("log.txt", "wt")
+	logFile = open(LOG_FILE, "wt")
 	logFile.close()
 
+# appends data to the log
 def log(data):
-	logFile = open("log.txt", "at")
+	logFile = open(LOG_FILE, "at")
 	logFile.write(str(data) + "\n")
 	logFile.close()

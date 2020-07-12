@@ -90,7 +90,7 @@ To run **ash** make sure you have `:$HOME/.local/bin` appended to your $PATH var
 To uninstall **ash** you can use:
 
 ```bash
-$ pip3 uninstall ash
+$ sudo pip3 uninstall ash
 ```
 
 ### Downloading and setting up the developmental build for ash

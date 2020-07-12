@@ -13,7 +13,8 @@
 - [Design Goals](#design-goals)
 - [Installation](#installation)
   - Prerequisites
-  - Downloading and setting up **ash**
+  - Installing **ash**
+  - Downloading and setting up the developmental build for **ash**
 - [Prebuilt binaries](#prebuilt-binaries)  
 - [Colors](#colors)
 - [Usage](#usage)
@@ -61,7 +62,7 @@ The following is a list of features available in **ash**; some of which have alr
 
 ## Installation
 
-As **ash** is still in development, there are no prebuilt binaries available for download. However, if you have python 3.8 installed on your system, you can download and run a developmental build for **ash**. For Linux users, follow the following steps to get **ash** on your system:
+As **ash** is still in development, there are no prebuilt binaries available for download. However, if you have python 3.8 installed on your system, you can download and install a released version or run a developmental build for **ash**. For Linux users, follow the following steps to get **ash** on your system:
 
 ### Prerequisites
 
@@ -74,7 +75,27 @@ $ sudo apt install python3
 $ sudo apt install python3-pip
 ```
 
-### Downloading and setting up ash
+### Installing ash
+
+If you want to install **ash** on your system, download the `.tar.gz` file from the latest release (from the Releases section on GitHub). Extract it a folder, and once inside that folder (make sure it contains the file `setup.py`), execute the following:
+
+```bash
+$ sudo pip3 install .
+```
+
+To run **ash** make sure you have `:$HOME/.local/bin` appended to your $PATH variable in the file `~/.bashrc`. To execute **ash**, see the [Usage](#usage) section.
+
+### Uninstalling ash
+
+To uninstall **ash** you can use:
+
+```bash
+$ pip3 uninstall ash
+```
+
+### Downloading and setting up the developmental build for ash
+
+**Note:** This section is only for users who want to run the latest build
 
 ```bash
 $ cd ~

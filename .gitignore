@@ -6,8 +6,6 @@ src/ash/core/__pycache__
 src/ash/formatting/__pycache__
 src/ash/gui/__pycache__
 src/ash/utils/__pycache__
-assets/logo.gif
-assets/logo.png
 dist
 ash.egg-info
 *.pyc

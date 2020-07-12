@@ -68,6 +68,8 @@ def get_default_colors():
 	element_colors["global-builtin-function"] = ("cyan", "darkgray")
 	element_colors["global-builtin-constant"] = ("blue", "darkgray")
 	element_colors["global-namespace"] = ("dimwhite", "darkgray")
+	element_colors["global-code"] = ("white", "lightgray")	
+
 	
 	return (colors, element_colors)
 
@@ -93,7 +95,8 @@ def get_element_color_index(element_name):
 						"status-6", "status-7", "global-default", "global-keyword", "global-comment",
 						"global-string", "global-error", "global-function", "global-variable",
 						"global-punctuation", "global-integer", "global-float", "global-operator",
-						"global-builtin-function", "global-builtin-constant", "global-namespace"
+						"global-builtin-function", "global-builtin-constant", "global-namespace",
+						"global-code"
 					) 
 
 	try:

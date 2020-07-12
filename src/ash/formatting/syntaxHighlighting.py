@@ -31,6 +31,12 @@ style_map[Token.Name.Builtin] = "global-builtin-function"
 style_map[Token.Name.Builtin.Pseudo] = "global-builtin-constant"
 style_map[Token.Name.Namespace] = "global-namespace"
 style_map[Token.Keyword.Namespace] = "global-keyword"
+style_map[Token.Literal.String.Backtick] = "global-code"
+style_map[Token.Generic.Strong] = "global-keyword"
+style_map[Token.Generic.Heading] = "global-function"
+style_map[Token.Generic.Subheading] = "global-function"
+style_map[Token.Name.Tag] = "global-keyword"
+style_map[Token.Name.Attribute] = "global-function"
 # <----------------------------------------------------------------->
 
 # SyntaxHighlighter class: stylizes text according to its language
@@ -42,7 +48,7 @@ class SyntaxHighlighter:
 	def reset_file(self, filename):
 		try:
 			self.lexer = pygments.lexers.get_lexer_for_filename(filename)
-			if(filename.lower().endswith(".txt")): self.lexer = None
+			if(filename.lower().endswith(".txt")): self.lexer = None			
 		except:
 			self.lexer = None
 
@@ -64,7 +70,7 @@ class SyntaxHighlighter:
 	# returns the assigned style for a particular token-type
 	def get_style(self, token_type):
 		style = style_map.get(token_type)
-		if(style == None):		
+		if(style == None):
 			return gc("global-default")
 		else:
 			return gc(style)

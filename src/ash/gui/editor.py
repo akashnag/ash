@@ -102,10 +102,15 @@ class Editor(Widget):
 		self.cum_sub_line_lengths = list()
 		self.grouped_colspans = dict()
 		self.col_spans = list()
+		self.unexpanded_lines = list()
 
 		total = 0
 		for line_index, line in enumerate(self.buffer.lines):
+			eline = line.expandtabs(self.tab_size)
 			wline = self.utility.wrapped(line, self.width, self.word_wrap, self.hard_wrap)
+			ewline = self.utility.wrapped(eline, self.width, self.word_wrap, self.hard_wrap)
+
+			self.unexpanded_lines.extend(wline)
 
 			cumx = 0
 			colspan_list = list()
@@ -115,7 +120,7 @@ class Editor(Widget):
 
 			self.col_spans.extend(colspan_list)
 			self.grouped_colspans[line_index] = list(colspan_list)
-			self.sub_lines.extend(wline)
+			self.sub_lines.extend(ewline)
 			self.cum_sub_line_lengths.append(total)
 			total += len(wline)
 		self.cum_sub_line_lengths.append(total)
@@ -253,8 +258,8 @@ class Editor(Widget):
 	def print_selection(self, line_index):
 		start, end = self.get_selection_endpoints_rendered()
 		
-		text = self.rendered_lines[line_index]
-		wstext = text.expandtabs(self.tab_size)
+		text = self.unexpanded_lines[line_index]
+		wstext = self.rendered_lines[line_index]
 		vtext = wstext[self.col_start:] if self.col_end > len(wstext) else wstext[self.col_start:self.col_end]
 		
 		vstartx = get_horizontal_cursor_position(text, start.x, self.tab_size)
@@ -336,8 +341,10 @@ class Editor(Widget):
 				self.rendered_sel_start = self.utility.get_rendered_pos(self.sel_start)
 				self.rendered_sel_end = self.utility.get_rendered_pos(self.sel_end)
 		else:
-			self.rendered_lines = self.buffer.lines
-			self.rendered_curpos = self.curpos
+			self.unexpanded_lines = self.buffer.lines
+			self.rendered_lines = expand_tabs_in_lines(self.buffer.lines, self.tab_size)
+			rcx = get_horizontal_cursor_position(self.buffer.lines[self.curpos.y], self.curpos.x, self.tab_size)
+			self.rendered_curpos = CursorPosition(self.curpos.y, rcx)
 			self.rendered_sel_start = self.sel_start
 			self.rendered_sel_end = self.sel_end
 
@@ -351,8 +358,8 @@ class Editor(Widget):
 		if(self.selection_mode and not self.find_mode):
 			start, end = self.get_selection_endpoints_rendered()
 			if(start.y == end.y):
-				text = self.rendered_lines[start.y]
-				wstext = text.expandtabs(self.tab_size)
+				text = self.unexpanded_lines[start.y]
+				wstext = self.rendered_lines[start.y]
 				vtext = wstext[self.col_start:] if self.col_end > len(wstext) else wstext[self.col_start:self.col_end]
 				vstartx = get_horizontal_cursor_position(text, start.x, self.tab_size)
 				vendx = get_horizontal_cursor_position(text, end.x, self.tab_size)
@@ -384,7 +391,7 @@ class Editor(Widget):
 				self.parent.addstr(self.y + i - self.line_start, self.x, line_number.rjust(self.line_number_width), line_theme)
 			
 			# print the text
-			text = self.rendered_lines[i].expandtabs(self.tab_size)
+			text = self.rendered_lines[i] #.expandtabs(self.tab_size)
 			vtext = text[self.col_start:] if self.col_end > len(text) else text[self.col_start:self.col_end]
 			if(self.is_in_selection_rendered(i)):
 				self.print_selection(i)
@@ -398,7 +405,7 @@ class Editor(Widget):
 		if(rline < self.cum_sub_line_lengths[index]): index -= 1
 		return index
 		
-	def print_formatted(self, i, vtext, off_y = 0, off_x = 0):		
+	def print_formatted(self, i, vtext, off_y = 0, off_x = 0):
 		offset_y = self.y + i - self.line_start + off_y
 		init_offset_x = self.x + self.line_number_width + 1 + off_x
 		offset_x = init_offset_x

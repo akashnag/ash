@@ -1,8 +1,16 @@
-#!/bin/bash
+#!/usr/bin/python3
 
 # ---------------------------------------------------------------------------------------------
 #  Copyright (c) Akash Nag. All rights reserved.
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
-python3 ../src/ash.py $@
+import os.path, sys
+
+dn = os.path.dirname(os.path.realpath(__file__))
+pd = os.pardir + "/src"
+jp = os.path.join(dn, pd)
+sys.path.append(jp)
+
+from ash.ash_main import *
+run()

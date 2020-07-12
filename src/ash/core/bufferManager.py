@@ -117,7 +117,7 @@ class Buffer:
 			if(ed != caller): ed.notify_update()
 
 		self.last_curpos = curpos
-		self.last_caller = caller
+		self.last_caller = caller		
 
 	# same as update() but forces the buffer to save changes to its edit-history,
 	# and to make a backup if desired
@@ -234,9 +234,14 @@ class Buffer:
 			textFile = codecs.open(filename, "w", self.encoding)
 			textFile.close()
 
-		textFile = codecs.open(filename, "r", self.encoding)
-		text = textFile.read()
-		textFile.close()
+		try:
+			textFile = codecs.open(filename, "r", self.encoding)
+			text = textFile.read()
+			textFile.close()
+		except:
+			raise(Exception("error reading file: " + filename))
+			raise
+
 		self.render_data_to_lines(text)
 		
 		if(not read_from_backup): 

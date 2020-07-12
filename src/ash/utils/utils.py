@@ -102,6 +102,12 @@ def should_highlight(cur_row, line_num, cum_lengths, last_printed):
 	else:
 		return False
 
+def expand_tabs_in_lines(lines, tab_size):
+	elines = list()
+	for l in lines:
+		elines.append(l.expandtabs(tab_size))
+	return elines
+
 def get_delim_positions(string, delim):
 	if(delim == None or string == None): return None
 	n = len(string)

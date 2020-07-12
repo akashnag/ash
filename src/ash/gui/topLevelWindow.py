@@ -156,7 +156,6 @@ class TopLevelWindow(Window):
 		if(error_msg == None):
 			if(self.status != None): self.status.repaint(self.win, self.width-1, self.height-1, 0)
 		else:
-			log(f"{self.app.screen_height} {self.app.screen_width} {self.height} {self.width}")
 			if(len(error_msg) + 1 > self.width - 1): error_msg = error_msg[0:self.width-2]
 			self.win.addstr(self.height-1, 0, (" " + error_msg).ljust(self.width-1), gc("messagebox-background"))
 		

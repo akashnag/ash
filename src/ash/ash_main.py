@@ -10,6 +10,10 @@ import os
 
 from ash.main import *
 
-ash_dir = os.path.dirname(os.path.realpath(__file__))
-app = AshEditorApp(ash_dir, sys.argv)
-app.run()
+def run():
+	ash_dir = os.path.dirname(os.path.realpath(__file__))
+	app = AshEditorApp(ash_dir, sys.argv)
+	app.run()
+	
+if __name__ == "__main__":
+	run()

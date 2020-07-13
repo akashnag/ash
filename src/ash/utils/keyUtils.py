@@ -82,7 +82,7 @@ ASH_KEY_BINDINGS = [
 	("F9", "Save As"),
 	("", ""),			# blank line
 
-	("For more, visit", "https://github.com/akashnag/ash")
+	("Website:", "https://akashnag.github.io/ash")
 ]
 
 def get_ash_key_bindings():
@@ -112,6 +112,7 @@ def is_func(ch, k=None):
 	else:
 		return(True if sch == "b'KEY_F(" + str(k) + ")'" else False)
 
+# returns which function-key was pressed as an integer
 def get_func_key(ch):
 	if(not is_func(ch)):
 		return None
@@ -149,6 +150,7 @@ def is_ctrl_arrow(ch, arrow = None):
 		else:
 			return False
 
+# generic function to check the keyname of a pressed key
 def is_keyname(ch, name):
 	sch = str(curses.keyname(ch))
 	if(sch == "b'k" + name + "'"):

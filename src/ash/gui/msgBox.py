@@ -48,11 +48,9 @@ class MessageBox(Window):
 		
 		curses.curs_set(False)
 		self.win.keypad(True)
-		self.win.timeout(0)
-		
+		self.win.timeout(0)		
 		self.repaint()
 
-		# start of the event loop	
 		while(True):
 			ch = self.win.getch()
 			if(ch > -1): 

@@ -15,3 +15,4 @@ import mimetypes
 from datetime import datetime
 
 from ash import *
+from ash.core.logger import *

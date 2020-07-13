@@ -12,9 +12,10 @@
 
 - [Design Goals](#design-goals)
 - [Installation](#installation)
-  - Prerequisites
-  - Installing **ash**
-  - Downloading and setting up the developmental build for **ash**
+  - [Prerequisites](#prerequisites)
+  - [Installing **ash**](#installing-ash)
+  - [Uninstalling **ash**](#uninstalling-ash)
+  - [Running Development Build](#running-development-build)
 - [Prebuilt binaries](#prebuilt-binaries)  
 - [Colors](#colors)
 - [Usage](#usage)
@@ -44,9 +45,9 @@ The following is a list of features available in **ash**; some of which have alr
 - Project mode (opening a directory instead of individual files)
 - Support for splits/windows
 - Support for various text-encodings
-- Syntax highlighting (partially implemented)
 - Selection highlighting (highlights text under selection wherever they occur in the document)
 - Color scheme customization
+- Syntax highlighting (partially implemented)
 
 **Not yet implemented:**
 
@@ -62,14 +63,13 @@ The following is a list of features available in **ash**; some of which have alr
 
 ## Installation
 
-As **ash** is still in development, there are no prebuilt binaries available for download. However, if you have python 3.8 installed on your system, you can download and install a released version or run a developmental build for **ash**. For Linux users, follow the following steps to get **ash** on your system:
+As **ash** is still in development, there are no prebuilt binaries available for download. However, if you have python 3.8 installed on your system, you can download and install a released version or run a developmental build for **ash**. To get the nightly release, download the tar-ball from the `dist` folder. For Linux users, follow the following steps to get **ash** on your system:
 
 ### Prerequisites
 
 You need certain packages and Python 3 itself to download and run the developmental build:
 
 ```bash
-$ sudo apt install git
 $ sudo apt install xclip
 $ sudo apt install python3
 $ sudo apt install python3-pip
@@ -77,7 +77,7 @@ $ sudo apt install python3-pip
 
 ### Installing ash
 
-If you want to install **ash** on your system, download the `.tar.gz` file from the latest release (from the Releases section on GitHub). Extract it a folder, and once inside that folder (make sure it contains the file `setup.py`), execute the following:
+If you want to install **ash** on your system, download the `.tar.gz` file from the latest release (from the Releases section on GitHub) or from the `dist` folder. Extract it a folder, and once inside that folder (make sure it contains the file `setup.py`), execute the following:
 
 ```bash
 $ sudo pip3 install .
@@ -93,11 +93,12 @@ To uninstall **ash** you can use:
 $ sudo pip3 uninstall ash
 ```
 
-### Downloading and setting up the developmental build for ash
+### Running Development Build
 
 **Note:** This section is only for users who want to run the latest build
 
 ```bash
+$ sudo apt install git
 $ cd ~
 $ git clone --depth 1 -b master https://github.com/akashnag/ash.git
 $ cd ash/bin

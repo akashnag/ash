@@ -29,8 +29,6 @@ class InputBox(Window):
 
 	# show the window and start the event-loop
 	def show(self):
-		#self.win = curses.newwin(self.height, self.width, self.y, self.x)
-		
 		curses.curs_set(False)
 		self.win.keypad(True)
 		self.win.timeout(0)		

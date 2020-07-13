@@ -28,18 +28,23 @@ class TreeNode:
 		else:
 			self.children = list()
 
+	# return True if the node represents a directory
 	def is_dir(self):
 		return (True if self.type == "d" else False)
 
+	# add a child node under this directory-node
 	def add_child_node(self, child_node):
 		if(self.children != None): self.children.append(child_node)
 
+	# collapse this directory-node
 	def collapse(self):
 		if(self.expanded != None): self.expanded = False
 
+	# expand this directory-node
 	def expand(self):
 		if(self.expanded != None): self.expanded = True
 
+	# return the display-name for this node
 	def __str__(self):
 		title = get_file_title(self.path)
 		if(self.is_dir()):
@@ -47,8 +52,9 @@ class TreeNode:
 		else:
 			return title
 
+	# returns the path of the file/directory represented by this node
 	def __repr__(self):
-		pass
+		get_file_title(self.path)
 
 class TreeView(Widget):
 	def __init__(self, parent, y, x, width, row_count, buffer_manager, project_dir):
@@ -66,6 +72,7 @@ class TreeView(Widget):
 		self.is_in_focus = False		
 		self.refresh()
 
+	# refresh the tree
 	def refresh(self, maintain_selindex = False):
 		self.refresh_glob()
 		self.ensure_files_have_buffers()
@@ -76,6 +83,7 @@ class TreeView(Widget):
 		self.end = min([self.row_count, len(self.items)])
 		self.repaint()
 
+	# create buffers for all text-files in the tree if they do not exist
 	def ensure_files_have_buffers(self):		
 		for f in self.files:
 			if(BufferManager.is_binary(f)): continue
@@ -83,6 +91,7 @@ class TreeView(Widget):
 			if(not self.buffer_manager.does_file_have_its_own_buffer(f)):
 				self.buffer_manager.create_new_buffer(filename=f, has_backup=has_backup)
 
+	# finds all files and subdirectories in the tree
 	def refresh_glob(self):
 		self.files = list()
 		self.dirs = list()				
@@ -101,11 +110,13 @@ class TreeView(Widget):
 			if(d[0] not in self.dirs and not should_ignore_directory(d[0])):
 				self.dirs.append(d[0])
 	
+	# form the tree-root and add subnodes recursively
 	def form_tree(self):
 		root_node = TreeNode(None, self.project_dir)
 		self.form_children(root_node)
 		return root_node
 
+	# add subnodes recursively
 	def form_children(self, root_node):
 		sub_dirs = sorted(filter_child_directories(root_node.path, self.dirs))
 		sub_files = sorted(filter_child_directories(root_node.path, self.files))
@@ -119,6 +130,7 @@ class TreeView(Widget):
 			sf_node = TreeNode(root_node, f)
 			root_node.add_child_node(sf_node)
 
+	# form the root display-node and add its children recursively
 	def form_list_items(self):
 		self.items = list()
 		self.tags = list()		
@@ -127,6 +139,7 @@ class TreeView(Widget):
 		if(self.tree_root.expanded): 
 			self.form_sublist_items(self.tree_root, 0, " " * INDENT_SIZE)
 	
+	# form the displayed child nodes recursively
 	def form_sublist_items(self, root_node, root_level, space):
 		if(root_node.children == None): return
 		n = len(root_node.children)
@@ -257,11 +270,13 @@ class TreeView(Widget):
 
 		self.repaint()
 
+	# refresh on collapse/expand operation
 	def mini_refresh(self):
 		self.form_list_items()
 		self.start = 0
 		self.end = min([self.row_count, len(self.items)])
 
+	# create a new directory under the selected node
 	def create_new_directory(self):
 		parent_dir = self.get_sel_filepath()
 		if(os.path.isfile(parent_dir)): parent_dir = get_file_directory(parent_dir)
@@ -277,6 +292,7 @@ class TreeView(Widget):
 				except:
 					self.parent.parent.app.show_error("An error occurred while creating directory")				
 	
+	# create a new file under the selected node
 	def create_new_file(self):
 		parent_dir = self.get_sel_filepath()
 		if(os.path.isfile(parent_dir)): parent_dir = get_file_directory(parent_dir)
@@ -294,7 +310,7 @@ class TreeView(Widget):
 			except:
 				self.parent.parent.app.show_error("An error occurred while creating file")
 				
-
+	# move the selected file/directory to the trash
 	def delete_sel_item(self):
 		fp = self.get_sel_filepath()
 		if(self.parent.parent.app.ask_question("DELETE", "Are you sure you want to delete this item?")):
@@ -304,6 +320,7 @@ class TreeView(Widget):
 			except:
 				self.parent.parent.app.show_error("An error occurred while deleting item")
 	
+	# rename the selected file/directory
 	def rename_sel_item(self):
 		fp = self.get_sel_filepath()
 		new_name = self.parent.parent.app.prompt("RENAME", "Enter a new name: ", get_file_title(fp))
@@ -320,7 +337,6 @@ class TreeView(Widget):
 				self.refresh()
 			except:
 				self.parent.parent.app.show_error("An error occurred during renaming")
-
 
 	# returns the text of the selected item
 	def __str__(self):

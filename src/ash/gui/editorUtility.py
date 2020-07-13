@@ -150,7 +150,7 @@ class EditorUtility:
 				if(text == "\n"): text = ""
 			else:
 				ls = len(sub)
-				rsub = str_reverse(sub)
+				rsub = sub[::-1]		# reverse the string
 				index = next((i for i, ch in enumerate(rsub) if ch in separators), None)
 				if(index == None):
 					# no separator found before intended line-break

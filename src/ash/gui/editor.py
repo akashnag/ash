@@ -85,15 +85,23 @@ class Editor(Widget):
 		self.buffer = buffer
 		self.buffer.attach_editor(self)
 		self.reset()
+		self.notify_self_update()
 
 	def destroy(self):			# called by TopLevelWindow.close_active_editor()
 		self.buffer.detach_editor(self)
 
 	def set_wrap(self, word_wrap, hard_wrap):
 		self.word_wrap = word_wrap
-		self.hard_wrap = hard_wrap
+		self.hard_wrap = hard_wrap	
 		self.reset()
+		self.notify_self_update()
 		self.repaint()
+
+	def notify_self_update(self):
+		if(self.word_wrap):
+			self.wrap_all()
+		else:
+			self.expanded_lines = expand_tabs_in_lines(self.buffer.lines, self.tab_size)
 
 	def wrap_all(self):
 		if(self.buffer == None): return
@@ -143,7 +151,7 @@ class Editor(Widget):
 		self.line_start = 0
 		self.line_end = self.height
 
-		self.repaint()
+		#self.repaint()
 
 	# when focus received
 	def focus(self):
@@ -255,7 +263,7 @@ class Editor(Widget):
 		return (start, end)
 
 	# print selected text using selection-theme
-	def print_selection(self, line_index):
+	def print_selection(self, line_index, format = None):
 		start, end = self.get_selection_endpoints_rendered()
 		
 		text = self.unexpanded_lines[line_index]
@@ -270,13 +278,13 @@ class Editor(Widget):
 		
 		if(line_index == start.y):
 			if(start.y == end.y):
-				self.print_formatted(line_index, vtext)
+				self.print_formatted(line_index, vtext, format=format)
 				self.parent.addstr(offset_y, offset_x + vstartx, vtext[vstartx:vendx], gc("selection"))
 			else:
-				self.print_formatted(line_index, vtext)
+				self.print_formatted(line_index, vtext, format=format)
 				self.parent.addstr(offset_y, offset_x + vstartx, vtext[vstartx:], gc("selection"))
 		elif(line_index == end.y):
-			self.print_formatted(line_index, vtext)
+			self.print_formatted(line_index, vtext, format=format)
 			self.parent.addstr(offset_y, offset_x, vtext[0:vendx], gc("selection"))			
 		else:
 			self.parent.addstr(offset_y, offset_x, vtext, gc("selection"))
@@ -326,15 +334,16 @@ class Editor(Widget):
 	# the primary draw routine for the editor
 	def repaint(self):
 		self.parent.layout_manager.readjust()
-
+		
+		# check conditions where no repaint is necessary
 		if(self.height <= 0 or self.width <= 0): return
 		if(self.curpos.x < 0 or self.curpos.y < 0): return
 		if(self.line_start < 0 or self.line_end <= self.line_start): return
 		if(self.col_start < 0 or self.col_end <= self.col_start): return
 		if(self.buffer == None): return
 
+		# get the data to be displayed after performing tab-expansion and word-wrapping
 		if(self.word_wrap):
-			self.wrap_all()
 			self.rendered_lines = self.sub_lines
 			self.rendered_curpos = self.utility.get_rendered_pos(self.curpos)
 			if(self.selection_mode):
@@ -342,19 +351,19 @@ class Editor(Widget):
 				self.rendered_sel_end = self.utility.get_rendered_pos(self.sel_end)
 		else:
 			self.unexpanded_lines = self.buffer.lines
-			self.rendered_lines = expand_tabs_in_lines(self.buffer.lines, self.tab_size)
+			self.rendered_lines = self.expanded_lines
 			rcx = get_horizontal_cursor_position(self.buffer.lines[self.curpos.y], self.curpos.x, self.tab_size)
 			self.rendered_curpos = CursorPosition(self.curpos.y, rcx)
 			self.rendered_sel_start = self.sel_start
 			self.rendered_sel_end = self.sel_end
 
+		# determine the cursor position to be displayed w.r.t the screen
+		nlines = len(self.rendered_lines)
 		curpos_row = self.determine_vertical_visibility()
 		curpos_col = self.determine_horizontal_visibility()
-		nlines = len(self.rendered_lines)
-		
 		self.vcurpos = (self.y + curpos_row, self.x + self.line_number_width + 1 + curpos_col)
 		
-		# highlighting
+		# set up location of text-highlights
 		if(self.selection_mode and not self.find_mode):
 			start, end = self.get_selection_endpoints_rendered()
 			if(start.y == end.y):
@@ -370,11 +379,14 @@ class Editor(Widget):
 			self.highlighted_text = None
 
 		last_line_number_printed = 0
-		
+
+		# get syntax highlighting for all lines in the range to be displayed
+		line_formats = get_format_list_for_lines(self.buffer, self.rendered_lines, self.line_start, self.line_end, nlines)
+
 		for i in range(self.line_start, self.line_end):
 			if(i >= nlines): break
 
-			# print line number
+			# compute whether line-number should be highlighted
 			if(self.show_line_numbers):
 				if(self.word_wrap):
 					line_number = translate_line_number(i, self.cum_sub_line_lengths) 
@@ -388,15 +400,29 @@ class Editor(Widget):
 					line_number = str(i + 1)				
 					line_theme = gc("highlighted-line-number") if self.rendered_curpos.y == i else gc("line-number")
 				
+				# print the line number
 				self.parent.addstr(self.y + i - self.line_start, self.x, line_number.rjust(self.line_number_width), line_theme)
 			
-			# print the text
-			text = self.rendered_lines[i] #.expandtabs(self.tab_size)
-			vtext = text[self.col_start:] if self.col_end > len(text) else text[self.col_start:self.col_end]
-			if(self.is_in_selection_rendered(i)):
-				self.print_selection(i)
+			# get the line to be printed
+			text = self.rendered_lines[i]
+			
+			# calculate the portion of the line to be actually displayed on screen
+			cs = self.col_start			
+			if(self.col_end > len(text)):
+				vtext = text[self.col_start:]
+				ce = len(text)
 			else:
-				self.print_formatted(i, vtext)
+				vtext = text[self.col_start:self.col_end]
+				ce = self.col_end
+
+			# get the portion of syntax highlighting necessary to display the visible portion of the line
+			partial_format = get_sub_lex_list(line_formats[i-self.line_start], cs, ce)
+			
+			# print either in selection mode or normal syntax-highlighted mode
+			if(self.is_in_selection_rendered(i)):
+				self.print_selection(i, format=partial_format)
+			else:
+				self.print_formatted(i, vtext, format=partial_format)
 
 	def get_real_line_from_rendered_line(self, rline):
 		if(not self.word_wrap): return rline
@@ -405,16 +431,16 @@ class Editor(Widget):
 		if(rline < self.cum_sub_line_lengths[index]): index -= 1
 		return index
 		
-	def print_formatted(self, i, vtext, off_y = 0, off_x = 0):
+	def print_formatted(self, i, vtext, off_y = 0, off_x = 0, format = None):
 		offset_y = self.y + i - self.line_start + off_y
 		init_offset_x = self.x + self.line_number_width + 1 + off_x
 		offset_x = init_offset_x
 		char_under_cursor = None
 		
-		format = self.buffer.format_code(vtext)
+		if(format == None): format = self.buffer.format_code(vtext)
 		n = len(format)
 		for i in range(n):
-			index, text, style = format[i]			
+			index, style, text = format[i]
 			tlen = len(text)
 			self.parent.addstr(offset_y, offset_x, text, style)
 				

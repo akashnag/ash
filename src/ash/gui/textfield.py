@@ -28,6 +28,7 @@ class TextField(Widget):
 
 		self.focus()
 	
+	# set the text to be displayed
 	def set_text(self, text):
 		self.text = text
 		self.curpos = len(text)
@@ -105,8 +106,7 @@ class TextField(Widget):
 			self.parent.addstr(self.y, self.x, self.text, paint_theme)
 			self.parent.move(self.y, self.x+self.curpos)
 		else:
-			# TO DO: fix this word-wrap to appear more like
-			# modern GUI textfields			
+			# TO DO: fix this word-wrap	
 			flank = self.width // 2
 			start = self.curpos - flank
 			end = self.curpos + flank

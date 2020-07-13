@@ -54,17 +54,18 @@ class SyntaxHighlighter:
 
 	# return a list of tuples (index, text, style)
 	# style = gc(SOME_COLOR_PAIR)
-	def format_code(self, line):		
+	def format_code(self, line):
 		styles = list()
 		
 		if(self.lexer == None):
-			styles.append( (0, line, gc("global-default")) )
+			styles.append( (0, gc("global-default"), line) )
 			return styles
 		
 		tokens = self.lexer.get_tokens_unprocessed(line)
 		for (index, token_type, value) in tokens:
-			styles.append( (int(index), str(value), self.get_style(token_type)) )
+			styles.append( (int(index), self.get_style(token_type), str(value)) )
 
+		log(styles)
 		return styles
 
 	# returns the assigned style for a particular token-type

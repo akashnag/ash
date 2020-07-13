@@ -36,13 +36,13 @@ LINE_SPLIT 				= "\u251c"
 LINE_HORIZONTAL 		= "\u2500"
 
 # <------------------- border constants -------------------->
-BORDER_HORIZONTAL		= "\u2500"		# _
-BORDER_VERTICAL			= "\u2502"		# |
-BORDER_CROSSROADS		= "\u253C"		# +
-BORDER_SPLIT_RIGHT		= "\u251C"		# |-
-BORDER_SPLIT_LEFT		= "\u2524"		# -|
-BORDER_SPLIT_TOP		= "\u2534"		# _|_
-BORDER_SPLIT_BOTTOM		= "\u252C"		# T
+BORDER_HORIZONTAL		= "\u2500"
+BORDER_VERTICAL			= "\u2502"
+BORDER_CROSSROADS		= "\u253C"
+BORDER_SPLIT_RIGHT		= "\u251C"
+BORDER_SPLIT_LEFT		= "\u2524"
+BORDER_SPLIT_TOP		= "\u2534"
+BORDER_SPLIT_BOTTOM		= "\u252C"
 
 # <------------------- widget types ------------------------->
 WIDGET_TYPE_LABEL			= 1

@@ -71,11 +71,17 @@ class TextArea(Widget):
 			else:
 				beep()
 		elif(ch == curses.KEY_UP):
-			# TO DO: implement cursor move to previous line
-			pass
+			start, start_before, start_after = self.__find_line_starts(self.curpos)
+			if(start_before == None):
+				beep()
+			else:
+				self.curpos = start_before + (self.curpos - start)
 		elif(ch == curses.KEY_DOWN):
-			# TO DO: implement cursor move to next line
-			pass
+			start, start_before, after = self.__find_line_starts(self.curpos)
+			if(start_after == None):
+				beep()
+			else:
+				self.curpos = max([len(self.text), start_after + (self.curpos - start)])									
 		else:
 			char = str(chr(ch))
 			if(self.charset.find(char) != -1):
@@ -88,6 +94,15 @@ class TextArea(Widget):
 				beep()
 		
 		self.repaint()
+
+	def __find_line_starts(self, curpos):
+		for i, cs in enumerate(self.col_starts):
+			if(cs > curpos):
+				start = self.col_starts[i-1]
+				start_before = self.col_starts[i-2] if i >= 2 else None
+				start_after = self.col_starts[i+1] if i < len(self.col_starts) - 1 else None
+				return start, start_before, start_after
+		return None, None, None
 
 	# draw the text area
 	def repaint(self):
@@ -132,6 +147,7 @@ class TextArea(Widget):
 	# of separate lines
 	def __get_lines(self):
 		lines = list()
+		self.col_starts = list()
 		
 		c = self.curpos
 		cumadd = 0
@@ -140,6 +156,7 @@ class TextArea(Widget):
 		text = self.text
 		width = self.width
 
+		self.col_starts.append(0)
 		while(n > width):
 			sub = text[0:width]
 
@@ -166,6 +183,7 @@ class TextArea(Widget):
 
 			lines.append(sub)
 			cumadd += len(sub) + offset
+			self.col_starts.append(cumadd)
 			n = len(text)
 			row += 1
 		
@@ -180,6 +198,7 @@ class TextArea(Widget):
 
 			lines.append(sub)
 			cumadd += len(sub) + offset
+			self.col_starts.append(cumadd)
 			row += 1
 
 		lines.append(text)

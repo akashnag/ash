@@ -148,10 +148,12 @@ class LayoutManager:
 		x = area.get("x")
 		w = area.get("width")-1
 		return (y, x, w)
-		
+
+	# driver function for curses addstr()
 	def __addstr(self, y, x, w):
 		self.win.win.addstr(y, x, "No files selected".center(w), gc("disabled"))
 
+	# returns the dimensions of each editor in the given layout-type
 	def get_dimensions(self, layout_type):
 		if(self.win.layout_type == LAYOUT_SINGLE): 
 			return([{

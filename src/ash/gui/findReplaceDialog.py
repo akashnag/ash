@@ -94,7 +94,9 @@ class FindReplaceDialog(Window):
 				
 			self.repaint()
 			self.parent.win.refresh()
-		
+	
+	# <----------------------------- driver functions ------------------------------->
+
 	def handle_find_next_match(self, search_text):
 		self.ed.find_next(search_text)
 
@@ -122,7 +124,7 @@ class FindReplaceDialog(Window):
 
 		self.win.addstr(1, 2, self.title, curses.A_BOLD | self.theme)
 		
-		# active widget must be repainted last to correctly position cursor
+		# active widget must be repainted last, to correctly position cursor
 		aw = self.get_active_widget()
 		for w in self.widgets: 
 			if(w != aw): w.repaint()

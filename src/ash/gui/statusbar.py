@@ -27,10 +27,9 @@ class StatusBar(Widget):
 	# returns the status text as a whole
 	def __str__(self):
 		str = ""
-		# TO DO: fix (in future) the following: 
-		# subtraction of 1 should not be necessary
-		# but curses.window.addstr() throws error as cursor has
-		# no place to go
+		# TO DO: subtraction of 1 should not be necessary
+		# but curses.window.addstr() throws error as cursor has no place to go
+		curses.curs_set(False)
 		w = int(self.parent.get_width()) - 1
 		cumw = 0
 		for i in range(len(self.section_widths)):
@@ -51,7 +50,7 @@ class StatusBar(Widget):
 
 	def repaint(self, win, width, y, x):				# called from TopLevelWindow
 		n = len(self.sections)
-
+		curses.curs_set(False)
 		cumw = 0
 		for i in range(n):
 			w = self.section_widths[i]

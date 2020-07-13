@@ -115,6 +115,7 @@ class Buffer:
 		
 		for ed in self.editors:
 			if(ed != caller): ed.notify_update()
+		caller.notify_self_update()
 
 		self.last_curpos = curpos
 		self.last_caller = caller		

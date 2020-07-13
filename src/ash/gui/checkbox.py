@@ -61,5 +61,6 @@ class CheckBox(Widget):
 	def __str__(self):
 		return self.text
 
+	# set the checked-status of the checkbox
 	def set_value(self, checked = True):
 		self.checked = checked

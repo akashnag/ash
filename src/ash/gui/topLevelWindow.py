@@ -141,11 +141,11 @@ class TopLevelWindow(Window):
 			
 			if(self.active_editor_index > -1):
 				self.get_active_editor().perform_action(ch)
-
+				
 			self.repaint()
 		
 	# draws the window
-	def repaint(self, error_msg = None):
+	def repaint(self, error_msg = None, caller=None):
 		curses.curs_set(False)
 		if(self.win == None): return
 		
@@ -169,9 +169,9 @@ class TopLevelWindow(Window):
 				self.win.addstr(0, ts + len(self.title + " - "), self.app_name, curses.A_BOLD | gc("titlebar"))
 
 			self.layout_manager.draw_layout_borders()
-			self.layout_manager.repaint_editors()
+			self.layout_manager.repaint_editors(caller=caller)
 		except:
-			pass
+			raise
 		
 		self.win.refresh()
 

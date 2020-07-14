@@ -24,6 +24,8 @@ class ListBox(Widget):
 		self.sel_index = -1
 		self.is_in_focus = False
 		self.focussable = False
+		self.list_start = 0
+		self.list_end = 0
 		self.repaint()
 
 	# when focus received
@@ -60,24 +62,17 @@ class ListBox(Widget):
 		if(self.is_in_focus): curses.curs_set(False)
 		
 		count = len(self.items)
-		start = 0
-		end = min([self.row_count, count])
-
-		if(count <= self.row_count):
-			start = 0
-			end = count
-		elif(self.sel_index == -1):
-			start = 0
-			end = self.row_count
-		else:
-			if(self.sel_index < start):
-				start = self.sel_index
-				end = min([start + self.row_count, count])
-			elif(self.sel_index >= end):
-				end = self.sel_index + 1
-				start = max([end - self.row_count, 0])
+		if(self.sel_index == -1):
+			self.list_start = 0
+			self.list_end = min([self.row_count, count])
+		elif(self.sel_index < self.list_start):
+			self.list_start = self.sel_index
+			self.list_end = min([self.list_start + self.row_count, count])
+		elif(self.sel_index >= self.list_end):
+			self.list_end = min([count, self.sel_index + 1])
+			self.list_start = max([0, self.sel_index - self.row_count + 1])
 			
-		for i in range(start, end):
+		for i in range(self.list_start, self.list_end):
 			n = 2 + len(str(self.items[i]))
 			if(n > self.width):
 				text = " " + str(self.items[i])[0:self.width-2] + " "
@@ -86,11 +81,11 @@ class ListBox(Widget):
 
 			if(i == self.sel_index):
 				if(self.is_in_focus):
-					self.parent.addstr(self.y + i - start, self.x, text, self.focus_theme)
+					self.parent.addstr(self.y + i - self.list_start, self.x, text, self.focus_theme)
 				else:
-					self.parent.addstr(self.y + i - start, self.x, text, self.sel_blur_theme)
+					self.parent.addstr(self.y + i - self.list_start, self.x, text, self.sel_blur_theme)
 			else:				
-				self.parent.addstr(self.y + i - start, self.x, text, self.theme)
+				self.parent.addstr(self.y + i - self.list_start, self.x, text, self.theme)
 
 		if(count == 0): self.parent.addstr(self.y + (self.row_count // 2), self.x, ("" if self.placeholder_text == None else self.placeholder_text).center(self.width), gc("disabled"))
 	
@@ -130,6 +125,8 @@ class ListBox(Widget):
 		self.tags.append(tag)
 		if(self.sel_index < 0): self.sel_index = 0
 		self.focussable = True
+		self.list_start = 0
+		self.list_end = min([self.row_count, len(self.items)])
 
 	# remove an item from the list
 	def remove_item(self, index):
@@ -140,12 +137,16 @@ class ListBox(Widget):
 			self.focussable = False
 		else:
 			self.sel_index = 0
+		self.list_start = 0
+		self.list_end = min([self.row_count, len(self.items)])
 
 	# insert an item in the middle of the list
 	def insert_item(self, index, item, tag=None):
 		self.items.insert(index, item)
 		self.tags.insert(index, tag)
 		if(self.sel_index == index): self.sel_index += 1
+		self.list_start = 0
+		self.list_end = min([self.row_count, len(self.items)])
 
 	# returns the text of the selected item
 	def __str__(self):

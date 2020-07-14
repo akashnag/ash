@@ -33,13 +33,16 @@ class EditorKeyHandler:
 		elif(is_ctrl(ch, "H")):
 			self.ed.parent.app.dialog_handler.invoke_find_and_replace()
 		elif(is_ctrl(ch, "Z")):
-			self.handle_undo()
+			self.handle_undo()			
 		elif(is_ctrl(ch, "Y")):
 			self.handle_redo()
 		elif(is_ctrl(ch, "P")):
 			self.ed.parent.app.dialog_handler.invoke_set_preferences()
-		elif(is_func(ch, 9)):
+		elif(is_func(ch, 9)):					# F9
 			self.ed.parent.app.dialog_handler.invoke_file_save_as(self.ed.buffer)
+		elif(is_ctrl_and_func(ch, 2)):			# Ctrl+F2
+			self.ed.buffer.decode_unicode()
+			return True
 
 		return False
 
@@ -467,11 +470,11 @@ class EditorKeyHandler:
 		
 	def handle_undo(self):
 		self.ed.buffer.do_undo()
-		self.ed.parent.repaint()
+		self.ed.parent.repaint(caller=self)
 
 	def handle_redo(self):
 		self.ed.buffer.do_redo()
-		self.ed.parent.repaint()
+		self.ed.parent.repaint(caller=self)
 
 	def handle_save(self):
 		if(not self.ed.buffer.save_status):

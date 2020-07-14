@@ -26,11 +26,16 @@ class TextField(Widget):
 		self.charset += "~`!@#$%^&*()-_=+\\|[{]};:\'\",<.>/? "			
 		self.numeric_charset = "-.0123456789"
 
+		self.start = 0
+		self.end = min([self.width, len(self.text)])
+
 		self.focus()
 	
 	# set the text to be displayed
 	def set_text(self, text):
 		self.text = text
+		self.start = 0
+		self.end = min([self.width, len(self.text)])
 		self.curpos = len(text)
 		self.repaint()
 	
@@ -106,22 +111,16 @@ class TextField(Widget):
 			self.parent.addstr(self.y, self.x, self.text, paint_theme)
 			self.parent.move(self.y, self.x+self.curpos)
 		else:
-			# TO DO: fix this word-wrap	
-			flank = self.width // 2
-			start = self.curpos - flank
-			end = self.curpos + flank
-
-			if(start < 0):
-				delta = abs(start)
-				start += delta
-				end += delta				
-			elif(end > n):
-				delta = end - n
-				start -= delta
-				end -= delta
+			n = len(self.text)
+			if(self.curpos < self.start):
+				self.start = self.curpos
+				self.end = min([self.start + self.width, n])
+			elif(self.curpos > self.end):
+				self.end = min([n, self.curpos + 1])
+				self.start = max([0, self.curpos - self.width + 1])
 			
-			vtext = self.text[start:end]
-			vcurpos = self.curpos - start
+			vtext = self.text[self.start:self.end]
+			vcurpos = self.curpos - self.start
 
 			self.parent.addstr(self.y, self.x, vtext, paint_theme)
 			self.parent.move(self.y, self.x+vcurpos)

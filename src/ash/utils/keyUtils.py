@@ -81,6 +81,7 @@ ASH_KEY_BINDINGS = [
 	("Ctrl + F", "Opens the find window"),
 	("Ctrl + H", "Opens the find and replace window"),
 	("F9", "Save As"),
+	("Ctrl + F2", "Convert all escape sequences and text-encoding to Unicode"),
 	("", ""),			# blank line
 
 	("Website:", "https://akashnag.github.io/ash")
@@ -112,6 +113,13 @@ def is_func(ch, k=None):
 		return(True if sch.startswith("b'KEY_F(") else False)
 	else:
 		return(True if sch == "b'KEY_F(" + str(k) + ")'" else False)
+
+def is_ctrl_and_func(ch, k = None):
+	sch = str(curses.keyname(ch))
+	if(k == None):
+		return(True if sch.startswith("b'KEY_F(") else False)
+	else:
+		return(True if sch == "b'KEY_F(" + str(int(k)+24) + ")'" else False)
 
 # returns which function-key was pressed as an integer
 def get_func_key(ch):

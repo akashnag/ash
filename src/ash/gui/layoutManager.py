@@ -114,7 +114,7 @@ class LayoutManager:
 				self.win.editors[i].resize(y, x, h, w, True)
 	
 	# repaint editor if available or appropriate text
-	def repaint_editors(self):
+	def repaint_editors(self, caller=None):
 		ec = EDITOR_COUNTS[self.win.layout_type]
 		dim = self.get_dimensions(self.win.layout_type)
 		aed = self.win.get_active_editor()
@@ -128,9 +128,10 @@ class LayoutManager:
 
 		for i in range(ec):
 			if(self.editor_exists(i) and i != self.win.active_editor_index):
-				self.win.editors[i].repaint()
+				if(caller != self.win.editors[i]): self.win.editors[i].repaint()
 				
-		if(aed != None): aed.repaint()
+		if(aed != None and caller != aed): 
+			aed.repaint()
 		
 	# checks if given editor exists
 	def editor_exists(self, index):

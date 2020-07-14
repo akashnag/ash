@@ -97,21 +97,15 @@ class Editor(Widget):
 		self.notify_self_update()
 		self.repaint()
 
-	def notify_self_update(self):
-		if(self.word_wrap):
-			self.wrap_all()
-		else:
-			self.expanded_lines = expand_tabs_in_lines(self.buffer.lines, self.tab_size)
-
 	def wrap_all(self):
-		if(self.buffer == None): return
-
 		self.sub_lines = list()
 		self.cum_sub_line_lengths = list()
 		self.grouped_colspans = dict()
 		self.col_spans = list()
 		self.unexpanded_lines = list()
 
+		if(self.buffer == None): return
+		
 		total = 0
 		for line_index, line in enumerate(self.buffer.lines):
 			eline = line.expandtabs(self.tab_size)
@@ -131,6 +125,7 @@ class Editor(Widget):
 			self.sub_lines.extend(ewline)
 			self.cum_sub_line_lengths.append(total)
 			total += len(wline)
+		
 		self.cum_sub_line_lengths.append(total)
 
 	# resize editor
@@ -150,8 +145,6 @@ class Editor(Widget):
 		self.col_end = self.width
 		self.line_start = 0
 		self.line_end = self.height
-
-		#self.repaint()
 
 	# when focus received
 	def focus(self):
@@ -179,7 +172,6 @@ class Editor(Widget):
 		self.focus()
 
 		if(ch == -1):
-			self.repaint()
 			return None
 		
 		edit_made = False
@@ -216,18 +208,19 @@ class Editor(Widget):
 			beep()
 		
 		if(edit_made): self.buffer.update(self.curpos, self)
-		self.repaint()
+		self.notify_self_update()
 
 	# <------------------- Functions called from BufferManager --------------------->
 
 	def notify_update(self):
-		repaint_needed = False
 		if(self.curpos.y >= len(self.buffer.lines) or self.curpos.x > len(self.buffer.lines[self.curpos.y])):
 			self.curpos.x = 0
 			self.curpos.y = 0			
 		if(self.selection_mode):
 			if(self.sel_start.y >= len(self.buffer.lines) or self.sel_start.x > len(self.buffer.lines[self.sel_start.y]) or self.sel_end.y >= len(self.buffer.lines) or self.sel_end.x > len(self.buffer.lines[self.sel_end.y])):
 				self.selection_mode = False
+		
+		self.notify_self_update()
 		self.repaint()
 
 	def notify_merge(self, new_bid, new_buffer):
@@ -238,6 +231,12 @@ class Editor(Widget):
 			self.curpos.x = 0
 			self.curpos.y = 0
 		self.repaint()
+
+	def notify_self_update(self):
+		if(self.word_wrap):
+			self.wrap_all()
+		else:
+			self.expanded_lines = expand_tabs_in_lines(self.buffer.lines, self.tab_size)
 
 	# <---------------------------- Repaint Operations ----------------------------->
 
@@ -341,7 +340,7 @@ class Editor(Widget):
 		if(self.line_start < 0 or self.line_end <= self.line_start): return
 		if(self.col_start < 0 or self.col_end <= self.col_start): return
 		if(self.buffer == None): return
-
+				
 		# get the data to be displayed after performing tab-expansion and word-wrapping
 		if(self.word_wrap):
 			self.rendered_lines = self.sub_lines
@@ -567,19 +566,19 @@ class Editor(Widget):
 	# find next match
 	def find_next(self, search_text):
 		self.utility.find_next(search_text)
-		self.repaint()
+		#self.repaint()
 
 	# find previous match
 	def find_previous(self, search_text):
 		self.utility.find_previous(search_text)
-		self.repaint()
+		#self.repaint()
 
 	# replace next instance
 	def replace_next(self, search_text, replace_text):
 		self.utility.replace_next(search_text, replace_text)
-		self.repaint()
+		#self.repaint()
 
 	# replace all instances
 	def replace_all(self, search_text, replace_text):
 		self.utility.replace_all(search_text, replace_text)
-		self.repaint()
+		#self.repaint()

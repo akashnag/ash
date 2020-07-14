@@ -9,7 +9,9 @@ from ash.core import *
 from ash.core.logger import *
 from ash.gui.cursorPosition import *
 from ash.core.editHistory import *
+
 from ash.formatting.syntaxHighlighting import *
+from ash.formatting.formatting import *
 
 BACKUP_FREQUENCY_SIZE	= 16		# backup after every 16 edits
 HISTORY_FREQUENCY_SIZE	= 8			# undo: every 8 edit operations
@@ -85,6 +87,7 @@ class Buffer:
 			self.lines = copy.copy(hdata.data)
 			for ed in self.editors:
 				ed.curpos = copy.copy(hdata.curpos)
+				ed.notify_update()
 
 	# revert the buffer to its previous state by cancelling the last do_undo() operation
 	def do_redo(self):
@@ -95,6 +98,7 @@ class Buffer:
 			self.lines = copy.copy(hdata.data)
 			for ed in self.editors:
 				ed.curpos = copy.copy(hdata.curpos)
+				ed.notify_update()
 
 	# keeps track of the number of edit operations performed on the buffer
 	# this is called after every edit by the editor
@@ -115,8 +119,7 @@ class Buffer:
 		
 		for ed in self.editors:
 			if(ed != caller): ed.notify_update()
-		caller.notify_self_update()
-
+		
 		self.last_curpos = curpos
 		self.last_caller = caller		
 
@@ -138,6 +141,22 @@ class Buffer:
 
 		self.last_curpos = curpos
 		self.last_caller = caller
+	
+	def decode_unicode(self):
+		if(self.undo_edit_count > 0): 		# add the latest change forcefully
+			self.history.add_change(self.lines, self.last_curpos)
+			self.undo_edit_count = 0
+
+		for index, line in enumerate(self.lines):
+			dec_line = get_unicode_encoded_line(line)
+			sub_lines = dec_line.splitlines()			# if they contained newlines
+			self.lines.pop(index)
+			for i in range(len(sub_lines)-1, -1, -1):
+				self.lines.insert(index, sub_lines[i])
+			self.encoding = "utf-8"
+
+		for ed in self.editors:
+			ed.notify_update()
 	
 	# writes out the buffer to a file on disk
 	def write_to_disk(self, filename = None):

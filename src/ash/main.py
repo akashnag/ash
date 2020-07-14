@@ -67,7 +67,7 @@ class AshEditorApp:
 					progress = ( ( i / (len(self.args)-1) ) * 100 )
 					progress_handler("Loading...", progress)
 		
-		if(progress_handler != None): progress_handler("All files loaded", None)
+		if(progress_handler != None): progress_handler("Ready", None)
 
 	def run(self):		
 		# invoke the GUI initialization routine

@@ -69,7 +69,11 @@ These key combinations work only if an editor is currently active.
 
 <kbd>Del</kbd> &nbsp;&nbsp;Deletes the selected-text or, character at the cursor position
 
+<kbd>Ctrl</kbd> + <kbd>F2</kbd> &nbsp;&nbsp;Convert all Uncode escape sequences and also sets file encoding to UTF-8
+
 <kbd>Ctrl</kbd> + <kbd>S</kbd> &nbsp;&nbsp;Saves the current file
+
+<kbd>F9</kbd> &nbsp;&nbsp;Save As...
 
 <kbd>Ctrl</kbd> + <kbd>P</kbd> &nbsp;&nbsp;Opens the preferences dialog-box
 

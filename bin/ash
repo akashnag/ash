@@ -13,4 +13,6 @@ jp = os.path.join(dn, pd)
 sys.path.append(jp)
 
 from ash.ash_main import *
-run()
+
+ret_code = run()
+sys.exit(ret_code)

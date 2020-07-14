@@ -48,6 +48,7 @@ ASH_KEY_BINDINGS = [
 	("+", "Collapse the selected directory"),
 	("-", "Expand the selected directory"),
 	("F2", "Rename the selected file/directory"),
+	("Del", "Move the selected file/directory to the trash/bin"),
 	("", ""),			# blank line
 
 	("GROUP:", "EDITOR COMMANDS"),

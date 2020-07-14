@@ -34,7 +34,7 @@ class AshEditorApp:
 		self.dialog_handler = DialogHandler(self)
 		log_init()		
 		
-	def run(self):
+	def load_files(self, progress_handler = None):
 		self.buffers = BufferManager()
 		
 		if(self.argc == 1):
@@ -44,12 +44,15 @@ class AshEditorApp:
 			self.project_dir = str(os.path.abspath(self.args[1]))
 			all_files = glob.glob(self.project_dir + "/**/*", recursive=True)
 
-			for f in all_files:
+			for i, f in enumerate(all_files):
 				if(not os.path.isfile(f)): continue
 				if(should_ignore_file(f)): continue
 				if(BufferManager.is_binary(f)): continue
 				has_backup = BufferManager.backup_exists(f)
 				self.buffers.create_new_buffer(filename=f, has_backup=has_backup)
+				if(progress_handler != None): 
+					progress = ( ( i / len(all_files) ) * 100 )
+					progress_handler("Loading...", progress)
 		else:
 			self.app_mode = APP_MODE_FILE
 			for i in range(1, len(self.args)):
@@ -60,9 +63,16 @@ class AshEditorApp:
 				if(BufferManager.is_binary(filePath)): continue
 				has_backup = BufferManager.backup_exists(filePath)
 				self.buffers.create_new_buffer(filename=filePath, has_backup=has_backup)
+				if(progress_handler != None): 
+					progress = ( ( i / (len(self.args)-1) ) * 100 )
+					progress_handler("Loading...", progress)
 		
+		if(progress_handler != None): progress_handler("All files loaded", None)
+
+	def run(self):		
 		# invoke the GUI initialization routine
-		ret_code = curses.wrapper(self.app_main)		
+		ret_code = curses.wrapper(self.app_main)
+		return ret_code
 
 	# recalculates screen dimensions
 	def readjust(self):
@@ -76,29 +86,7 @@ class AshEditorApp:
 	# returns the name of the application
 	def get_app_name(self):
 		return "ash-" + APP_VERSION
-
-	# returns the appropriate app title
-	def get_app_title(self, active_editor = None):
-		app_title = ""
-
-		if(active_editor == None):
-			if(self.app_mode == APP_MODE_PROJECT):
-				app_title = "[" + get_file_title(self.project_dir) + "]"
-				return app_title
-			else:
-				return app_title
-
-		if(self.app_mode == APP_MODE_FILE):
-			app_title = get_file_title(active_editor.buffer.get_name())
-		elif(self.app_mode == APP_MODE_PROJECT):
-			if(active_editor.buffer.filename == None):
-				app_title = active_editor.buffer.get_name()
-			else:
-				app_title = get_relative_file_title(self.project_dir, active_editor.buffer.filename)
-		
-		app_title = ("  " if active_editor.buffer.save_status else UNSAVED_BULLET + " ") + app_title
-		return app_title
-
+	
 	# initialize the GUI
 	def app_main(self, stdscr):
 		self.stdscr = stdscr
@@ -112,9 +100,9 @@ class AshEditorApp:
 		# status-bar sections: total=101+1 (min)
 		# *status (8), *file-type (11), encoding(7), sloc (20), file-size (10), 
 		# *unsaved-file-count (4), *tab-size (1), cursor-position (6+1+6+3+8=24)
-		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 13, 9, 22, 12, 6, 3, -1 ]))
-				
+		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 13, 9, 22, 12, 6, 3, -1 ]))				
 		self.main_window.layout_manager.readjust(True)
+		self.load_files(self.progress_handler)
 
 		if(self.app_mode == APP_MODE_FILE):
 			if(len(self.buffers) > 0):
@@ -137,6 +125,14 @@ class AshEditorApp:
 		self.__destroy()
 		return 0
 	
+	# shows progress in the status bar
+	def progress_handler(self, msg, progress):
+		if(progress == None):
+			self.main_window.repaint(f"{msg}")
+		else:
+			progress_line = "\u2501" * int((progress/100) * (self.screen_width - 9 - len(msg)))
+			self.main_window.repaint(f"{int(progress)}% {progress_line} {msg}")		
+
 	# called on app_exit
 	def __destroy(self):
 		self.buffers.destroy()
@@ -251,7 +247,30 @@ class AshEditorApp:
 	def is_file_already_loaded(self, filename):
 		return self.buffers.does_file_have_its_own_buffer(filename)
 
+	# prints warning to user that the screen dimensions are below the minimum requirement
 	def warn_insufficient_screen_space(self):
 		self.main_window.repaint(f"error: insufficient screen space (minimum reqd.: {MIN_WIDTH}x{MIN_HEIGHT} ), ash may crash unexpectedly")
 		beep()
 		time.sleep(1)
+
+	# returns the appropriate app title
+	def get_app_title(self, active_editor = None):
+		app_title = ""
+
+		if(active_editor == None):
+			if(self.app_mode == APP_MODE_PROJECT):
+				app_title = "[" + get_file_title(self.project_dir) + "]"
+				return app_title
+			else:
+				return app_title
+
+		if(self.app_mode == APP_MODE_FILE):
+			app_title = get_file_title(active_editor.buffer.get_name())
+		elif(self.app_mode == APP_MODE_PROJECT):
+			if(active_editor.buffer.filename == None):
+				app_title = active_editor.buffer.get_name()
+			else:
+				app_title = get_relative_file_title(self.project_dir, active_editor.buffer.filename)
+		
+		app_title = ("  " if active_editor.buffer.save_status else UNSAVED_BULLET + " ") + app_title
+		return app_title

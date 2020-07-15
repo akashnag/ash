@@ -8,7 +8,7 @@ src/ash/formatting/__pycache__
 src/ash/gui/__pycache__
 src/ash/utils/__pycache__
 dist/*
-ash.egg-info
+ash_editor.egg-info
 *.pyc
 *.txt
 !/requirements.txt

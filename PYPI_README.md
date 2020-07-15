@@ -77,7 +77,7 @@ $ sudo apt install python3-pip
 ### Installing ash
 
 ```bash
-$ sudo pip3 install ash
+$ sudo pip3 install ash-editor
 ```
 
 To run **ash** make sure you have `:$HOME/.local/bin` appended to your $PATH variable in the file `~/.bashrc`. To execute **ash**, see the [Usage](#usage) section.
@@ -87,7 +87,7 @@ To run **ash** make sure you have `:$HOME/.local/bin` appended to your $PATH var
 To uninstall **ash** you can use:
 
 ```bash
-$ sudo pip3 uninstall ash
+$ sudo pip3 uninstall ash-editor
 ```
 
 ## Colors

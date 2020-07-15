@@ -32,7 +32,8 @@ class AshEditorApp:
 		self.args = args
 		self.argc = len(args)
 		self.dialog_handler = DialogHandler(self)
-		log_init()		
+		log_init()
+		recent_files_init()
 		
 	def load_files(self, progress_handler = None):
 		self.buffers = BufferManager()
@@ -95,13 +96,14 @@ class AshEditorApp:
 		init_colors()
 		curses.raw()
 		
-		self.main_window = TopLevelWindow(self, self.stdscr, "Ash " + APP_VERSION, self.main_key_handler)
+		self.main_window = TopLevelWindow(self, self.stdscr, "ash " + APP_VERSION, self.main_key_handler)
 		
 		# status-bar sections: total=101+1 (min)
 		# *status (8), *file-type (11), encoding(7), sloc (20), file-size (10), 
 		# *unsaved-file-count (4), *tab-size (1), cursor-position (6+1+6+3+8=24)
 		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 13, 9, 22, 12, 6, 3, -1 ]))				
-		self.main_window.layout_manager.readjust(True)
+		self.readjust()
+		self.main_window.layout_manager.readjust(True)		
 		self.load_files(self.progress_handler)
 
 		if(self.app_mode == APP_MODE_FILE):
@@ -118,11 +120,9 @@ class AshEditorApp:
 		if(self.screen_width < MIN_WIDTH or self.screen_height < MIN_HEIGHT):
 			welcome_msg = f"insufficient screen space, ash may crash unexpectedly; reqd.: {MIN_WIDTH}x{MIN_HEIGHT}"
 
-		self.readjust()
-		self.main_window.layout_manager.readjust(True)
-		self.main_window.show(welcome_msg)		# this call returns when main_window() is closed
-		
+		self.main_window.show(welcome_msg)		# this call returns when main_window() is closed		
 		self.__destroy()
+		
 		return 0
 	
 	# shows progress in the status bar
@@ -183,6 +183,7 @@ class AshEditorApp:
 			# F8 - replace
 			# Ctrl+F8 - replace all
 			# Ctrl+F1 - help
+			# F12 - recent files
 
 			fn = get_func_key(ch)
 			ned = fn - 1
@@ -192,6 +193,9 @@ class AshEditorApp:
 				return -1
 			elif(is_ctrl_and_func(ch, 1)):
 				self.dialog_handler.invoke_help_key_bindings()
+				return -1
+			elif(fn == 12):
+				self.dialog_handler.invoke_recent_files()
 				return -1
 
 		return ch

@@ -92,8 +92,9 @@ class FindReplaceDialog(Window):
 				self.get_active_widget().perform_action(ch)
 				self.ed.find_all(str(self.txtFind))
 				
-			self.repaint()
 			self.parent.win.refresh()
+			self.repaint()
+			self.win.refresh()
 	
 	# <----------------------------- driver functions ------------------------------->
 

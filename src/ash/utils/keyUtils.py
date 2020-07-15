@@ -37,6 +37,7 @@ ASH_KEY_BINDINGS = [
 	("F5", "Activate the 5th editor in the layout"),
 	("F6", "Activate the 6th editor in the layout"),
 	("F11", "Resize window"),
+	("F12", "Shows the list of recently opened files"),
 	("Ctrl + F1", "Show this help"),	
 	("", ""),			# blank line
 	

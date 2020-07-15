@@ -28,4 +28,7 @@ MIN_HEIGHT			= 22
 
 # name of the log and configuration files
 LOG_FILE			= "log.txt"
-CONFIG_FILE			= os.path.expanduser("~/.ashrc")
+CONFIG_FILE			= os.path.expanduser("~/.ashedrc")
+RECENT_FILES_RECORD	= "recentfiles.txt"
+
+recent_files_list 	= list()

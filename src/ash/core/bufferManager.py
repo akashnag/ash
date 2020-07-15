@@ -40,7 +40,7 @@ class Buffer:
 			self.formatter = SyntaxHighlighter(self.display_name)
 		else:
 			if(has_backup):
-				self.backup_file = get_file_directory(self.filename) + "/.ash.b-" + get_file_title(self.filename)
+				self.backup_file = os.path.dirname(self.filename) + "/.ash.b-" + get_file_title(self.filename)
 				self.read_file_from_disk(True)
 			else:
 				self.read_file_from_disk()			
@@ -171,10 +171,11 @@ class Buffer:
 		textFile.write(data)
 		textFile.close()
 		self.save_status = True
-		self.backup_file = get_file_directory(self.filename) + "/.ash.b-" + get_file_title(self.filename)
+		self.backup_file = os.path.dirname(self.filename) + "/.ash.b-" + get_file_title(self.filename)
 
 		self.backup_edit_count = 0
 		self.undo_edit_count = 0
+		add_opened_file_to_record(self.filename)
 
 		return self.manager.merge_if_required(self.id)
 
@@ -265,7 +266,7 @@ class Buffer:
 		self.render_data_to_lines(text)
 		
 		if(not read_from_backup): 
-			self.backup_file = get_file_directory(self.filename) + "/.ash.b-" + get_file_title(self.filename)
+			self.backup_file = os.path.dirname(self.filename) + "/.ash.b-" + get_file_title(self.filename)
 			self.save_status = True
 		else:
 			self.save_status = False
@@ -273,6 +274,7 @@ class Buffer:
 		self.backup_edit_count = 0
 		self.undo_edit_count = 0
 		
+		if(not read_from_backup): add_opened_file_to_record(self.filename)
 		return 0
 
 	# splits the raw-data (read from a file) into separate lines
@@ -435,7 +437,7 @@ class BufferManager:
 	# parent file
 	@staticmethod
 	def backup_exists(filename):
-		if(os.path.isfile(get_file_directory(filename) + "/.ash.b-" + get_file_title(filename))):
+		if(os.path.isfile(os.path.dirname(filename) + "/.ash.b-" + get_file_title(filename))):
 			return True
 		else:
 			return False

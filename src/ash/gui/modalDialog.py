@@ -25,7 +25,7 @@ class ModalDialog(Window):
 		self.win.timeout(0)		
 		self.repaint()
 
-		while(True):
+		while(self.win != None):
 			ch = self.win.getch()
 			if(ch == -1): continue
 			

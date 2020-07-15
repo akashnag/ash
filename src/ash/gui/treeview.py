@@ -279,7 +279,7 @@ class TreeView(Widget):
 	# create a new directory under the selected node
 	def create_new_directory(self):
 		parent_dir = self.get_sel_filepath()
-		if(os.path.isfile(parent_dir)): parent_dir = get_file_directory(parent_dir)
+		if(os.path.isfile(parent_dir)): parent_dir = os.path.dirname(parent_dir)
 		fn = self.parent.parent.app.prompt("CREATE DIRECTORY", "Enter a new directory name: ")
 		if(fn != None and len(fn) > 0):
 			filename = parent_dir + "/" + fn
@@ -295,7 +295,7 @@ class TreeView(Widget):
 	# create a new file under the selected node
 	def create_new_file(self):
 		parent_dir = self.get_sel_filepath()
-		if(os.path.isfile(parent_dir)): parent_dir = get_file_directory(parent_dir)
+		if(os.path.isfile(parent_dir)): parent_dir = os.path.dirname(parent_dir)
 		fn = self.parent.parent.app.prompt("CREATE FILE", "Enter a new filename: ")
 		if(fn != None and len(fn) > 0):
 			filename = parent_dir + "/" + fn
@@ -326,7 +326,7 @@ class TreeView(Widget):
 		new_name = self.parent.parent.app.prompt("RENAME", "Enter a new name: ", get_file_title(fp))
 		if(new_name == get_file_title(fp)): return
 
-		dir = get_file_directory(fp)
+		dir = os.path.dirname(fp)
 		new_fp = dir + "/" + new_name
 
 		if(os.path.isfile(new_fp) or os.path.isdir(new_fp)):

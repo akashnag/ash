@@ -8,14 +8,12 @@
 from ash.utils import *
 from ash.utils.utils import *
 
+# returns the name of the file without its directory
 def get_file_title(filename):
 	pos = filename.rfind("/")
 	return filename[pos+1:]
 
-def get_file_directory(filename):
-	pos = filename.rfind("/")
-	return filename[0:pos]
-
+# returns a list of directories in dir_list which are under parent_dir
 def filter_child_directories(parent_dir, dir_list):
 	filtered = list()
 	n = len(parent_dir)
@@ -25,6 +23,7 @@ def filter_child_directories(parent_dir, dir_list):
 			if(sd.find("/") == -1): filtered.append(d)
 	return filtered
 
+# get the file name of a file with respect to project_dir
 def get_relative_file_title(project_dir, filename):
 	if(filename == None): return ""
 	pos = project_dir.rfind("/")
@@ -33,6 +32,7 @@ def get_relative_file_title(project_dir, filename):
 	else:
 		return filename[pos+1:]
 
+# get all sub-directories w.r.t. filename and project_dir
 def get_relative_subdirectories(project_dir, filename):		# filename must be a file, not a directory
 	relpath = filename[len(project_dir):]
 	pos = relpath.rfind("/")
@@ -43,6 +43,7 @@ def get_relative_subdirectories(project_dir, filename):		# filename must be a fi
 		if(core[i] == "/"): subdir_list.append(project_dir + "/" + core[0:i])
 	return subdir_list
 
+# returns a new filename from an existing filename to serve as a copy during Save As...
 def get_copy_filename(filename):
 	pos1 = filename.rfind("/")
 	dir = filename[0:pos1+1]
@@ -53,6 +54,7 @@ def get_copy_filename(filename):
 	else:
 		return dir + ft[0:pos2] + "-copy" + ft[pos2:]
 
+# predict the encoding of a file
 def predict_file_encoding(filename, n = 20):
 	if(not os.path.isfile(filename)): return None
 	fs = int(os.stat(filename).st_size)
@@ -60,8 +62,9 @@ def predict_file_encoding(filename, n = 20):
 	with open(filename, "rb") as f:
 		rawdata = b"".join([f.readline() for _ in range(n)])
 	enc = chardet.detect(rawdata)["encoding"]
-	return ("utf-8" if enc == "ascii" else enc)
+	return ("utf-8" if enc == "ascii" else enc)		# assume UTF-8
 
+# returns the size of a filename formatted in units
 def get_file_size(filename):
 	if(filename == None): 
 		return None
@@ -87,6 +90,7 @@ def get_file_size(filename):
 		else:
 			return str(round(kb,2)) + " KB"
 
+# get the mime-type of a file
 def get_textfile_mimetype(filename):
 	mt = str(mimetypes.guess_type(filename, strict=False)[0]).lower()
 	pos = mt.find("/")
@@ -95,6 +99,7 @@ def get_textfile_mimetype(filename):
 	else:
 		return mt[pos+1:]
 
+# checks if a file rests in any of the IGNORED DIRECTORIES
 def should_ignore_file(filename):
 	positions = get_delim_positions(filename[1:], "/")
 	last_pos = -1
@@ -104,6 +109,7 @@ def should_ignore_file(filename):
 		if(dir in IGNORED_DIRECTORIES): return True
 	return False
 
+# check if a directory is in any of the IGNORED DIRECTORIES
 def should_ignore_directory(dirname):
 	if(get_file_title(dirname).lower() not in IGNORED_DIRECTORIES):
 		return False

@@ -565,19 +565,19 @@ class Editor(Widget):
 	# find next match
 	def find_next(self, search_text):
 		self.utility.find_next(search_text)
-		#self.repaint()
-
+		self.parent.repaint()
+		
 	# find previous match
 	def find_previous(self, search_text):
 		self.utility.find_previous(search_text)
-		#self.repaint()
-
+		self.parent.repaint()
+		
 	# replace next instance
 	def replace_next(self, search_text, replace_text):
 		self.utility.replace_next(search_text, replace_text)
-		#self.repaint()
-
+		self.parent.repaint()
+		
 	# replace all instances
 	def replace_all(self, search_text, replace_text):
 		self.utility.replace_all(search_text, replace_text)
-		#self.repaint()
+		self.parent.repaint()

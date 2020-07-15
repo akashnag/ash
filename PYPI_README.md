@@ -46,11 +46,11 @@ The following is a list of features available in **ash**; some of which have alr
 - Support for various text-encodings
 - Selection highlighting (highlights text under selection wherever they occur in the document)
 - Color scheme customization
+- View list of recent files
 - Syntax highlighting (partially implemented)
 
 **Not yet implemented:**
 
-- View list of recent files
 - Git integration
 
 **Future goals:**
@@ -61,8 +61,6 @@ The following is a list of features available in **ash**; some of which have alr
 - Plugin system
 
 ## Installation
-
-As **ash** is still in development, there are no prebuilt binaries available for download. However, if you have python 3.8 installed on your system, you can download and install a released version or run a developmental build for **ash**. To get the nightly release, download the tar-ball from the `dist` folder. For Linux users, follow the following steps to get **ash** on your system:
 
 ### Prerequisites
 

@@ -65,18 +65,27 @@ class DialogHandler:
 
 		self.app.dlgGoTo = ModalDialog(self.app.main_window, y, x, 5, 14, "GO TO LINE", self.go_to_key_handler)
 		currentLine = str(self.app.main_window.get_active_editor().curpos.y + 1)
-		txtLineNumber = TextField(self.app.dlgGoTo, 3, 2, 10, currentLine, True)
+		txtLineNumber = TextField(self.app.dlgGoTo, 3, 2, 10, currentLine, True, callback = self.go_to_live_preview_key_handler)
 		self.app.dlgGoTo.add_widget("txtLineNumber", txtLineNumber)
+		self.app.old_goto_curpos = copy.copy(self.app.main_window.get_active_editor().curpos)
 		self.app.dlgGoTo.show()
 
 	def go_to_key_handler(self, ch):
-		if(is_ctrl(ch, "Q")): 
+		if(is_ctrl(ch, "Q")):
+			self.app.main_window.get_active_editor().curpos = copy.copy(self.app.old_goto_curpos)
 			self.app.dlgGoTo.hide()
-		elif(is_newline(ch)):
+			self.app.main_window.repaint()
+		return ch
+
+	def go_to_live_preview_key_handler(self, ch):
+		if(is_newline(ch) or str(chr(ch)) in ".0123456789"):
+			isn = is_newline(ch)
 			line = str(self.app.dlgGoTo.get_widget("txtLineNumber"))
+			
 			if(len(line) == 0):
-				beep()
-				return -1
+				if(isn): 
+					beep()
+					return -1
 
 			pos = line.find(".")
 			try:
@@ -87,8 +96,11 @@ class DialogHandler:
 					row = int(line) - 1
 					col = 0
 			except:
-				self.app.show_error("Invalid line number specified")
-				return -1
+				if(isn): 
+					self.app.show_error("Invalid line number specified")
+					return -1
+				else:
+					return ch
 			
 			aed = self.app.main_window.get_active_editor()
 			if(row < 0 or row >= len(aed.buffer.lines)):
@@ -96,10 +108,10 @@ class DialogHandler:
 			elif(col < 0 or col > len(aed.buffer.lines[row])):
 				beep()
 			else:
-				self.app.dlgGoTo.hide()
+				if(isn): self.app.dlgGoTo.hide()
 				aed.curpos.y = row
 				aed.curpos.x = col
-				aed.repaint()
+				self.app.main_window.repaint()				
 		
 		return ch
 
@@ -135,6 +147,79 @@ class DialogHandler:
 			
 			mw.hide()
 			
+	# <--------------------------- Recent Files List ------------------------------>
+
+	def invoke_recent_files(self):
+		self.app.readjust()
+
+		if(len(recent_files_list) == 0):
+			self.app.show_error("No recent files on record")
+			return
+
+		try:
+			y, x = get_center_coords(self.app, 20, 80)
+		except:
+			self.app.warn_insufficient_screen_space()
+			return
+
+		self.app.dlgRecentFiles = ModalDialog(self.app.main_window, y, x, 20, 80, "RECENT FILES", self.recent_files_key_handler)
+		lstRecentFiles = ListBox(self.app.dlgRecentFiles, 3, 2, 76, 16)
+		
+		for i in range(len(recent_files_list)-1, -1, -1):
+			if(os.path.isfile(recent_files_list[i])):
+				disp = get_file_title(recent_files_list[i]) + " [" + os.path.dirname(recent_files_list[i]) + "/]"
+				lstRecentFiles.add_item(disp, tag=recent_files_list[i])
+
+		self.app.dlgRecentFiles.add_widget("lstRecentFiles", lstRecentFiles)
+		self.app.dlgRecentFiles.show()
+
+	def recent_files_key_handler(self, ch):
+		if(is_ctrl(ch, "Q") or is_func(ch, 12)):
+			self.app.dlgRecentFiles.hide()
+			self.app.main_window.repaint()
+			return -1
+		elif(is_newline(ch)):
+			mw = self.app.main_window
+
+			index = self.app.dlgRecentFiles.get_widget("lstRecentFiles").get_sel_index()
+			filename = recent_files_list[len(recent_files_list) - 1 - index]
+			self.app.dlgRecentFiles.hide()
+			mw.repaint()
+			aed = mw.get_active_editor()
+			aedi = mw.active_editor_index
+
+			if(not os.path.isfile(filename)):
+				self.app.show_error("The selected file does not exist")
+				return -1
+
+			if(BufferManager.is_binary(filename)):
+				self.app.show_error("Cannot open binary file!")
+				mw.repaint()
+				self.app.dlgRecentFiles.repaint()
+				return -1
+
+			sel_buffer = self.app.buffers.get_buffer_by_filename(filename)
+			if(sel_buffer == None):
+				sel_bid, sel_buffer = self.app.buffers.create_new_buffer(filename=filename, has_backup=BufferManager.backup_exists(filename))
+			
+			self.app.dlgRecentFiles.hide()
+
+			if(aed == None):
+				ffedi = mw.get_first_free_editor_index()
+				aed = mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
+			else:
+				ffedi = mw.get_first_free_editor_index(aedi)
+				if(ffedi == -1):
+					if(self.app.ask_question("REPLACE ACTIVE EDITOR", "No free editors available: replace active editor?")):
+						ffedi = aedi
+					else:
+						return -1
+				mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
+				mw.repaint()
+			return -1
+			
+		return ch
+	
 	# <--------------------------- Set Preferences ------------------------------>
 
 	def invoke_set_preferences(self):

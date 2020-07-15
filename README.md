@@ -15,8 +15,8 @@
   - [Prerequisites](#prerequisites)
   - [Installing **ash**](#installing-ash)
   - [Uninstalling **ash**](#uninstalling-ash)
-  - [Running Development Build](#running-development-build)
-- [Prebuilt binaries](#prebuilt-binaries)  
+  - [Setting paths](#setting-paths)
+- [Prebuilt binaries](#prebuilt-binaries)
 - [Colors](#colors)
 - [Usage](#usage)
 - [Contributing](#contributing)
@@ -47,11 +47,11 @@ The following is a list of features available in **ash**; some of which have alr
 - Support for various text-encodings
 - Selection highlighting (highlights text under selection wherever they occur in the document)
 - Color scheme customization
+- View list of recent files
 - Syntax highlighting (partially implemented)
 
 **Not yet implemented:**
 
-- View list of recent files
 - Git integration
 
 **Future goals:**
@@ -63,11 +63,9 @@ The following is a list of features available in **ash**; some of which have alr
 
 ## Installation
 
-As **ash** is still in development, there are no prebuilt binaries available for download. However, if you have python 3.8 installed on your system, you can download and install a released version or run a developmental build for **ash**. To get the nightly release, download the tar-ball from the `dist` folder. For Linux users, follow the following steps to get **ash** on your system:
-
 ### Prerequisites
 
-You need certain packages and Python 3 itself to download and run the developmental build:
+You need certain packages and Python 3 itself to download **ash**, as there are no prebuilt binaries available yet:
 
 ```bash
 $ sudo apt install xclip
@@ -77,11 +75,52 @@ $ sudo apt install python3-pip
 
 ### Installing ash
 
-If you want to install **ash** on your system, download the `.tar.gz` file from the latest release (from the Releases section on GitHub) or from the `dist` folder. Extract it a folder, and once inside that folder (make sure it contains the file `setup.py`), execute the following:
+You have multiple options here:
+- Install from PyPi
+- Install the latest stable release from GitHub
+- Install the latest nightly release from GitHub
+- Build and install from source
+
+#### Install from PyPi
+
+Execute the following to install from PyPi:
+
+```bash
+$ sudo pip3 install ash-editor
+```
+
+The above command downloads **ash** and installs it locally on your system. To be able to invoke **ash** from anywhere, see the [Setting Paths](#setting-paths) section.
+
+#### Install the latest stable release
+
+Go to the **ash** [Website](https://akashnag.github.io/ash) and download the latest stable release. Then extract the downloaded tar-ball into a folder and once inside that folder, open up your terminal from there and execute:
 
 ```bash
 $ sudo pip3 install .
 ```
+
+#### Install the latest nightly release
+
+Go to the **ash** [Website](https://akashnag.github.io/ash) and download the latest nightly release. Then extract the downloaded tar-ball into a folder and once inside that folder, open up your terminal from there and execute:
+
+```bash
+$ sudo pip3 install .
+```
+
+#### Build from source and install
+
+```bash
+$ sudo apt install git
+$ cd ~
+$ git clone --depth 1 -b master https://github.com/akashnag/ash.git
+$ cd ash
+$ python3 setup.py sdist
+```
+
+(Though you can install it directly from here, it is not recommended) You will find the new tar-ball created under `dist` directory, from where you can proceed as before by first copying the tarball into a new directory, extracting it, and then installing it.
+
+
+### Setting paths
 
 To run **ash** make sure you have `:$HOME/.local/bin` appended to your $PATH variable in the file `~/.bashrc`. To execute **ash**, see the [Usage](#usage) section.
 
@@ -90,30 +129,8 @@ To run **ash** make sure you have `:$HOME/.local/bin` appended to your $PATH var
 To uninstall **ash** you can use:
 
 ```bash
-$ sudo pip3 uninstall ash
+$ sudo pip3 uninstall ash-editor
 ```
-
-### Running Development Build
-
-**Note:** This section is only for users who want to run the latest build
-
-```bash
-$ sudo apt install git
-$ cd ~
-$ git clone --depth 1 -b master https://github.com/akashnag/ash.git
-$ cd ash/bin
-$ sudo chmod +x ash
-$ cd ..
-$ sudo pip3 install -r requirements.txt
-```
-
-To be able to launch **ash** from anywhere, you need to add `~/ash/bin` to your path by editing your `.bashrc` file:
-
-```bash
-$ sudo nano ~/.bashrc
-```
-
-Then append `:~/ash/bin` to the `PATH` variable. You are now ready to run **ash** from the terminal. See [Usage](#usage) for details.
 
 ## Prebuilt binaries
 

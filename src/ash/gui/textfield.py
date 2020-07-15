@@ -8,7 +8,7 @@
 from ash.gui import *
 
 class TextField(Widget):
-	def __init__(self, parent, y, x, width, initial_text = "", numeric = False, maxlen = -1):
+	def __init__(self, parent, y, x, width, initial_text = "", numeric = False, maxlen = -1, callback = None):
 		super(TextField, self).__init__(WIDGET_TYPE_TEXTFIELD)
 		self.y = y
 		self.x = x
@@ -19,6 +19,7 @@ class TextField(Widget):
 		self.parent = parent
 		self.numeric = numeric
 		self.maxlen = maxlen
+		self.callback = callback
 		self.focus_theme = gc("formfield-focussed")
 		self.is_in_focus = False
 
@@ -206,16 +207,14 @@ class TextField(Widget):
 					if(self.maxlen < 0 or self.curpos < self.maxlen-1):					
 						self.text = (self.text[0:self.curpos] if self.curpos>0 else "") + char + (self.text[self.curpos:] if self.curpos<len(self.text) else "")
 						self.curpos += 1
-					else:
-						beep()
-						return
+					else:						
+						if(self.callback == None): return
 				else:
-					beep()
-					return
+					if(self.callback == None): return
 			else:
-				beep()
-				return
+				if(self.callback == None): return
 		
+		if(self.callback != None): self.callback(ch)
 		self.repaint()
 
 	# draws the textfield

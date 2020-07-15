@@ -22,6 +22,9 @@ class EditorKeyHandler:
 			return self.handle_paste()
 		elif(is_ctrl(ch, "S")):
 			self.handle_save()
+		elif(is_ctrl(ch, "W")):
+			self.handle_save()
+			if(self.ed.buffer.filename != None): self.ed.parent.app.dialog_handler.invoke_quit()
 		elif(is_ctrl(ch, "G")):
 			self.ed.parent.app.dialog_handler.invoke_go_to_line()
 		elif(is_ctrl(ch, "O")):

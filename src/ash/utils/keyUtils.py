@@ -37,7 +37,7 @@ ASH_KEY_BINDINGS = [
 	("F5", "Activate the 5th editor in the layout"),
 	("F6", "Activate the 6th editor in the layout"),
 	("F11", "Resize window"),
-	("F12", "Show this help"),	
+	("Ctrl + F1", "Show this help"),	
 	("", ""),			# blank line
 	
 	("GROUP:", "PROJECT EXPLORER"),
@@ -71,6 +71,7 @@ ASH_KEY_BINDINGS = [
 	("Backspace", "Deletes the character to the left of the cursor"),
 
 	("Ctrl + S", "Save"),
+	("Ctrl + W", "Save and close active editor"),
 	("Ctrl + X", "Cut"),
 	("Ctrl + C", "Copy"),
 	("Ctrl + V", "Paste"),
@@ -81,7 +82,7 @@ ASH_KEY_BINDINGS = [
 	("Ctrl + F", "Opens the find window"),
 	("Ctrl + H", "Opens the find and replace window"),
 	("F9", "Save As"),
-	("Ctrl + F2", "Convert all escape sequences and text-encoding to Unicode"),
+	("Ctrl + F2", "Convert all Unicode escape sequences to  Unicode characters"),
 	("", ""),			# blank line
 
 	("Website:", "https://akashnag.github.io/ash")

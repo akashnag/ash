@@ -128,7 +128,7 @@ class TopLevelWindow(Window):
 
 		if(self.editors[0] != None): self.editors[0].focus()
 
-		while(True):
+		while(self.win != None):
 			ch = self.win.getch()
 			if(ch == -1): continue
 			
@@ -141,8 +141,7 @@ class TopLevelWindow(Window):
 			
 			if(self.active_editor_index > -1):
 				self.get_active_editor().perform_action(ch)
-				
-			self.repaint()
+				self.repaint()
 		
 	# draws the window
 	def repaint(self, error_msg = None, caller=None):

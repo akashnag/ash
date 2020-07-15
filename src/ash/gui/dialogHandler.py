@@ -178,7 +178,7 @@ class DialogHandler:
 
 		if(is_ctrl(ch, "Q")): 
 			self.app.dlgPreferences.hide()
-		elif(is_newline(ch)):
+		elif(is_newline(ch) or is_ctrl(ch, "W")):
 			try:
 				tab_size = int(str(self.app.dlgPreferences.get_widget("txtTabSize")))
 			except:
@@ -476,7 +476,7 @@ class DialogHandler:
 			self.app.dlgSwitchLayout.hide()
 			self.app.main_window.repaint()
 			return -1
-		elif(is_newline(ch)):
+		elif(is_newline(ch) or is_ctrl(ch, "W")):
 			new_layout = self.app.dlgSwitchLayout.get_widget("lstLayouts").get_sel_index()
 			self.app.dlgSwitchLayout.hide()
 			self.app.main_window.repaint()

@@ -114,7 +114,7 @@ class AshEditorApp:
 				bid, buffer = self.buffers.create_new_buffer()
 				self.main_window.layout_manager.invoke_activate_editor(0, bid, buffer)
 		
-		welcome_msg = f"ash-{APP_VERSION} | F12: Help"
+		welcome_msg = f"ash-{APP_VERSION} | Ctrl+F1: Help"
 		if(self.screen_width < MIN_WIDTH or self.screen_height < MIN_HEIGHT):
 			welcome_msg = f"insufficient screen space, ash may crash unexpectedly; reqd.: {MIN_WIDTH}x{MIN_HEIGHT}"
 
@@ -131,7 +131,7 @@ class AshEditorApp:
 			self.main_window.repaint(f"{msg}")
 		else:
 			progress_line = "\u2501" * int((progress/100) * (self.screen_width - 9 - len(msg)))
-			self.main_window.repaint(f"{int(progress)}% {progress_line} {msg}")		
+			self.main_window.repaint(f"{int(progress)}% {progress_line} {msg}")	
 
 	# called on app_exit
 	def __destroy(self):
@@ -182,6 +182,7 @@ class AshEditorApp:
 			# F7 - find previous
 			# F8 - replace
 			# Ctrl+F8 - replace all
+			# Ctrl+F1 - help
 
 			fn = get_func_key(ch)
 			ned = fn - 1
@@ -189,7 +190,7 @@ class AshEditorApp:
 			if(ned >=0 and ned <= 5):
 				self.main_window.layout_manager.invoke_activate_editor(ned)
 				return -1
-			elif(fn == 12):
+			elif(is_ctrl_and_func(ch, 1)):
 				self.dialog_handler.invoke_help_key_bindings()
 				return -1
 

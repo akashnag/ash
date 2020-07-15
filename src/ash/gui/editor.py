@@ -169,11 +169,9 @@ class Editor(Widget):
 
 	# when key-press detected
 	def perform_action(self, ch):
-		self.focus()
+		if(ch == -1): return None
+		if(not self.is_in_focus): self.focus()
 
-		if(ch == -1):
-			return None
-		
 		edit_made = False
 
 		if(ch == curses.KEY_BACKSPACE):
@@ -203,12 +201,13 @@ class Editor(Widget):
 		elif(str(chr(ch)) in self.charset):
 			edit_made = self.keyHandler.handle_printable_character(ch)
 		elif(is_ctrl_or_func(ch)):
-			edit_made = self.keyHandler.handle_ctrl_and_func_keys(ch)			
+			edit_made = self.keyHandler.handle_ctrl_and_func_keys(ch)
 		else:
 			beep()
 		
-		if(edit_made): self.buffer.update(self.curpos, self)
-		self.notify_self_update()
+		if(edit_made): 
+			self.buffer.update(self.curpos, self)
+			self.notify_self_update()
 
 	# <------------------- Functions called from BufferManager --------------------->
 

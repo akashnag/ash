@@ -346,13 +346,13 @@ class DialogHandler:
 		self.app.readjust()
 
 		try:
-			y, x = get_center_coords(self.app, 20, 60)
+			y, x = get_center_coords(self.app, 20, 80)
 		except:
 			self.app.warn_insufficient_screen_space()
 			return
 
-		self.app.dlgProjectExplorer = ModalDialog(self.app.main_window, y, x, 20, 60, "PROJECT EXPLORER", self.project_explorer_key_handler)
-		lstFiles = TreeView(self.app.dlgProjectExplorer, 3, 2, 56, 16, self.app.buffers, self.app.project_dir)
+		self.app.dlgProjectExplorer = ModalDialog(self.app.main_window, y, x, 20, 80, "PROJECT EXPLORER", self.project_explorer_key_handler)
+		lstFiles = TreeView(self.app.dlgProjectExplorer, 3, 2, 76, 16, self.app.buffers, self.app.project_dir)
 		self.app.dlgProjectExplorer.add_widget("lstFiles", lstFiles)
 		self.app.target_open_ed_index = target_ed_index
 		self.app.dlgProjectExplorer.show()

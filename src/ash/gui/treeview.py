@@ -9,9 +9,8 @@ from ash import *
 from ash.gui import *
 from ash.gui.listbox import *
 from ash.core.bufferManager import *
+from ash.core.gitRepo import *
 
-import glob
-import os
 from send2trash import send2trash
 
 INDENT_SIZE		= 4
@@ -56,6 +55,30 @@ class TreeNode:
 	def __repr__(self):
 		get_file_title(self.path)
 
+	def get_dirname_with_gitstatus(self, git_repo):
+		title = get_file_title(self.path)
+		gsc = None
+
+		if(self.is_dir()):
+			if(self.parent == None):
+				rds = git_repo.is_dirty()
+				if(rds):
+					gs = UNSAVED_BULLET + " "
+					gsc = gc("gitstatus-M")
+				else:
+					gs = ""
+			else:
+				gs, gsc = GitRepo.format_status_type(git_repo.get_directory_status(self.path))
+				if(gs != None): 
+					gs += " "
+				else:
+					gs = ""
+
+			return ("[" + ("-" if self.expanded else "+")  + "] " + gs + title, gsc, 4)
+		else:
+			return None		# this fn is not for files
+		
+
 class TreeView(Widget):
 	def __init__(self, parent, y, x, width, row_count, buffer_manager, project_dir):
 		super().__init__(WIDGET_TYPE_LISTBOX)
@@ -66,14 +89,16 @@ class TreeView(Widget):
 		self.row_count = row_count
 		self.buffer_manager = buffer_manager
 		self.project_dir = project_dir
-		self.theme = gc("formfield")
+		self.theme = gc("global-default")
 		self.focus_theme = gc("formfield-focussed")
 		self.sel_blur_theme = gc("formfield-selection-blurred")		
-		self.is_in_focus = False		
+		self.is_in_focus = False
+		self.git_repo = GitRepo(self.project_dir)
 		self.refresh()
 
 	# refresh the tree
 	def refresh(self, maintain_selindex = False):
+		self.git_repo.refresh(True)
 		self.refresh_glob()
 		self.ensure_files_have_buffers()
 		self.tree_root = self.form_tree()
@@ -134,7 +159,9 @@ class TreeView(Widget):
 	def form_list_items(self):
 		self.items = list()
 		self.tags = list()		
-		self.items.append( (str(self.tree_root), self.tree_root) )
+
+		disp_text, disp_style, offset = self.tree_root.get_dirname_with_gitstatus(self.git_repo)
+		self.items.append( (disp_text, self.tree_root, disp_style, offset) )
 		self.tags.append(self.tree_root.type + ":" + self.tree_root.path)
 		if(self.tree_root.expanded): 
 			self.form_sublist_items(self.tree_root, 0, " " * INDENT_SIZE)
@@ -146,14 +173,22 @@ class TreeView(Widget):
 		for index, c in enumerate(root_node.children):
 			marker = LINE_EDGE if index == n-1 else LINE_SPLIT
 			extra_space = marker
+			gs = "  "
+			gsc = None
 			if(not c.is_dir()): 
 				if(not BufferManager.is_binary(c.path)):
 					buffer = self.buffer_manager.get_buffer_by_filename(c.path)
 					save_status = buffer.save_status
-					extra_space += (LINE_HORIZONTAL * (INDENT_SIZE-3)) + " " + (" " if save_status else UNSAVED_BULLET) + " "
+					extra_space += (LINE_HORIZONTAL * (INDENT_SIZE-3)) + " " + ("" if save_status else UNSAVED_BULLET) + " "
 				else:
 					extra_space += (LINE_HORIZONTAL * (INDENT_SIZE-3)) + "   "
-			self.items.append( (space + extra_space + str(c), c) )
+				gs, gsc = GitRepo.format_status_type(self.git_repo.get_file_status(c.path))
+				gs += "  "
+				self.items.append( (space + extra_space + gs + str(c), c, gsc, len(space+extra_space)) )
+			else:
+				disp_text, gsc, offset = c.get_dirname_with_gitstatus(self.git_repo)
+				self.items.append( (space + extra_space + disp_text, c, gsc, len(space+extra_space) + offset) )
+
 			self.tags.append(c.type + ":" + c.path)
 			if(c.is_dir() and c.expanded): 
 				self.form_sublist_items(c, root_level + 1, space + (LINE_VERTICAL if marker == LINE_SPLIT else " ") + (" " * (INDENT_SIZE-1)))
@@ -200,7 +235,8 @@ class TreeView(Widget):
 				self.start = max([self.end - self.row_count, 0])
 			
 		for i in range(self.start, self.end):
-			disp_text, node_obj = self.items[i]
+			disp_text, node_obj, style, text_offset = self.items[i]
+			if(style == None): style = self.theme
 
 			n = 2 + len(disp_text)
 			if(n > self.width):
@@ -214,7 +250,8 @@ class TreeView(Widget):
 				else:
 					self.parent.addstr(self.y + i - self.start, self.x, text, self.sel_blur_theme)
 			else:				
-				self.parent.addstr(self.y + i - self.start, self.x, text, self.theme)
+				self.parent.addstr(self.y + i - self.start, self.x, text[0:text_offset], self.theme)
+				self.parent.addstr(self.y + i - self.start, self.x + text_offset, text[text_offset:], style)
 
 		
 	# handle key presses

@@ -37,3 +37,16 @@ def get_unicode_encoded_line(line):
 		i += 1
 
 	return line
+
+def unicode_escape(s):
+	return bytes(s, "utf-8").decode("unicode_escape")
+
+def get_circled_letter(letter):
+	u = ord(letter)
+	if(u >= 65 and u <= 90):
+		base = 0x24b6 + (u - 65)
+	elif(u >= 97 and u <= 122):
+		base = 0x24d0 + (u - 97)
+	else:
+		return None	
+	return unicode_escape("\\u" + hex(base)[2:])

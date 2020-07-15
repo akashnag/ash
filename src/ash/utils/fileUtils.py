@@ -8,6 +8,9 @@
 from ash.utils import *
 from ash.utils.utils import *
 
+def normalized_path(path):
+	return os.path.abspath(os.path.expanduser(path))
+
 # returns the name of the file without its directory
 def get_file_title(filename):
 	pos = filename.rfind("/")
@@ -23,7 +26,7 @@ def filter_child_directories(parent_dir, dir_list):
 			if(sd.find("/") == -1): filtered.append(d)
 	return filtered
 
-# get the file name of a file with respect to project_dir
+# get the file name of a file with respect to project_dir (keeps the project_dir name)
 def get_relative_file_title(project_dir, filename):
 	if(filename == None): return ""
 	pos = project_dir.rfind("/")
@@ -31,6 +34,14 @@ def get_relative_file_title(project_dir, filename):
 		return filename[pos:]
 	else:
 		return filename[pos+1:]
+
+# get the file name of a file with respect to project_dir (removes the project_dir name)
+def get_relative_file_title2(project_dir, filename):
+	if(filename == None): return ""
+	if(project_dir == "/"):
+		return filename[1:]
+	else:
+		return filename[len(project_dir)+1:]
 
 # get all sub-directories w.r.t. filename and project_dir
 def get_relative_subdirectories(project_dir, filename):		# filename must be a file, not a directory
@@ -42,6 +53,9 @@ def get_relative_subdirectories(project_dir, filename):		# filename must be a fi
 	for i in range(n):
 		if(core[i] == "/"): subdir_list.append(project_dir + "/" + core[0:i])
 	return subdir_list
+
+def is_file_under_directory(dirname, filename):
+	return(True if filename.startswith(dirname + "/") else False)
 
 # returns a new filename from an existing filename to serve as a copy during Save As...
 def get_copy_filename(filename):

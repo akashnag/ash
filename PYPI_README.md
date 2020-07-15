@@ -33,9 +33,9 @@ The following is a list of design goals for **ash**:
 - Minimal dependencies
 - Common keybindings
 
-The following is a list of features available in **ash**; some of which have already been implemented, while some are yet to be:
+**Features:**
 
-**Already implemented:**
+The following is a list of features available in **ash**:
 
 - Common editor features such as undo/redo, line numbers, find-replace, cut-copy-paste, etc.
 - True support for wrapping (both hard & soft) with intuitive cursor movements along wrapped text
@@ -48,9 +48,6 @@ The following is a list of features available in **ash**; some of which have alr
 - Color scheme customization
 - View list of recent files
 - Syntax highlighting (partially implemented)
-
-**Not yet implemented:**
-
 - Git integration
 
 **Future goals:**
@@ -90,7 +87,7 @@ $ sudo pip3 uninstall ash-editor
 
 ## Colors
 
-If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `.ashrc` file inside your home directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.ashrc`.
+If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `.ashedrc` file inside your home directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.ashedrc`.
 
 ## Usage
 

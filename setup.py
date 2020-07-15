@@ -9,7 +9,7 @@ with urlopen(url="https://github.com/akashnag/ash/raw/master/PYPI_README.md") as
 
 setup(
 	name="ash-editor",
-    version="0.1.0-dev2",
+    version="0.1.0-dev4",
 	description='A modern terminal text-editor',
 	classifiers=[
 	'License :: OSI Approved :: MIT License',
@@ -22,10 +22,17 @@ setup(
 	url='https://akashnag.github.io/ash',
 	author='Akash Nag',
 	author_email='nag.akash.cs@gmail.com',
-	license='MIT',    
+	license='MIT',
+	install_requires=[
+		'chardet>=3.0.4',
+		'Pygments>=2.3.1',
+		'pyperclip>=1.8.0',
+		'Send2Trash>=1.5.0',
+		'GitPython>=3.1.7'
+	],
     packages=['ash', 'ash.core', 'ash.utils', 'ash.formatting', 'ash.gui'],
     package_dir = { 'ash': 'src/ash', 'ash.core': 'src/ash/core', 'ash.utils': 'src/ash/utils', 'ash.formatting': 'src/ash/formatting', 'ash.gui': 'src/ash/gui'},
     entry_points = {'console_scripts': ['ash = ash.ash_main:run']},
-    data_files=[('docs', ['README.md', 'KEYBINDINGS.md', 'LICENSE.md', 'PYPI_README.MD']),
+    data_files=[('docs', ['README.md', 'KEYBINDINGS.md', 'LICENSE.md']),
     			('assets', ['assets/banner.png', 'assets/ash-default.png', 'assets/ss1.png', 'assets/ss2.png', 'assets/ss3.png', 'assets/ss4.png', 'assets/ss5.png'])]
 )

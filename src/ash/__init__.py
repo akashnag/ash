@@ -26,6 +26,10 @@ IGNORED_DIRECTORIES = [ ".git", "__pycache__" ]
 MIN_WIDTH			= 102
 MIN_HEIGHT			= 22
 
+# minimum dimensions for any particular editor
+MIN_EDITOR_WIDTH	= 15
+MIN_EDITOR_HEIGHT	= 5
+
 # name of the log and configuration files
 LOG_FILE			= "log.txt"
 CONFIG_FILE			= os.path.expanduser("~/.ashedrc")

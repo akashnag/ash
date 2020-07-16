@@ -15,7 +15,7 @@ PREFERRED_LINE_NUMBER_WIDTH = 6
 
 # This is the text editor class
 class Editor(Widget):
-	def __init__(self, parent):
+	def __init__(self, parent, area):
 		super().__init__(WIDGET_TYPE_EDITOR, True, True)
 		
 		# initialize parent window
@@ -70,6 +70,7 @@ class Editor(Widget):
 		self.line_end = -1
 		self.bid = -1
 		self.buffer = None
+		self.resize(area.y, area.x, area.height, area.width, True)
 		
 	def reset(self):
 		self.selection_mode = False
@@ -331,8 +332,6 @@ class Editor(Widget):
 	
 	# the primary draw routine for the editor
 	def repaint(self):
-		self.parent.layout_manager.readjust()
-		
 		# check conditions where no repaint is necessary
 		if(self.height <= 0 or self.width <= 0): return
 		if(self.curpos.x < 0 or self.curpos.y < 0): return
@@ -565,19 +564,19 @@ class Editor(Widget):
 	# find next match
 	def find_next(self, search_text):
 		self.utility.find_next(search_text)
-		self.parent.repaint()
+		self.parent.bottom_up_repaint()
 		
 	# find previous match
 	def find_previous(self, search_text):
 		self.utility.find_previous(search_text)
-		self.parent.repaint()
+		self.parent.bottom_up_repaint()
 		
 	# replace next instance
 	def replace_next(self, search_text, replace_text):
 		self.utility.replace_next(search_text, replace_text)
-		self.parent.repaint()
+		self.parent.bottom_up_repaint()
 		
 	# replace all instances
 	def replace_all(self, search_text, replace_text):
 		self.utility.replace_all(search_text, replace_text)
-		self.parent.repaint()
+		self.parent.bottom_up_repaint()

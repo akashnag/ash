@@ -122,15 +122,14 @@ class DialogHandler:
 
 	def invoke_quit(self):
 		mw = self.app.main_window
-		lm = mw.layout_manager
 		aed = mw.get_active_editor()
 		am = self.app.app_mode
 
 		unsaved_count = self.app.buffers.get_true_unsaved_count()
-		editor_count = mw.get_visible_editor_count()
+		editor_count = mw.get_editor_count()
 		
 		if(unsaved_count == 0):
-			if(editor_count <= 1 and am == APP_MODE_FILE):				
+			if(editor_count <= 1 and am == APP_MODE_FILE):
 				mw.hide()
 			elif(editor_count == 0 and am == APP_MODE_PROJECT):
 				mw.hide()
@@ -205,16 +204,9 @@ class DialogHandler:
 			self.app.dlgRecentFiles.hide()
 
 			if(aed == None):
-				ffedi = mw.get_first_free_editor_index()
-				aed = mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
+				self.app.show_error("No active editor")
 			else:
-				ffedi = mw.get_first_free_editor_index(aedi)
-				if(ffedi == -1):
-					if(self.app.ask_question("REPLACE ACTIVE EDITOR", "No free editors available: replace active editor?")):
-						ffedi = aedi
-					else:
-						return -1
-				mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
+				mw.invoke_activate_editor(sel_buffer.id, sel_buffer)
 				mw.repaint()
 			return -1
 			
@@ -303,10 +295,9 @@ class DialogHandler:
 		new_bid, new_buffer = self.app.buffers.create_new_buffer()
 
 		if(aed == None):
-			ffedi = mw.get_first_free_editor_index()			
-			aed = mw.layout_manager.invoke_activate_editor(ffedi, new_bid, new_buffer)
+			self.app.show_error("No active editor")
 		else:
-			mw.layout_manager.invoke_activate_editor(aedi, new_bid, new_buffer)
+			mw.invoke_activate_editor(new_bid, new_buffer)
 
 		mw.repaint()
 
@@ -342,7 +333,7 @@ class DialogHandler:
 
 	# <------------------------ File Open / Project Explorer --------------------------------->
 
-	def invoke_project_explorer(self, target_ed_index = -1):
+	def invoke_project_explorer(self):
 		self.app.readjust()
 
 		try:
@@ -354,7 +345,6 @@ class DialogHandler:
 		self.app.dlgProjectExplorer = ModalDialog(self.app.main_window, y, x, 20, 80, "PROJECT EXPLORER", self.project_explorer_key_handler)
 		lstFiles = TreeView(self.app.dlgProjectExplorer, 3, 2, 76, 16, self.app.buffers, self.app.project_dir)
 		self.app.dlgProjectExplorer.add_widget("lstFiles", lstFiles)
-		self.app.target_open_ed_index = target_ed_index
 		self.app.dlgProjectExplorer.show()
 
 	def project_explorer_key_handler(self, ch):
@@ -362,7 +352,6 @@ class DialogHandler:
 		
 		mw = self.app.main_window
 		aed = mw.get_active_editor()
-		aedi = mw.active_editor_index
 		
 		if(is_ctrl(ch, "Q")):
 			self.app.dlgProjectExplorer.hide()
@@ -387,25 +376,12 @@ class DialogHandler:
 			
 			self.app.dlgProjectExplorer.hide()
 
-			# if target editor supplied
-			if(self.app.target_open_ed_index > -1):
-				mw.layout_manager.invoke_activate_editor(self.app.target_open_ed_index, sel_buffer.id, sel_buffer)
-				mw.repaint()
-				return -1
-			
 			# if target editor not supplied
 			if(aed == None):
-				ffedi = mw.get_first_free_editor_index()
-				aed = mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
+				self.app.show_error("No active editor")
 			else:
-				ffedi = mw.get_first_free_editor_index(aedi)
-				if(ffedi == -1):
-					if(self.app.ask_question("REPLACE ACTIVE EDITOR", "No free editors available: replace active editor?")):
-						ffedi = aedi
-					else:
-						return -1
-				mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
-				mw.repaint()			
+				mw.invoke_activate_editor(None, sel_buffer.id, sel_buffer)
+				mw.repaint()
 			return -1
 		
 		return ch
@@ -501,24 +477,11 @@ class DialogHandler:
 				
 			# at this point, buffer exists in sel_buffer
 			
-			# if target-editor already supplied
-			if(self.app.target_open_ed_index > -1):
-				mw.layout_manager.invoke_activate_editor(self.app.target_open_ed_index, sel_buffer.id, sel_buffer)
-				mw.repaint()
-				return -1
-			
 			# if target-editor not supplied
 			if(aed == None):
-				ffedi = mw.get_first_free_editor_index()
-				aed = mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
+				self.app.show_error("No active editor!")
 			else:
-				ffedi = mw.get_first_free_editor_index(aedi)
-				if(ffedi == -1):
-					if(self.app.ask_question("REPLACE ACTIVE EDITOR", "No free editors available: replace active editor?")):
-						ffedi = aedi
-					else:
-						return -1
-				mw.layout_manager.invoke_activate_editor(ffedi, sel_buffer.id, sel_buffer)
+				mw.invoke_activate_editor(sel_buffer.id, sel_buffer)
 				mw.repaint()
 			return -1
 		
@@ -526,49 +489,44 @@ class DialogHandler:
 
 	# <----------------------------------------------------------------------------------->
 
-	# <----------------------------------- Switch Layout --------------------------------->
+	# <----------------------------------- Show Active Tabs --------------------------------->
 
-	def invoke_switch_layout(self):
+	def invoke_show_active_tabs(self):
 		self.app.readjust()
-
 		try:
 			y, x = get_center_coords(self.app, 9, 40)
 		except:
 			self.app.warn_insufficient_screen_space()
 			return
-
-		self.app.dlgSwitchLayout = ModalDialog(self.app.main_window, y, x, 9, 40, "SWITCH LAYOUT", self.switch_layout_key_handler)
+	
+		self.app.dlgActiveTabs = ModalDialog(self.app.main_window, y, x, 9, 40, "ACTIVE TABS", self.show_active_tabs_key_handler)
+		lstActiveTabs = ListBox(self.app.dlgActiveTabs, 3, 2, 36, 5)
 		
-		lstLayouts = ListBox(self.app.dlgSwitchLayout, 3, 2, 36, 5)
-		layouts = 	[ 
-					"Single", "Horizontal-2", "Horizontal-3", "Horizontal-4",
-					"Vertical-2", "2x2", "2x3", "1-Left, 2-Right", "2-Left, 1-Right",
-					"1-Top, 2-Bottom", "2-Top, 1-Bottom"
-					]
-
-		for i in range(len(layouts)):
-			if(self.app.main_window.layout_type == i):
-				lstLayouts.add_item(TICK_MARK + " " + layouts[i])
-				lstLayouts.sel_index = i
+		tabs_info = self.app.main_window.get_tabs_info()
+		active_tab_index = self.app.main_window.get_active_tab_index()
+		for i in range(len(tabs_info)):
+			tab_name, ed_count = tabs_info[i]
+			disp = tab_name + " (" + str(ed_count) + " editors)"
+			if(i == active_tab_index):
+				lstActiveTabs.add_item(TICK_MARK + " " + disp)
+				lstActiveTabs.sel_index = i
 			else:
-				lstLayouts.add_item("  " + layouts[i])
+				lstActiveTabs.add_item("  " + disp)
+	
+		self.app.dlgActiveTabs.add_widget("lstActiveTabs", lstActiveTabs)
+		self.app.dlgActiveTabs.show()
 
-		self.app.dlgSwitchLayout.add_widget("lstLayouts", lstLayouts)
-		self.app.dlgSwitchLayout.show()
-
-	def switch_layout_key_handler(self, ch):
+	def show_active_tabs_key_handler(self, ch):
 		if(is_ctrl(ch, "Q")):
-			self.app.dlgSwitchLayout.hide()
+			self.app.dlgActiveTabs.hide()
 			self.app.main_window.repaint()
 			return -1
 		elif(is_newline(ch) or is_ctrl(ch, "W")):
-			new_layout = self.app.dlgSwitchLayout.get_widget("lstLayouts").get_sel_index()
-			self.app.dlgSwitchLayout.hide()
-			self.app.main_window.repaint()
-
-			if(new_layout != self.app.main_window.layout_type):				
-				self.app.main_window.layout_manager.set_layout(new_layout)
-				return -1
+			new_tab_index = self.app.dlgActiveTabs.get_widget("lstActiveTabs").get_sel_index()
+			self.app.dlgActiveTabs.hide()
+			self.app.main_window.switch_to_tab(new_tab_index)
+			self.app.main_window.repaint()			
+			return -1
 			
 		return ch
 

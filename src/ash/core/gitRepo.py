@@ -116,3 +116,11 @@ class GitRepo:
 			return (st, gc("gitstatus-M"))
 		else:
 			return (get_circled_letter(st), gc("gitstatus-" + st))
+
+	@staticmethod
+	def get_active_branch_name(dir):
+		try:
+			repo = Repo(dir)
+			return repo.active_branch.name
+		except:
+			return None

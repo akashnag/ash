@@ -20,8 +20,6 @@ from ash.formatting.colors import *
 from ash.formatting.formatting import *
 
 from ash.gui.topLevelWindow import *
-from ash.gui.editor import *
-from ash.gui.statusbar import *
 from ash.gui.msgBox import *
 from ash.gui.inputBox import *
 from ash.gui.dialogHandler import *
@@ -71,13 +69,13 @@ class AshEditorApp:
 		if(progress_handler != None): progress_handler("Ready", None)
 
 	def run(self):		
-		# invoke the GUI initialization routine
 		ret_code = curses.wrapper(self.app_main)
 		return ret_code
 
 	# recalculates screen dimensions
 	def readjust(self):
 		self.screen_height, self.screen_width = self.stdscr.getmaxyx()
+		self.main_window.readjust()
 		return (self.screen_height, self.screen_width)
 
 	# returns the version of Ash
@@ -91,30 +89,30 @@ class AshEditorApp:
 	# initialize the GUI
 	def app_main(self, stdscr):
 		self.stdscr = stdscr
-		self.readjust()
+		self.screen_height, self.screen_width = self.stdscr.getmaxyx()
 				
 		init_colors()
 		curses.raw()
 		
 		self.main_window = TopLevelWindow(self, self.stdscr, "ash " + APP_VERSION, self.main_key_handler)
-		
-		# status-bar sections: total=101+1 (min)
-		# *status (8), *file-type (11), encoding(7), sloc (20), file-size (10), 
-		# *unsaved-file-count (4), *tab-size (1), cursor-position (6+1+6+3+8=24)
-		self.main_window.add_status_bar(StatusBar(self.main_window, [ 10, 13, 9, 22, 12, 6, 3, -1 ]))				
+				
 		self.readjust()
-		self.main_window.layout_manager.readjust(True)		
+		self.main_window.readjust()
 		self.load_files(self.progress_handler)
 
 		if(self.app_mode == APP_MODE_FILE):
 			if(len(self.buffers) > 0):
 				bid = 0
 				buffer = self.buffers.get_buffer_by_id(bid)
-				self.main_window.layout_manager.invoke_activate_editor(0, bid, buffer)
+				self.main_window.add_tab()
+				self.main_window.get_active_editor().set_buffer(bid, buffer)
+				#self.main_window.layout_manager.invoke_activate_editor(0, bid, buffer)
 			elif(len(self.buffers) == 0):
-				# comment the following 2 lines if you want to start ash with no buffers opened
+				# comment the following 3 lines if you want to start ash with no buffers opened
 				bid, buffer = self.buffers.create_new_buffer()
-				self.main_window.layout_manager.invoke_activate_editor(0, bid, buffer)
+				self.main_window.add_tab()
+				self.main_window.get_active_editor().set_buffer(bid, buffer)
+				#self.main_window.layout_manager.invoke_activate_editor(0, bid, buffer)
 		
 		welcome_msg = f"ash-{APP_VERSION} | Ctrl+F1: Help"
 		if(self.screen_width < MIN_WIDTH or self.screen_height < MIN_HEIGHT):
@@ -161,9 +159,8 @@ class AshEditorApp:
 			self.readjust()
 			self.main_window.repaint()
 			return -1
-		elif(is_ctrl(ch, "L")):
-			# adjust layout
-			self.dialog_handler.invoke_switch_layout()
+		elif(is_ctrl(ch, "T")):
+			self.dialog_handler.invoke_show_active_tabs()
 			return -1
 		elif(is_ctrl(ch, "E") and self.app_mode == APP_MODE_PROJECT):
 			# project explorer
@@ -178,24 +175,52 @@ class AshEditorApp:
 			self.dialog_handler.invoke_file_open()
 			return -1		
 		elif(is_func(ch)):
-			# F1 - F6 to select an active editor
-			# F7 - find previous
-			# F8 - replace
-			# Ctrl+F8 - replace all
-			# Ctrl+F1 - help
-			# F12 - recent files
+			# F1: help
+			# F2: recent files
+			# F3: previous editor
+			# F4: next editor
+			# F5: previous tab
+			# F6: next tab
+			# Ctrl+F2: create new tab
+			# Ctrl+F3: split horizontally
+			# Ctrl+F4: split vertically
+			# Ctrl+F5: merge horizontally
+			# Ctrl+F6: merge horizontally
 
 			fn = get_func_key(ch)
-			ned = fn - 1
 			
-			if(ned >=0 and ned <= 5):
-				self.main_window.layout_manager.invoke_activate_editor(ned)
-				return -1
-			elif(is_ctrl_and_func(ch, 1)):
+			if(fn == 1):
 				self.dialog_handler.invoke_help_key_bindings()
 				return -1
-			elif(fn == 12):
+			elif(fn == 2):
 				self.dialog_handler.invoke_recent_files()
+				return -1
+			elif(fn == 3):
+				self.main_window.switch_to_previous_editor()
+				return -1
+			elif(fn == 4):
+				self.main_window.switch_to_next_editor()
+				return -1
+			elif(fn == 5):
+				self.main_window.switch_to_previous_tab()
+				return -1
+			elif(fn == 6):
+				self.main_window.switch_to_next_tab()
+				return -1
+			elif(is_ctrl_and_func(ch, 2)):
+				self.main_window.add_tab()
+				return -1	
+			elif(is_ctrl_and_func(ch, 3)):
+				self.main_window.split_horizontally()
+				return -1
+			elif(is_ctrl_and_func(ch, 4)):
+				self.main_window.split_vertically()
+				return -1
+			elif(is_ctrl_and_func(ch, 5)):
+				self.main_window.merge_horizontally()
+				return -1
+			elif(is_ctrl_and_func(ch, 6)):
+				self.main_window.merge_vertically()
 				return -1
 
 		return ch

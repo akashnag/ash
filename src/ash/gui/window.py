@@ -3,7 +3,8 @@
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
-# This is an abstract Window class from which Dialog and TopLevelWindow are derived
+# This module implements:
+# The abstract Window class from which Dialog and TopLevelWindow are derived
 
 from ash.gui import *
 

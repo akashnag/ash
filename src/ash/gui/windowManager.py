@@ -77,15 +77,15 @@ class WindowArea:
 		return WindowArea(y1, x1, h1+h2+1, w1)
 
 class TabNode:
-	def __init__(self, tab, parent, win, type, area, existing_editor = None):
+	def __init__(self, tab, parent, win, type, area, existing_editor = None, bid = None, buffer = None):
 		self.tab = tab
 		self.parent = parent
 		self.type = type
 		self.win = win
 		self.area = area
 		if(self.type != TabNodeType.EDITOR): raise(Exception("TabNode:__init__() called with invalid NodeType"))
-		if(existing_editor == None):
-			self.editor = self.create_new_blank_editor()
+		if(existing_editor == None):			
+			self.editor = self.create_new_editor(bid, buffer)
 		else:
 			self.editor = existing_editor
 		self.editor.parent = self
@@ -107,9 +107,9 @@ class TabNode:
 			self.children[0].readjust(split_area1)
 			self.children[1].readjust(split_area2)
 
-	def create_new_blank_editor(self):
+	def create_new_editor(self, bid = None, buffer = None):
 		ed = Editor(self, self.area)
-		bid, buffer = self.tab.manager.app.buffers.create_new_buffer()
+		if(bid == None): bid, buffer = self.tab.manager.app.buffers.create_new_buffer()
 		ed.set_buffer(bid, buffer)
 		return ed
 
@@ -170,20 +170,24 @@ class TabNode:
 	def bottom_up_readjust(self):				# called from an editor only
 		self.tab.bottom_up_readjust()
 
-	def bottom_up_repaint(self):				# called from an editor only
+	def bottom_up_repaint(self):												# called from an editor only
 		self.win.repaint()
 		
-	def repaint(self):							# called from parent
+	def repaint(self, show_filenames, active_editor):							# called from parent
 		self.draw_border()
 		if(self.type == TabNodeType.EDITOR):
-			if(self.editor.buffer == None):
-				y, x, w = self.area.get_center_of_area
+			y, x, w = self.area.get_center_of_area()
+			if(self.editor.buffer == None):				
 				self.win.addstr(y, x, "No files selected".center(w), gc("disabled"))
 			else:
 				self.editor.repaint()
+				if(show_filenames and self.editor != active_editor):
+					disp_title = " " + self.tab.manager.app.get_displayed_file_title(self.editor).strip() + " "
+					if(len(disp_title) > w): disp_title = disp_title[0:w]
+					self.win.addstr(y, x + (w - len(disp_title)) // 2, disp_title, gc("inactive-filename-display") )
 		else:
-			self.children[0].repaint()
-			self.children[1].repaint()
+			self.children[0].repaint(show_filenames, active_editor)
+			self.children[1].repaint(show_filenames, active_editor)
 			self.parent.draw_junction(self)
 
 	def split_horizontally(self):
@@ -216,6 +220,10 @@ class TabNode:
 		if(self.type == TabNodeType.EDITOR):
 			self.parent.merge_horizontally(caller = self)
 		elif(self.type == TabNodeType.HORIZONTAL_SPLIT and caller != None and caller.type == TabNodeType.EDITOR):
+			if(self.children[0] == caller):
+				self.children[1].editor.destroy()
+			else:
+				self.children[0].editor.destroy()
 			self.type = TabNodeType.EDITOR
 			self.editor = caller.editor
 			self.editor.parent = self
@@ -229,6 +237,10 @@ class TabNode:
 		if(self.type == TabNodeType.EDITOR):
 			self.parent.merge_vertically(caller = self)
 		elif(self.type == TabNodeType.VERTICAL_SPLIT and caller != None and caller.type == TabNodeType.EDITOR):
+			if(self.children[0] == caller):
+				self.children[1].editor.destroy()
+			else:
+				self.children[0].editor.destroy()
 			self.type = TabNodeType.EDITOR
 			self.editor = caller.editor
 			self.editor.parent = self
@@ -239,12 +251,12 @@ class TabNode:
 			return		# cannot merge
 
 class WindowTab:
-	def __init__(self, manager, win, screen_height, screen_width):
+	def __init__(self, manager, win, screen_height, screen_width, bid = None, buffer = None):
 		self.manager = manager
 		self.win = win
 		self.screen_height = screen_height
 		self.screen_width = screen_width
-		self.root = TabNode(self, self, win, TabNodeType.EDITOR, WindowArea(1,0,screen_height-2,screen_width))
+		self.root = TabNode(self, self, win, TabNodeType.EDITOR, WindowArea(1,0,screen_height-2,screen_width), existing_editor = None, bid = bid, buffer = buffer)
 		self.active_editor = self.root.editor
 		self.active_editor.focus()
 
@@ -258,15 +270,23 @@ class WindowTab:
 
 	def close_active_editor(self):
 		active_tab_node = self.active_editor.parent
-		if(active_tab_node == self.root):
-			return False			# cannot close by itself; must be destroyed by parent
 		parent_node = active_tab_node.parent
+
+		if(active_tab_node == self.root): return False			# cannot close by itself; must be destroyed by parent
+		if(parent_node.type == TabNodeType.EDITOR): return False
+		
+		if(parent_node.children[0] == active_tab_node):
+			inactive_tab_node = parent_node.children[1]
+		else:
+			inactive_tab_node = parent_node.children[0]
+		
 		if(parent_node.type == TabNodeType.HORIZONTAL_SPLIT):
-			parent_node.merge_horizontally(active_tab_node)
+			parent_node.merge_horizontally(inactive_tab_node)
 			return True
 		elif(parent_node.type == TabNodeType.VERTICAL_SPLIT):
-			parent_node.merge_vertically(active_tab_node)
+			parent_node.merge_vertically(inactive_tab_node)
 			return True
+		
 		raise(Exception("Error in WindowTab:close_active_editor()"))
 	
 	# this function is required for the recursion as a dummy 
@@ -299,7 +319,7 @@ class WindowTab:
 		self.active_editor.focus()
 
 	def repaint(self):				# Called from WindowManager
-		self.root.repaint()
+		self.root.repaint(self.manager.show_filenames, self.active_editor)
 
 	def split_horizontally(self):
 		self.active_editor.blur()
@@ -332,12 +352,13 @@ class WindowTab:
 
 class WindowManager:
 	def __init__(self, app, win):
-		self.app = app				# AshEditorApp
-		self.win = win				# TopLevelWindow
+		self.app = app										# AshEditorApp
+		self.win = win										# TopLevelWindow
 		self.screen_height = self.app.screen_height
 		self.screen_width = self.app.screen_width
 		self.tabs = list()
 		self.active_tab_index = -1
+		self.show_filenames = False
 
 	def bottom_up_readjust(self):			# called from WindowTab only
 		self.win.readjust()
@@ -358,8 +379,13 @@ class WindowManager:
 		return self.active_tab_index
 
 	# add tab after the current tab
-	def add_tab(self):
+	def add_blank_tab(self):
 		new_tab = WindowTab(self, self.win, self.screen_height, self.screen_width)
+		self.tabs.insert(self.active_tab_index + 1, new_tab)
+		self.active_tab_index += 1
+
+	def add_tab_with_buffer(self, bid, buffer):
+		new_tab = WindowTab(self, self.win, self.screen_height, self.screen_width, bid, buffer)
 		self.tabs.insert(self.active_tab_index + 1, new_tab)
 		self.active_tab_index += 1
 
@@ -377,7 +403,9 @@ class WindowManager:
 			self.active_tab_index = -1
 		elif(self.active_tab_index >= len(self.tabs)): 
 			self.active_tab_index = 0
-		self.get_active_editor().focus()
+		
+		aed = self.get_active_editor()
+		if(aed != None): aed.focus()
 	
 	def close_active_editor(self):
 		if(self.active_tab_index == -1): return
@@ -390,8 +418,10 @@ class WindowManager:
 			return True
 
 	def repaint(self):					# called by main_window
-		if(self.active_tab_index == -1): return
-		self.tabs[self.active_tab_index].repaint()
+		if(self.active_tab_index == -1): 
+			self.win.addstr(self.screen_height // 2, 0, "No tabs active".center(self.screen_width), gc("disabled"))
+		else:
+			self.tabs[self.active_tab_index].repaint()
 
 	def get_tabs_info(self):
 		info = list()
@@ -447,3 +477,6 @@ class WindowManager:
 	def split_vertically(self):
 		if(self.active_tab_index == -1): return
 		self.tabs[self.active_tab_index].split_vertically()
+
+	def toggle_filename_visibility(self):
+		self.show_filenames = not self.show_filenames

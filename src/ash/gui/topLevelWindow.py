@@ -12,7 +12,6 @@ from ash.gui import *
 from ash.gui.windowManager import *
 from ash.gui.statusbar import *
 from ash.gui.window import *
-#from ash.gui.layoutManager import *
 from ash.core.bufferManager import *
 from ash.core.gitRepo import *
 
@@ -23,61 +22,15 @@ class TopLevelWindow(Window):
 		self.app = app
 		self.win = stdscr
 		self.handler_func = handler_func
-		self.app_name = self.app.get_app_name()
+		self.app_name = self.app.get_app_name()		
 
 		# status-bar sections: total=101+1 (min)
 		# *status (8), *file-type (11), encoding(7), sloc (20), file-size (10), 
 		# *unsaved-file-count (4), *tab-size (1), cursor-position (6+1+6+3+8=24)
 		self.status = StatusBar(self, [ 10, 13, 9, 22, 12, 6, 3, -1 ])
-
-		# <--------------- new ------------------->
 		self.window_manager = WindowManager(self.app, self)
 
-		#self.layout_manager = LayoutManager(self)		
-		#self.layout_type = LAYOUT_SINGLE
-		#self.active_editor_index = -1
-		#self.editors = list()
-		#for i in range(6): self.editors.append(None)
-	
-	# sets layout
-	#def set_layout(self, layout_type):
-	#	self.layout_manager.set_layout(layout_type)
-	#	self.layout_manager.readjust()
-
-	
-	# returns the active editor object
-	#def get_active_editor(self):
-	#	if(self.active_editor_index < 0):
-	#		return None
-	#	else:
-	#		if(self.editors[self.active_editor_index] == None):
-	#			self.active_editor_index = -1
-	#			return None
-	#		else:
-	#			return self.editors[self.active_editor_index]
-
-	# closes the active editor
-	#def close_active_editor(self):
-	#	# no active editor: return: nothing to do
-	#	if(self.active_editor_index < 0): return
-	#
-	#	# close active editor
-	#	self.editors[self.active_editor_index].destroy()
-	#	self.editors[self.active_editor_index] = None
-	#	self.active_editor_index = -1
-	#
-	#	# switch to a different editor (if available)
-	#	n = len(self.editors)
-	#	for i in range(n):
-	#		if(self.editors[i] != None):
-	#			self.layout_manager.invoke_activate_editor(i)
-	#			break
-	#
-	#	# repaint
-	#	self.repaint()
-
 	def update_status(self):
-		#aed = self.get_active_editor()
 		aed = self.window_manager.get_active_editor()
 
 		tab_size = ""
@@ -137,15 +90,6 @@ class TopLevelWindow(Window):
 		self.win.timeout(0)
 		self.repaint(welcome_msg)
 
-		#aed = None
-		#if(self.editors[0] != None): 
-		#	aed = self.editors[0]
-		# 	aed.focus()
-		
-		# <------------------- new -------------------->
-		
-		# ----------------------------------------------
-
 		while(self.win != None):
 			ch = self.win.getch()
 			if(ch == -1): continue
@@ -188,8 +132,6 @@ class TopLevelWindow(Window):
 				self.win.addstr(0, ts, self.title + " - ", gc("titlebar"))
 				self.win.addstr(0, ts + len(self.title + " - "), self.app_name, curses.A_BOLD | gc("titlebar"))
 
-			#self.layout_manager.draw_layout_borders()
-			#self.layout_manager.repaint_editors(caller=caller)
 			self.window_manager.repaint()
 		except:
 			raise
@@ -200,22 +142,6 @@ class TopLevelWindow(Window):
 	def addstr(self, y, x, text, style):
 		self.win.addstr(y, x, text, style)
 
-	# <------------------------ called from dialogbox handlers -------------------------------->
-	#def get_first_free_editor_index(self, barring = -1):
-	#	n = len(self.editors)
-	#	ec = EDITOR_COUNTS[self.layout_type]
-	#
-	#	for i in range(n):
-	#		if(i >= ec): continue
-	#		if(i != barring and self.editors[i] == None): return i
-	#	return -1
-
-	#def get_visible_editor_count(self):
-	#	count = 0
-	#	for i in range(len(self.editors)):
-	#		if(self.editors[i] != None): count += 1
-	#	return count
-
 	def bottom_up_readjust(self):				# called from WindowManager
 		self.app.readjust()
 
@@ -225,7 +151,16 @@ class TopLevelWindow(Window):
 		self.window_manager.readjust()
 
 	def invoke_activate_editor(self, buffer_id, buffer):
-		pass		# ADD CODE
+		aed = self.get_active_editor()
+		if(aed == None):
+			self.add_tab_with_buffer(buffer_id, buffer)
+		else:
+			aed.set_buffer(buffer_id, buffer)
+		self.repaint()
+
+	def toggle_filename_visibility(self):
+		self.window_manager.toggle_filename_visibility()
+		self.repaint()
 
 	# <------------------------------------ stub functions ------------------------------->
 
@@ -236,8 +171,12 @@ class TopLevelWindow(Window):
 		self.window_manager.close_active_editor()
 		self.repaint()
 
-	def add_tab(self):
-		self.window_manager.add_tab()
+	def add_blank_tab(self):
+		self.window_manager.add_blank_tab()
+		self.repaint()
+
+	def add_tab_with_buffer(self, bid, buffer):
+		self.window_manager.add_tab_with_buffer(bid, buffer)
 		self.repaint()
 
 	def remove_tab(self, tab_index):

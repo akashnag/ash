@@ -104,16 +104,11 @@ class AshEditorApp:
 			if(len(self.buffers) > 0):
 				bid = 0
 				buffer = self.buffers.get_buffer_by_id(bid)
-				self.main_window.add_tab()
-				self.main_window.get_active_editor().set_buffer(bid, buffer)
-				#self.main_window.layout_manager.invoke_activate_editor(0, bid, buffer)
+				self.main_window.add_tab_with_buffer(bid, buffer)				
 			elif(len(self.buffers) == 0):
-				# comment the following 3 lines if you want to start ash with no buffers opened
-				bid, buffer = self.buffers.create_new_buffer()
-				self.main_window.add_tab()
-				self.main_window.get_active_editor().set_buffer(bid, buffer)
-				#self.main_window.layout_manager.invoke_activate_editor(0, bid, buffer)
-		
+				# comment the following line if you want to start ash with no buffers opened
+				self.main_window.add_blank_tab()
+				
 		welcome_msg = f"ash-{APP_VERSION} | Ctrl+F1: Help"
 		if(self.screen_width < MIN_WIDTH or self.screen_height < MIN_HEIGHT):
 			welcome_msg = f"insufficient screen space, ash may crash unexpectedly; reqd.: {MIN_WIDTH}x{MIN_HEIGHT}"
@@ -181,11 +176,13 @@ class AshEditorApp:
 			# F4: next editor
 			# F5: previous tab
 			# F6: next tab
+			# Ctrl+F1: show/hide filenames in non-active editors
 			# Ctrl+F2: create new tab
 			# Ctrl+F3: split horizontally
 			# Ctrl+F4: split vertically
 			# Ctrl+F5: merge horizontally
 			# Ctrl+F6: merge horizontally
+			# Ctrl+F7: close current tab
 
 			fn = get_func_key(ch)
 			
@@ -207,6 +204,9 @@ class AshEditorApp:
 			elif(fn == 6):
 				self.main_window.switch_to_next_tab()
 				return -1
+			elif(is_ctrl_and_func(ch, 1)):
+				self.main_window.toggle_filename_visibility()
+				return -1
 			elif(is_ctrl_and_func(ch, 2)):
 				self.main_window.add_tab()
 				return -1	
@@ -222,6 +222,7 @@ class AshEditorApp:
 			elif(is_ctrl_and_func(ch, 6)):
 				self.main_window.merge_vertically()
 				return -1
+			
 
 		return ch
 
@@ -294,13 +295,15 @@ class AshEditorApp:
 			else:
 				return app_title
 
+		return self.get_displayed_file_title(active_editor)
+		
+	def get_displayed_file_title(self, active_editor):
 		if(self.app_mode == APP_MODE_FILE):
 			app_title = get_file_title(active_editor.buffer.get_name())
 		elif(self.app_mode == APP_MODE_PROJECT):
 			if(active_editor.buffer.filename == None):
 				app_title = active_editor.buffer.get_name()
 			else:
-				app_title = get_relative_file_title(self.project_dir, active_editor.buffer.filename)
-		
+				app_title =  get_relative_file_title(self.project_dir, active_editor.buffer.filename)
 		app_title = ("  " if active_editor.buffer.save_status else UNSAVED_BULLET + " ") + app_title
 		return app_title

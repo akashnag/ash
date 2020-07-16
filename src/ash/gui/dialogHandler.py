@@ -184,9 +184,7 @@ class DialogHandler:
 			filename = recent_files_list[len(recent_files_list) - 1 - index]
 			self.app.dlgRecentFiles.hide()
 			mw.repaint()
-			aed = mw.get_active_editor()
-			aedi = mw.active_editor_index
-
+			
 			if(not os.path.isfile(filename)):
 				self.app.show_error("The selected file does not exist")
 				return -1
@@ -203,11 +201,7 @@ class DialogHandler:
 			
 			self.app.dlgRecentFiles.hide()
 
-			if(aed == None):
-				self.app.show_error("No active editor")
-			else:
-				mw.invoke_activate_editor(sel_buffer.id, sel_buffer)
-				mw.repaint()
+			mw.invoke_activate_editor(sel_buffer.id, sel_buffer)
 			return -1
 			
 		return ch
@@ -288,18 +282,10 @@ class DialogHandler:
 
 	def invoke_file_new(self):
 		mw = self.app.main_window
-		aed = mw.get_active_editor()
-		aedi = mw.active_editor_index
-
+		
 		# create blank buffer
 		new_bid, new_buffer = self.app.buffers.create_new_buffer()
-
-		if(aed == None):
-			self.app.show_error("No active editor")
-		else:
-			mw.invoke_activate_editor(new_bid, new_buffer)
-
-		mw.repaint()
+		mw.invoke_activate_editor(new_bid, new_buffer)
 
 	# <------------------------------------ Help --------------------------------------------->
 
@@ -335,13 +321,11 @@ class DialogHandler:
 
 	def invoke_project_explorer(self):
 		self.app.readjust()
-
 		try:
 			y, x = get_center_coords(self.app, 20, 80)
 		except:
 			self.app.warn_insufficient_screen_space()
 			return
-
 		self.app.dlgProjectExplorer = ModalDialog(self.app.main_window, y, x, 20, 80, "PROJECT EXPLORER", self.project_explorer_key_handler)
 		lstFiles = TreeView(self.app.dlgProjectExplorer, 3, 2, 76, 16, self.app.buffers, self.app.project_dir)
 		self.app.dlgProjectExplorer.add_widget("lstFiles", lstFiles)
@@ -351,8 +335,7 @@ class DialogHandler:
 		lstFiles = self.app.dlgProjectExplorer.get_widget("lstFiles")
 		
 		mw = self.app.main_window
-		aed = mw.get_active_editor()
-		
+				
 		if(is_ctrl(ch, "Q")):
 			self.app.dlgProjectExplorer.hide()
 			mw.repaint()
@@ -375,13 +358,7 @@ class DialogHandler:
 				sel_bid, sel_buffer = self.app.buffers.create_new_buffer(filename=filename, has_backup=BufferManager.backup_exists(filename))
 			
 			self.app.dlgProjectExplorer.hide()
-
-			# if target editor not supplied
-			if(aed == None):
-				self.app.show_error("No active editor")
-			else:
-				mw.invoke_activate_editor(None, sel_buffer.id, sel_buffer)
-				mw.repaint()
+			mw.invoke_activate_editor(sel_buffer.id, sel_buffer)
 			return -1
 		
 		return ch
@@ -426,11 +403,8 @@ class DialogHandler:
 
 		sel_bid = lstActiveFiles.get_sel_tag()
 		sel_index = lstActiveFiles.get_sel_index()
-
 		mw = self.app.main_window
-		aed = mw.get_active_editor()
-		aedi = mw.active_editor_index
-		
+
 		if(is_ctrl(ch, "Q")):
 			self.app.dlgFileOpen.hide()
 			mw.repaint()
@@ -476,13 +450,7 @@ class DialogHandler:
 					sel_bid, sel_buffer = self.app.buffers.create_new_buffer(filename=filename, encoding=sel_encoding, has_backup=backup_status)
 				
 			# at this point, buffer exists in sel_buffer
-			
-			# if target-editor not supplied
-			if(aed == None):
-				self.app.show_error("No active editor!")
-			else:
-				mw.invoke_activate_editor(sel_buffer.id, sel_buffer)
-				mw.repaint()
+			mw.invoke_activate_editor(sel_buffer.id, sel_buffer)
 			return -1
 		
 		return ch

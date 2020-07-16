@@ -77,6 +77,8 @@ def get_default_colors():
 	element_colors["gitstatus-T"] = ("orange", "darkgray")
 	element_colors["gitstatus-U"] = ("green", "darkgray")
 	
+	element_colors["inactive-filename-display"] = ("darkgray", "white")
+
 	return (colors, element_colors)
 
 # returns the index for a specified color name
@@ -102,7 +104,7 @@ def get_element_color_index(element_name):
 						"global-string", "global-error", "global-function", "global-variable",
 						"global-punctuation", "global-integer", "global-float", "global-operator",
 						"global-builtin-function", "global-builtin-constant", "global-namespace",
-						"global-code", 
+						"global-code", "inactive-filename-display",
 						"gitstatus-A", "gitstatus-D", "gitstatus-R", "gitstatus-M", "gitstatus-T", "gitstatus-U"
 					)
 

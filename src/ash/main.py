@@ -32,41 +32,49 @@ class AshEditorApp:
 		self.dialog_handler = DialogHandler(self)
 		log_init()
 		recent_files_init()
-		
+	
+	def open_project(self, progress_handler = None):
+		add_opened_file_to_record(self.project_dir)
+		all_files = glob.glob(self.project_dir + "/**/*", recursive=True)
+
+		for i, f in enumerate(all_files):
+			if(not os.path.isfile(f)): continue
+			if(should_ignore_file(f)): continue
+			if(BufferManager.is_binary(f)): continue
+			has_backup = BufferManager.backup_exists(f)
+			if(not self.buffers.does_file_have_its_own_buffer(f)):
+				self.buffers.create_new_buffer(filename=f, has_backup=has_backup)
+			if(progress_handler != None): 
+				progress = ( ( i / len(all_files) ) * 100 )
+				progress_handler("Loading...", progress)
+		if(progress_handler != None): progress_handler("Ready", None)
+
+	def open_files_from_commandline_args(self, progress_handler = None):
+		for i in range(1, len(self.args)):
+			if(os.path.isdir(self.args[i])): continue			
+			filePath = str(os.path.abspath(self.args[i]))
+			if(BufferManager.is_binary(filePath)): continue
+			has_backup = BufferManager.backup_exists(filePath)
+			if(not self.buffers.does_file_have_its_own_buffer(filePath)):
+				self.buffers.create_new_buffer(filename=filePath, has_backup=has_backup)
+			if(progress_handler != None): 
+				progress = ( ( i / (len(self.args)-1) ) * 100 )
+				progress_handler("Loading...", progress)
+		if(progress_handler != None): progress_handler("Ready", None)
+
 	def load_files(self, progress_handler = None):
-		self.buffers = BufferManager()
+		self.buffers = BufferManager(self)
 		
 		if(self.argc == 1):
 			self.app_mode = APP_MODE_FILE
-		elif(self.argc == 2 and os.path.isdir(self.args[1])):
+		elif(self.argc == 2 and os.path.isdir(self.args[1])):			
 			self.app_mode = APP_MODE_PROJECT
 			self.project_dir = str(os.path.abspath(self.args[1]))
-			all_files = glob.glob(self.project_dir + "/**/*", recursive=True)
-
-			for i, f in enumerate(all_files):
-				if(not os.path.isfile(f)): continue
-				if(should_ignore_file(f)): continue
-				if(BufferManager.is_binary(f)): continue
-				has_backup = BufferManager.backup_exists(f)
-				self.buffers.create_new_buffer(filename=f, has_backup=has_backup)
-				if(progress_handler != None): 
-					progress = ( ( i / len(all_files) ) * 100 )
-					progress_handler("Loading...", progress)
+			self.open_project(progress_handler)
 		else:
 			self.app_mode = APP_MODE_FILE
-			for i in range(1, len(self.args)):
-				if(os.path.isdir(self.args[i])):
-					print("ERROR: cannot open more than 1 project")
-					return
-				filePath = str(os.path.abspath(self.args[i]))
-				if(BufferManager.is_binary(filePath)): continue
-				has_backup = BufferManager.backup_exists(filePath)
-				self.buffers.create_new_buffer(filename=filePath, has_backup=has_backup)
-				if(progress_handler != None): 
-					progress = ( ( i / (len(self.args)-1) ) * 100 )
-					progress_handler("Loading...", progress)
+			self.open_files_from_commandline_args(progress_handler)
 		
-		if(progress_handler != None): progress_handler("Ready", None)
 
 	def run(self):		
 		ret_code = curses.wrapper(self.app_main)
@@ -88,16 +96,19 @@ class AshEditorApp:
 	
 	# initialize the GUI
 	def app_main(self, stdscr):
+		# initialize screen
 		self.stdscr = stdscr
-		self.screen_height, self.screen_width = self.stdscr.getmaxyx()
-				
+		self.screen_height, self.screen_width = self.stdscr.getmaxyx()				
 		init_colors()
 		curses.raw()
 		
+		# create main window
 		self.main_window = TopLevelWindow(self, self.stdscr, "ash " + APP_VERSION, self.main_key_handler)
-				
+		
+		# adjust sizes
 		self.readjust()
-		self.main_window.readjust()
+		
+		# load files
 		self.load_files(self.progress_handler)
 
 		if(self.app_mode == APP_MODE_FILE):
@@ -106,10 +117,9 @@ class AshEditorApp:
 				buffer = self.buffers.get_buffer_by_id(bid)
 				self.main_window.add_tab_with_buffer(bid, buffer)				
 			elif(len(self.buffers) == 0):
-				# comment the following line if you want to start ash with no buffers opened
 				self.main_window.add_blank_tab()
-				
-		welcome_msg = f"ash-{APP_VERSION} | Ctrl+F1: Help"
+		
+		welcome_msg = f"ash-{APP_VERSION} | F1: Help"
 		if(self.screen_width < MIN_WIDTH or self.screen_height < MIN_HEIGHT):
 			welcome_msg = f"insufficient screen space, ash may crash unexpectedly; reqd.: {MIN_WIDTH}x{MIN_HEIGHT}"
 

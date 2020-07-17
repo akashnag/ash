@@ -228,9 +228,10 @@ class EditorUtility:
 		return rendered_pos
 
 	# finds all text in the given document
-	def find_all(self, s):
-		self.ed.find_mode = True
-		self.ed.highlighted_text = s
+	def find_all(self, s, match_case):
+		self.ed.find_mode = (True if len(s) > 0 else False)
+		self.ed.highlighted_text = (s if len(s) > 0 else None)
+		self.ed.find_match_case = match_case
 		self.ed.repaint()
 
 	# cancels all highlights if any
@@ -241,36 +242,56 @@ class EditorUtility:
 			self.ed.repaint()
 
 	# moves cursor to next match
-	def find_next(self, s):
-		self.find_all(s)
+	def find_next(self, s, match_case):
+		if(len(s) == 0): return
+
+		lower_s = s.lower()
+		self.find_all(s, match_case)
 		n = len(s)
 		
 		for y in range(self.ed.curpos.y, len(self.ed.buffer.lines)):
 			start = 0
 			if(y == self.ed.curpos.y): start = self.ed.curpos.x + 1
-			x = self.ed.buffer.lines[y].find(s, start)
+			if(match_case):
+				x = self.ed.buffer.lines[y].find(s, start)
+			else:
+				x = self.ed.buffer.lines[y].lower().find(lower_s, start)
 			if(x > -1):
 				self.ed.curpos.y = y
 				self.ed.curpos.x = x
 				return
 
 		for y in range(0, self.ed.curpos.y + 1):
-			x = self.ed.buffer.lines[y].find(s)
+			if(match_case):
+				x = self.ed.buffer.lines[y].find(s)
+			else:
+				x = self.ed.buffer.lines[y].lower().find(lower_s)
 			if(x > -1):
 				self.ed.curpos.y = y
 				self.ed.curpos.x = x
 				return
 
 	# moves cursor to previous match
-	def find_previous(self, s):
-		self.find_all(s)
+	def find_previous(self, s, match_case):
+		if(len(s) == 0): return
+		
+		lower_s = s.lower()
+		self.find_all(s, match_case)
 		n = len(s)
 		
 		for y in range(self.ed.curpos.y, -1, -1):
 			if(y == self.ed.curpos.y):
-				x = self.ed.buffer.lines[y][0:self.ed.curpos.x].rfind(s)
+				portion = self.ed.buffer.lines[y][0:self.ed.curpos.x]
+				if(match_case):
+					x = portion.rfind(s)
+				else:
+					x = portion.lower().rfind(lower_s)
 			else:
-				x = self.ed.buffer.lines[y].rfind(s)
+				portion = self.ed.buffer.lines[y]
+				if(match_case):
+					x = portion.rfind(s)
+				else:
+					x = portion.lower().rfind(lower_s)
 
 			if(x > -1):
 				self.ed.curpos.y = y
@@ -279,31 +300,40 @@ class EditorUtility:
 
 		for y in range(len(self.ed.buffer.lines) - 1, self.ed.curpos.y - 1, -1):
 			if(y == self.ed.curpos.y):
-				x = self.ed.buffer.lines[y][0:self.ed.curpos.x].rfind(s)
+				portion = self.ed.buffer.lines[y][0:self.ed.curpos.x]
+				if(match_case):
+					x = portion.rfind(s)
+				else:
+					x = portion.lower().rfind(lower_s)
 			else:
-				x = self.ed.buffer.lines[y].rfind(s)
+				portion = self.ed.buffer.lines[y]
+				if(match_case):
+					x = portion.rfind(s)
+				else:
+					x = portion.lower().rfind(lower_s)
+
 			if(x > -1):
 				self.ed.curpos.y = y
 				self.ed.curpos.x = x
 				return
 		
 	# replaces the first occurrence (after last find/replace operation)
-	def replace_next(self, sfind, srep, do_update = True):
+	def replace_next(self, sfind, srep, match_case):
 		n = len(sfind)
 		line = self.ed.buffer.lines[self.ed.curpos.y]
 		if(line[self.ed.curpos.x:self.ed.curpos.x+n] == sfind):
 			prev = line[0:self.ed.curpos.x]
 			next = line[self.ed.curpos.x+n:]
 			self.ed.buffer.lines[self.ed.curpos.y] = prev + srep + next
-			if(do_update): self.ed.buffer.major_update(self.ed.curpos, self.ed)
-			self.find_next(sfind)
+			self.ed.buffer.major_update(self.ed.curpos, self.ed)
+			self.find_next(sfind, match_case)
 			return True
 		
 		return False
 
-	def replace_all(self, sfind, srep):
-		self.find_next(sfind)
+	def replace_all(self, sfind, srep, match_case):
+		self.find_next(sfind, match_case)
 		count = 0
-		while(self.replace_next(sfind, srep, False)):
+		while(self.replace_next(sfind, srep, match_case)):
 			count += 1		
 		if(count > 0): self.ed.buffer.major_update(self.ed.curpos, self.ed, True)

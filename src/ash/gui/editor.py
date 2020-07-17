@@ -469,10 +469,15 @@ class Editor(Widget):
 
 	def highlight(self, offset_y, offset_x, vtext):
 		if(self.highlighted_text == None): return
+		lower_vtext = vtext.lower()
+		lower_htext = self.highlighted_text.lower()
 		
 		pos = -1
 		while(True):
-			pos = vtext.find(self.highlighted_text, pos + 1)
+			if(self.find_match_case):
+				pos = vtext.find(self.highlighted_text, pos + 1)
+			else:
+				pos = lower_vtext.find(lower_htext, pos + 1)
 			if(pos < 0): return
 			n = len(self.highlighted_text)
 			self.parent.addstr(offset_y, offset_x + pos, self.highlighted_text, gc("highlight"))
@@ -558,9 +563,11 @@ class Editor(Widget):
 	def get_file_size(self):
 		return self.utility.get_file_size()
 
+	# <---------------------------- Find/Replace operations --------------------------------->
+
 	# highlights all instances
-	def find_all(self, search_text):
-		self.utility.find_all(search_text)
+	def find_all(self, search_text, match_case):
+		self.utility.find_all(search_text, match_case)
 		self.repaint()
 
 	# cancels the find mode
@@ -569,21 +576,21 @@ class Editor(Widget):
 		self.repaint()
 
 	# find next match
-	def find_next(self, search_text):
-		self.utility.find_next(search_text)
+	def find_next(self, search_text, match_case):
+		self.utility.find_next(search_text, match_case)
 		self.repaint()
 		
 	# find previous match
-	def find_previous(self, search_text):
-		self.utility.find_previous(search_text)
+	def find_previous(self, search_text, match_case):
+		self.utility.find_previous(search_text, match_case)
 		self.repaint()
 		
 	# replace next instance
-	def replace_next(self, search_text, replace_text):
-		self.utility.replace_next(search_text, replace_text)
+	def replace_next(self, search_text, replace_text, match_case):
+		self.utility.replace_next(search_text, replace_text, match_case)
 		self.repaint()
 		
 	# replace all instances
-	def replace_all(self, search_text, replace_text):
-		self.utility.replace_all(search_text, replace_text)
+	def replace_all(self, search_text, replace_text, match_case):
+		self.utility.replace_all(search_text, replace_text, match_case)
 		self.repaint()

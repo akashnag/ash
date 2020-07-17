@@ -8,24 +8,29 @@
 from ash.gui import *
 from ash.gui.window import *
 from ash.gui.textfield import *
+from ash.gui.checkbox import *
 
 class FindReplaceDialog(Window):
 	def __init__(self, parent, y, x, ed, replace = False):
-		super().__init__(y, x, (7 if replace else 5), 30, ("FIND AND REPLACE" if replace else "FIND"))
+		super().__init__(y, x, (9 if replace else 7), 50, ("FIND AND REPLACE" if replace else "FIND"))
 		self.ed = ed
 		self.parent = parent
 		self.theme = gc("outer-border")
 		self.win = None
 		self.ed.find_mode = True
+		self.replace = replace
 		
 		init_text = ""
 		if(ed.selection_mode): init_text = ed.get_selected_text().replace("\n", "")
 				
-		self.txtFind = TextField(self, 3, 2, 26, init_text)
-		self.txtReplace = TextField(self, 5, 2, 26)
-
+		self.txtFind = TextField(self, 4, 2, 46, init_text)
+		self.txtReplace = TextField(self, 6, 2, 46)
+		
+		self.chkMatchCase = CheckBox(self, (7 if self.replace else 5), 2, "Match case")
+		
 		self.add_widget("txtFind", self.txtFind)
-		if(replace): self.add_widget("txtReplace", self.txtReplace)
+		if(self.replace): self.add_widget("txtReplace", self.txtReplace)
+		self.add_widget("chkMatchCase", self.chkMatchCase)
 
 	# show the window and start the event-loop
 	def show(self):
@@ -87,14 +92,14 @@ class FindReplaceDialog(Window):
 				self.handle_find_previous_match(search_text)
 			elif(is_func(ch, 8)):						# F8: replace
 				self.handle_replace(search_text, replace_text)
-			elif(is_func(ch, 32)):						# Ctrl+F8: replace all
+			elif(is_ctrl_and_func(ch, 8)):				# Ctrl+F8: replace all
 				self.handle_replace_all(search_text, replace_text)
 			elif(self.active_widget_index > -1):
 				aw = self.get_active_widget()
 				aw.perform_action(ch)
-				if(aw == self.txtFind):
-					self.ed.find_all(str(self.txtFind))
-					self.ed.find_next(str(self.txtFind))
+				if(aw == self.txtFind or aw == self.chkMatchCase):
+					self.ed.find_all(str(self.txtFind), self.chkMatchCase.is_checked())
+					self.ed.find_next(str(self.txtFind), self.chkMatchCase.is_checked())
 					self.parent.repaint()
 					
 			self.repaint()
@@ -105,16 +110,16 @@ class FindReplaceDialog(Window):
 	# <----------------------------- driver functions ------------------------------->
 
 	def handle_find_next_match(self, search_text):
-		self.ed.find_next(search_text)
+		self.ed.find_next(search_text, self.chkMatchCase.is_checked())
 
 	def handle_find_previous_match(self, search_text):
-		self.ed.find_previous(search_text)
+		self.ed.find_previous(search_text, self.chkMatchCase.is_checked())
 
 	def handle_replace(self, search_text, replace_text):
-		self.ed.replace_next(search_text, replace_text)
+		self.ed.replace_next(search_text, replace_text, self.chkMatchCase.is_checked())
 
 	def handle_replace_all(self, search_text, replace_text):
-		self.ed.replace_all(search_text, replace_text)
+		self.ed.replace_all(search_text, replace_text, self.chkMatchCase.is_checked())
 
 	# draw the window
 	def repaint(self):
@@ -130,6 +135,8 @@ class FindReplaceDialog(Window):
 		self.win.addstr(2, 1, BORDER_HORIZONTAL * (self.width-2), self.theme)
 
 		self.win.addstr(1, 2, self.title, curses.A_BOLD | self.theme)
+		self.win.addstr(3, 2, "Find:", self.theme)
+		if(self.replace): self.win.addstr(5, 2, "Replace with:", self.theme)
 		
 		# active widget must be repainted last, to correctly position cursor
 		aw = self.get_active_widget()

@@ -31,7 +31,7 @@ class CheckBox(Widget):
 		self.repaint()
 
 	# returns checkbox state
-	def isChecked(self):
+	def is_checked(self):
 		return self.checked
 
 	# draws the checkbox

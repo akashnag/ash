@@ -21,7 +21,7 @@ class Buffer:
 	def __init__(self, manager, id, filename = None, encoding = "utf-8", newline = "\n", has_backup = False):
 		self.manager = manager
 		self.id = id
-		self.filename = filename
+		self.filename = normalized_path(filename)
 		self.encoding = encoding
 		self.editors = list()
 		self.display_name = None
@@ -162,7 +162,7 @@ class Buffer:
 	# writes out the buffer to a file on disk
 	def write_to_disk(self, filename = None):
 		if(self.filename == None and filename == None): raise(Exception("Error 1: buffer.write_to_disk()"))
-		if(filename != None): self.filename = filename		# update filename even if filename has changed
+		if(filename != None): self.filename = normalized_path(filename)		# update filename even if filename has changed
 		
 		self.formatter = SyntaxHighlighter(self.filename)
 		self.display_name = None
@@ -176,7 +176,7 @@ class Buffer:
 
 		self.backup_edit_count = 0
 		self.undo_edit_count = 0
-		add_opened_file_to_record(self.filename)
+		if(self.manager.app.app_mode != APP_MODE_PROJECT): add_opened_file_to_record(self.filename)
 
 		return self.manager.merge_if_required(self.id)
 
@@ -275,7 +275,7 @@ class Buffer:
 		self.backup_edit_count = 0
 		self.undo_edit_count = 0
 		
-		if(not read_from_backup): add_opened_file_to_record(self.filename)
+		if(not read_from_backup and self.manager.app.app_mode != APP_MODE_PROJECT): add_opened_file_to_record(self.filename)
 		return 0
 
 	# splits the raw-data (read from a file) into separate lines
@@ -291,7 +291,8 @@ class Buffer:
 
 # Buffer Manager class: for keeping track of the list of all active buffers
 class BufferManager:
-	def __init__(self):
+	def __init__(self, app):
+		self.app = app
 		self.buffers = dict()
 		self.buffer_count = 0
 	

@@ -28,7 +28,7 @@ class DialogHandler:
 		self.app.readjust()
 
 		try:
-			y, x = get_center_coords(self.app, 5, 30)
+			y, x = get_center_coords(self.app, 7, 50)
 		except:
 			self.app.warn_insufficient_screen_space()			
 			return
@@ -43,7 +43,7 @@ class DialogHandler:
 		self.app.readjust()
 
 		try:
-			y, x = get_center_coords(self.app, 7, 30)
+			y, x = get_center_coords(self.app, 9, 50)
 		except:
 			self.app.warn_insufficient_screen_space()
 			return
@@ -167,7 +167,11 @@ class DialogHandler:
 		for i in range(len(recent_files_list)-1, -1, -1):
 			if(os.path.isfile(recent_files_list[i])):
 				disp = get_file_title(recent_files_list[i]) + " [" + os.path.dirname(recent_files_list[i]) + "/]"
-				lstRecentFiles.add_item(disp, tag=recent_files_list[i])
+			elif(os.path.isdir(recent_files_list[i])):
+				disp = "PROJECT: [" + recent_files_list[i] + "]"
+			else:
+				continue
+			lstRecentFiles.add_item(disp, tag=recent_files_list[i])
 
 		self.app.dlgRecentFiles.add_widget("lstRecentFiles", lstRecentFiles)
 		self.app.dlgRecentFiles.show()
@@ -186,8 +190,17 @@ class DialogHandler:
 			mw.repaint()
 			
 			if(not os.path.isfile(filename)):
-				self.app.show_error("The selected file does not exist")
-				return -1
+				if(os.path.isdir(filename)):
+					self.app.dlgRecentFiles.hide()
+					self.app.app_mode = APP_MODE_PROJECT
+					self.app.project_dir = filename
+					self.app.open_project(self.app.progress_handler)
+					return -1
+				else:
+					self.app.show_error("The selected file/directory does not exist")
+					mw.repaint()
+					self.app.dlgRecentFiles.repaint()
+					return -1
 
 			if(BufferManager.is_binary(filename)):
 				self.app.show_error("Cannot open binary file!")
@@ -200,7 +213,6 @@ class DialogHandler:
 				sel_bid, sel_buffer = self.app.buffers.create_new_buffer(filename=filename, has_backup=BufferManager.backup_exists(filename))
 			
 			self.app.dlgRecentFiles.hide()
-
 			mw.invoke_activate_editor(sel_buffer.id, sel_buffer)
 			return -1
 			
@@ -257,9 +269,9 @@ class DialogHandler:
 				return -1
 
 			encoding_index = self.app.dlgPreferences.get_widget("lstEncodings").sel_index
-			show_line_numbers = self.app.dlgPreferences.get_widget("chkShowLineNumbers").isChecked()
-			word_wrap = self.app.dlgPreferences.get_widget("chkWordWrap").isChecked()
-			hard_wrap = self.app.dlgPreferences.get_widget("chkHardWrap").isChecked()
+			show_line_numbers = self.app.dlgPreferences.get_widget("chkShowLineNumbers").is_checked()
+			word_wrap = self.app.dlgPreferences.get_widget("chkWordWrap").is_checked()
+			hard_wrap = self.app.dlgPreferences.get_widget("chkHardWrap").is_checked()
 
 			self.app.dlgPreferences.hide()
 
@@ -298,7 +310,7 @@ class DialogHandler:
 			self.app.warn_insufficient_screen_space()
 			return
 
-		self.app.dlgHelpKeyBindings = ModalDialog(self.app.main_window, y, x, 20, 80, "HELP: KEY BINDINGS", self.help_key_bindings_key_handler)
+		self.app.dlgHelpKeyBindings = ModalDialog(self.app.main_window, y, x, 20, 80, "HELP", self.help_key_bindings_key_handler)
 		lstKeys = ListBox(self.app.dlgHelpKeyBindings, 3, 2, 76, 16)
 
 		kbs = get_ash_key_bindings()
@@ -346,7 +358,7 @@ class DialogHandler:
 			file_type = tag[0].lower()
 			filename = tag[2:]
 			if(file_type == "d"): return -1
-						
+			
 			if(BufferManager.is_binary(filename)):
 				self.app.show_error("Cannot open binary file!")
 				mw.repaint()
@@ -422,9 +434,11 @@ class DialogHandler:
 
 			if(filename != None):
 				if(os.path.isdir(filename)):
-					self.app.show_error("Cannot open directory, relaunch with the directory-name as\nthe first argument to ash.")
+					self.app.dlgFileOpen.hide()
+					self.app.app_mode = APP_MODE_PROJECT
+					self.app.project_dir = filename
+					self.app.open_project(self.app.progress_handler)
 					mw.repaint()
-					self.app.dlgFileOpen.repaint()
 					return -1
 
 				if(BufferManager.is_binary(filename)):

@@ -9,6 +9,7 @@ from ash.utils import *
 from ash.utils.utils import *
 
 def normalized_path(path):
+	if(path == None): return None
 	return os.path.abspath(os.path.expanduser(path))
 
 # returns the name of the file without its directory

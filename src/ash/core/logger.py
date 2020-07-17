@@ -38,7 +38,13 @@ def recent_files_init():
 
 def add_opened_file_to_record(filename):
 	global recent_files_list
+
+	if(filename.endswith("/")): filename = filename[:-1]
+
 	if(filename not in recent_files_list):
+		recent_files_list.append(filename)
+	else:
+		recent_files_list.remove(filename)
 		recent_files_list.append(filename)
 
 	while(len(recent_files_list) > MAX_RECENT_RECORD):
@@ -46,6 +52,6 @@ def add_opened_file_to_record(filename):
 
 	recentFilesFile = open(RECENT_FILES_RECORD, "wt")
 	for filename in recent_files_list:
-		if(os.path.isfile(filename)):
+		if(os.path.isfile(filename) or os.path.isdir(filename)):
 			recentFilesFile.write(filename + "\n")
 	recentFilesFile.close()

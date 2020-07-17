@@ -171,6 +171,10 @@ class TopLevelWindow(Window):
 		self.window_manager.close_active_editor()
 		self.repaint()
 
+	def close_all_except_active_editor(self):
+		self.window_manager.close_all_except_active_editor()
+		self.repaint()
+
 	def add_blank_tab(self):
 		self.window_manager.add_blank_tab()
 		self.repaint()

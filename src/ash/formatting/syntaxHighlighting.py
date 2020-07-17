@@ -65,7 +65,6 @@ class SyntaxHighlighter:
 		for (index, token_type, value) in tokens:
 			styles.append( (int(index), self.get_style(token_type), str(value)) )
 
-		log(styles)
 		return styles
 
 	# returns the assigned style for a particular token-type

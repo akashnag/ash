@@ -71,6 +71,7 @@ class FindReplaceDialog(Window):
 			
 			if(ch == -1): continue
 
+			aw = None
 			search_text = str(self.get_widget("txtFind"))
 			replace_text = str(self.get_widget("txtReplace"))
 
@@ -89,12 +90,17 @@ class FindReplaceDialog(Window):
 			elif(is_func(ch, 32)):						# Ctrl+F8: replace all
 				self.handle_replace_all(search_text, replace_text)
 			elif(self.active_widget_index > -1):
-				self.get_active_widget().perform_action(ch)
-				self.ed.find_all(str(self.txtFind))
-				
-			self.parent.win.refresh()
+				aw = self.get_active_widget()
+				aw.perform_action(ch)
+				if(aw == self.txtFind):
+					self.ed.find_all(str(self.txtFind))
+					self.ed.find_next(str(self.txtFind))
+					self.parent.repaint()
+					
 			self.repaint()
 			self.win.refresh()
+			self.parent.win.refresh()
+			if(aw != None): aw.repaint()
 	
 	# <----------------------------- driver functions ------------------------------->
 

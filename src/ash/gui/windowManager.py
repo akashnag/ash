@@ -33,6 +33,7 @@ class WindowArea:
 		# width=50: 0,50,25,50: 0,50,25,25 & |x=75| & 0,76,25,24
 		# width=51: 0,50,25,51: 0,50,25,25 & |x=75| & 0,76,25,25
 		# width=101: 0,0,25,101: 0,0,25,50 & |x=50| & 0,51,25,50
+		# width=103:x24 1,0,22,103: 1,0,22,51 & |51| & 1,52,22,51
 		y2 = self.y
 		x2 = x1 + (self.width // 2) + 1
 		h2 = self.height
@@ -195,6 +196,7 @@ class TabNode:
 		split_area1, split_area2, self.border_x = self.area.split_horizontally()
 		y, x, height, width = split_area1.unpack()
 		self.editor.resize(y, x, height, width, True)
+		
 		self.children = [ 
 			TabNode(self.tab, self, self.win, TabNodeType.EDITOR, split_area1, self.editor),
 			TabNode(self.tab, self, self.win, TabNodeType.EDITOR, split_area2)
@@ -256,7 +258,7 @@ class WindowTab:
 		self.win = win
 		self.screen_height = screen_height
 		self.screen_width = screen_width
-		self.root = TabNode(self, self, win, TabNodeType.EDITOR, WindowArea(1,0,screen_height-2,screen_width), existing_editor = None, bid = bid, buffer = buffer)
+		self.root = TabNode(self, self, self.win, TabNodeType.EDITOR, WindowArea(1, 0, self.screen_height-2, self.screen_width), existing_editor = None, bid = bid, buffer = buffer)
 		self.active_editor = self.root.editor
 		self.active_editor.focus()
 
@@ -289,6 +291,27 @@ class WindowTab:
 		
 		raise(Exception("Error in WindowTab:close_active_editor()"))
 	
+	def close_all_except_active_editor(self):
+		buffer = self.active_editor.buffer
+		bid = buffer.id
+
+		node_list = list()
+		node_list.append(self.root)
+		
+		# use BFS to iterate over all editors and destroy them
+		while(len(node_list) > 0):
+			temp = node_list[0]
+			node_list.pop(0)
+			if(temp.type != TabNodeType.EDITOR): 
+				node_list.extend(temp.children)
+			else:
+				temp.editor.destroy()
+				del temp
+		
+		self.root = TabNode(self, self, self.win, TabNodeType.EDITOR, WindowArea(1, 0, self.screen_height-2, self.screen_width), existing_editor = None, bid = bid, buffer = buffer)
+		self.active_editor = self.root.editor
+		self.active_editor.focus()
+
 	# this function is required for the recursion as a dummy 
 	# else self.parent.merge_vertically() call will fail in TabNode
 	def draw_junction(self, caller):
@@ -416,6 +439,11 @@ class WindowManager:
 		else:
 			self.get_active_editor().focus()
 			return True
+
+	# closes all editors in the active-tab except the active-editor
+	def close_all_except_active_editor(self):
+		if(self.active_tab_index == -1): return
+		self.tabs[self.active_tab_index].close_all_except_active_editor()
 
 	def repaint(self):					# called by main_window
 		if(self.active_tab_index == -1): 

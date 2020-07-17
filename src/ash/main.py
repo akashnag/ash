@@ -132,7 +132,7 @@ class AshEditorApp:
 
 	# primary key handler to receive all key combinations from TopLevelWindow
 	def main_key_handler(self, ch):
-		#if(self.show_error("You pressed: " + str(curses.keyname(ch)))):
+		#if(not is_ctrl(ch,"@") and self.show_error("You pressed: " + str(curses.keyname(ch)))):
 		#	self.main_window.repaint()
 		#	return -1
 		
@@ -183,6 +183,7 @@ class AshEditorApp:
 			# Ctrl+F5: merge horizontally
 			# Ctrl+F6: merge horizontally
 			# Ctrl+F7: close current tab
+			# Ctrl+F9: close all but the active-editor (only in the active-tab)
 
 			fn = get_func_key(ch)
 			
@@ -208,7 +209,7 @@ class AshEditorApp:
 				self.main_window.toggle_filename_visibility()
 				return -1
 			elif(is_ctrl_and_func(ch, 2)):
-				self.main_window.add_tab()
+				self.main_window.add_blank_tab()
 				return -1	
 			elif(is_ctrl_and_func(ch, 3)):
 				self.main_window.split_horizontally()
@@ -221,6 +222,9 @@ class AshEditorApp:
 				return -1
 			elif(is_ctrl_and_func(ch, 6)):
 				self.main_window.merge_vertically()
+				return -1
+			elif(is_ctrl_and_func(ch, 9)):
+				self.main_window.close_all_except_active_editor()
 				return -1
 			
 

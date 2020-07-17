@@ -468,10 +468,11 @@ class DialogHandler:
 			return
 	
 		self.app.dlgActiveTabs = ModalDialog(self.app.main_window, y, x, 9, 40, "ACTIVE TABS", self.show_active_tabs_key_handler)
-		lstActiveTabs = ListBox(self.app.dlgActiveTabs, 3, 2, 36, 5)
+		lstActiveTabs = ListBox(self.app.dlgActiveTabs, 3, 2, 36, 5, callback = self.active_tab_selection_changed)
 		
 		tabs_info = self.app.main_window.get_tabs_info()
 		active_tab_index = self.app.main_window.get_active_tab_index()
+
 		for i in range(len(tabs_info)):
 			tab_name, ed_count = tabs_info[i]
 			disp = tab_name + " (" + str(ed_count) + " editors)"
@@ -481,12 +482,14 @@ class DialogHandler:
 			else:
 				lstActiveTabs.add_item("  " + disp)
 	
+		self.app.old_active_tab_index = active_tab_index
 		self.app.dlgActiveTabs.add_widget("lstActiveTabs", lstActiveTabs)
 		self.app.dlgActiveTabs.show()
 
 	def show_active_tabs_key_handler(self, ch):
 		if(is_ctrl(ch, "Q")):
 			self.app.dlgActiveTabs.hide()
+			self.app.main_window.switch_to_tab(self.app.old_active_tab_index)
 			self.app.main_window.repaint()
 			return -1
 		elif(is_newline(ch) or is_ctrl(ch, "W")):
@@ -497,6 +500,10 @@ class DialogHandler:
 			return -1
 			
 		return ch
+
+	def active_tab_selection_changed(self, new_tab_index):
+		self.app.main_window.switch_to_tab(new_tab_index)
+		self.app.main_window.repaint()
 
 	# -------------------------------------------------------------------------------------
 
@@ -531,10 +538,6 @@ class DialogHandler:
 			self.app.dlgSaveAs.hide()
 			txtFileName = self.app.dlgSaveAs.get_widget("txtFileName")
 			filename = str(txtFileName)
-
-			if(BufferManager.is_binary(filename)):
-				self.app.show_error("Cannot write to binary file!")
-				return -1
 
 			if(not os.path.isfile(filename)):
 				buffer.write_to_disk(filename)

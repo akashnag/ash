@@ -141,6 +141,7 @@ class Buffer:
 
 		self.last_curpos = curpos
 		self.last_caller = caller
+		caller.notify_self_update()
 	
 	def decode_unicode(self):
 		if(self.undo_edit_count > 0): 		# add the latest change forcefully

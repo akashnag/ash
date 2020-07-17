@@ -24,26 +24,26 @@ class EditorKeyHandler:
 			self.handle_save()
 		elif(is_ctrl(ch, "W")):
 			self.handle_save()
-			if(self.ed.buffer.filename != None): self.ed.parent.app.dialog_handler.invoke_quit()
+			if(self.ed.buffer.filename != None): self.ed.parent.win.app.dialog_handler.invoke_quit()
 		elif(is_ctrl(ch, "G")):
-			self.ed.parent.app.dialog_handler.invoke_go_to_line()
+			self.ed.parent.win.app.dialog_handler.invoke_go_to_line()
 		elif(is_ctrl(ch, "O")):
-			self.ed.parent.app.dialog_handler.invoke_file_open()
+			self.ed.parent.win.app.dialog_handler.invoke_file_open()
 		elif(is_ctrl(ch, "N")):
-			self.ed.parent.app.dialog_handler.invoke_file_new()
+			self.ed.parent.win.app.dialog_handler.invoke_file_new()
 		elif(is_ctrl(ch, "F")):
-			self.ed.parent.app.dialog_handler.invoke_find()			
+			self.ed.parent.win.app.dialog_handler.invoke_find()			
 		elif(is_ctrl(ch, "H")):
-			self.ed.parent.app.dialog_handler.invoke_find_and_replace()
+			self.ed.parent.win.app.dialog_handler.invoke_find_and_replace()
 		elif(is_ctrl(ch, "Z")):
 			self.handle_undo()			
 		elif(is_ctrl(ch, "Y")):
 			self.handle_redo()
 		elif(is_ctrl(ch, "P")):
-			self.ed.parent.app.dialog_handler.invoke_set_preferences()
+			self.ed.parent.win.app.dialog_handler.invoke_set_preferences()
 		elif(is_func(ch, 9)):					# F9
-			self.ed.parent.app.dialog_handler.invoke_file_save_as(self.ed.buffer)
-		elif(is_ctrl_and_func(ch, 2)):			# Ctrl+F2
+			self.ed.parent.win.app.dialog_handler.invoke_file_save_as(self.ed.buffer)
+		elif(is_ctrl_and_func(ch, 8)):			# Ctrl+F8
 			self.ed.buffer.decode_unicode()
 			return True
 
@@ -484,7 +484,7 @@ class EditorKeyHandler:
 			if(self.ed.buffer.filename != None):
 				self.ed.buffer.write_to_disk()
 			else:
-				self.ed.parent.app.dialog_handler.invoke_file_save_as(self.ed.buffer)
+				self.ed.parent.win.app.dialog_handler.invoke_file_save_as(self.ed.buffer)
 
 	def handle_select_all(self):
 		nlen = len(self.ed.buffer.lines)

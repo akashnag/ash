@@ -228,7 +228,9 @@ class TextField(Widget):
 		n = len(self.text)
 		if(n <= self.width):
 			self.parent.addstr(self.y, self.x, self.text, paint_theme)
-			rendered_curpos = self.curpos			
+			rendered_curpos = self.curpos
+			self.start = 0
+			self.end = min([self.width, n])
 		else:
 			n = len(self.text)
 			if(self.curpos < self.start):
@@ -260,7 +262,7 @@ class TextField(Widget):
 		else:
 			sel_start, sel_end = self.sel_start, self.sel_end
 
-		if(sel_end <= self.start or sel_start >= self.end or sel_start == sel_end): return
+		if(sel_end <= self.start or sel_start >= self.end or sel_start == sel_end): return (0, "")
 		
 		start = max([self.start, sel_start])
 		end = min([self.end, sel_end])

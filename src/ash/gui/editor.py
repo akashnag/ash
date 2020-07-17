@@ -439,17 +439,24 @@ class Editor(Widget):
 		for i in range(n):
 			index, style, text = format[i]
 			tlen = len(text)
+			
+			last_x = offset_x + tlen - 1
+			allowed_last_x = self.x + self.full_width - 1
+
+			if(last_x > allowed_last_x):
+				text = text[0:tlen-(last_x-allowed_last_x)]
+				tlen = len(text)
+
 			self.parent.addstr(offset_y, offset_x, text, style)
 				
-			if(offset_y == self.vcurpos[0] and self.vcurpos[1] >= offset_x and self.vcurpos[1] <= offset_x + len(text)):
+			if(offset_y == self.vcurpos[0] and self.vcurpos[1] >= offset_x and self.vcurpos[1] <= offset_x + tlen):
 				char_pos = self.vcurpos[1] - offset_x
-				if(char_pos >= len(text)):
+				if(char_pos >= tlen):
 					char_under_cursor = " "
 				else:
 					char_under_cursor = text[char_pos]
 					
 			offset_x += tlen
-			
 		
 		self.highlight(offset_y, init_offset_x, vtext)
 
@@ -564,19 +571,19 @@ class Editor(Widget):
 	# find next match
 	def find_next(self, search_text):
 		self.utility.find_next(search_text)
-		self.parent.bottom_up_repaint()
+		self.repaint()
 		
 	# find previous match
 	def find_previous(self, search_text):
 		self.utility.find_previous(search_text)
-		self.parent.bottom_up_repaint()
+		self.repaint()
 		
 	# replace next instance
 	def replace_next(self, search_text, replace_text):
 		self.utility.replace_next(search_text, replace_text)
-		self.parent.bottom_up_repaint()
+		self.repaint()
 		
 	# replace all instances
 	def replace_all(self, search_text, replace_text):
 		self.utility.replace_all(search_text, replace_text)
-		self.parent.bottom_up_repaint()
+		self.repaint()

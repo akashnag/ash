@@ -8,7 +8,7 @@
 from ash.gui import *
 
 class ListBox(Widget):
-	def __init__(self, parent, y, x, width, row_count, placeholder_text = None):
+	def __init__(self, parent, y, x, width, row_count, placeholder_text = None, callback = None):
 		super(ListBox, self).__init__(WIDGET_TYPE_LISTBOX)
 		self.parent = parent
 		self.y = y
@@ -16,6 +16,7 @@ class ListBox(Widget):
 		self.width = width
 		self.row_count = row_count
 		self.placeholder_text = placeholder_text
+		self.callback = callback
 		self.items = list()
 		self.tags = list()
 		self.theme = gc("formfield")
@@ -117,6 +118,8 @@ class ListBox(Widget):
 				self.sel_index = len(self.items)-1
 		else:
 			beep()
+
+		if(self.callback != None): self.callback(self.sel_index)
 		self.repaint()
 
 	# append an item to the list

@@ -314,11 +314,19 @@ class DialogHandler:
 		lstKeys = ListBox(self.app.dlgHelpKeyBindings, 3, 2, 76, 16)
 
 		kbs = KeyBindings.get_list_of_bindings()
+		coms = self.app.command_interpreter.get_command_list()
 		for kb in kbs:
 			key = kb[0].ljust(16)
 			desc = kb[1]
 			lstKeys.add_item(key + desc)
 		lstKeys.add_item(" ")
+		lstKeys.add_item("Commands to be entered in command-window:", None, True)
+		lstKeys.add_item(" ")
+		for command, info in coms.items():
+			lstKeys.add_item(command, None, True)
+			lstKeys.add_item(info[1])
+			lstKeys.add_item(" ")
+		
 		lstKeys.add_item("Custom colors can be set in $HOME/.ashedrc")
 		lstKeys.add_item("Custom key mappings can be set in $HOME/.ashedkeys")
 		lstKeys.add_item(" ")

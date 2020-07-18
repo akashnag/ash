@@ -15,6 +15,7 @@ from ash.core.logger import *
 from ash.utils.utils import *
 from ash.utils.keyUtils import *
 from ash.utils.fileUtils import *
+from ash.utils.commandUtils import *
 
 from ash.formatting.colors import *
 from ash.formatting.formatting import *
@@ -105,7 +106,8 @@ class AshEditorApp:
 		
 		# create main window
 		self.main_window = TopLevelWindow(self, self.stdscr, "ash " + APP_VERSION, self.main_key_handler)
-		
+		self.command_interpreter = CommandInterpreter(self, self.main_window)
+
 		# adjust sizes
 		self.readjust()
 		
@@ -226,7 +228,9 @@ class AshEditorApp:
 		elif(KeyBindings.is_key(ch, "SHOW_PROJECT_FIND_AND_REPLACE")):
 			self.show_error("TODO: Project-wide find and replace")
 			return -1
-
+		elif(KeyBindings.is_key(ch, "SHOW_COMMAND_WINDOW")):
+			self.command_interpreter.interpret_command(self.prompt("COMMAND", "Enter command:"))
+			
 		return ch
 
 	# displays an error message

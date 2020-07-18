@@ -228,10 +228,12 @@ class EditorUtility:
 		return rendered_pos
 
 	# finds all text in the given document
-	def find_all(self, s, match_case):
+	def find_all(self, s, match_case, whole_words, regex):
 		self.ed.find_mode = (True if len(s) > 0 else False)
 		self.ed.highlighted_text = (s if len(s) > 0 else None)
 		self.ed.find_match_case = match_case
+		self.ed.find_whole_words = whole_words
+		self.ed.find_regex = regex
 		self.ed.repaint()
 
 	# cancels all highlights if any
@@ -242,11 +244,11 @@ class EditorUtility:
 			self.ed.repaint()
 
 	# moves cursor to next match
-	def find_next(self, s, match_case):
+	def find_next(self, s, match_case, whole_words, regex):
 		if(len(s) == 0): return
 
 		lower_s = s.lower()
-		self.find_all(s, match_case)
+		self.find_all(s, match_case, whole_words, regex)
 		n = len(s)
 		
 		for y in range(self.ed.curpos.y, len(self.ed.buffer.lines)):
@@ -272,11 +274,11 @@ class EditorUtility:
 				return
 
 	# moves cursor to previous match
-	def find_previous(self, s, match_case):
+	def find_previous(self, s, match_case, whole_words, regex):
 		if(len(s) == 0): return
 		
 		lower_s = s.lower()
-		self.find_all(s, match_case)
+		self.find_all(s, match_case, whole_words, regex)
 		n = len(s)
 		
 		for y in range(self.ed.curpos.y, -1, -1):
@@ -318,7 +320,7 @@ class EditorUtility:
 				return
 		
 	# replaces the first occurrence (after last find/replace operation)
-	def replace_next(self, sfind, srep, match_case):
+	def replace_next(self, sfind, srep, match_case, whole_words, regex):
 		n = len(sfind)
 		line = self.ed.buffer.lines[self.ed.curpos.y]
 		if(line[self.ed.curpos.x:self.ed.curpos.x+n] == sfind):
@@ -331,7 +333,7 @@ class EditorUtility:
 		
 		return False
 
-	def replace_all(self, sfind, srep, match_case):
+	def replace_all(self, sfind, srep, match_case, whole_words, regex):
 		self.find_next(sfind, match_case)
 		count = 0
 		while(self.replace_next(sfind, srep, match_case)):

@@ -479,12 +479,23 @@ class Editor(Widget):
 		lower_vtext = vtext.lower()
 		lower_htext = self.highlighted_text.lower()
 		
+		corpus = (vtext if self.find_match_case else lower_vtext)
+		
+		if(self.find_regex):
+			search = self.highlighted_text
+		else:
+			search = (self.highlighted_text if self.find_match_case else lower_htext)
+
 		pos = -1
 		while(True):
-			if(self.find_match_case):
-				pos = vtext.find(self.highlighted_text, pos + 1)
+			if(self.find_regex):
+				pos = find_regex(corpus[pos+1:], search)
+			elif(self.find_whole_words):
+				pos = find_whole_word(corpus[pos+1:], search)
+				log(f"found {search} at {pos}")
 			else:
-				pos = lower_vtext.find(lower_htext, pos + 1)
+				pos = corpus.find(search, pos+1)
+
 			if(pos < 0): return
 			n = len(self.highlighted_text)
 			self.parent.addstr(offset_y, offset_x + pos, self.highlighted_text, gc("highlight"))
@@ -573,8 +584,8 @@ class Editor(Widget):
 	# <---------------------------- Find/Replace operations --------------------------------->
 
 	# highlights all instances
-	def find_all(self, search_text, match_case):
-		self.utility.find_all(search_text, match_case)
+	def find_all(self, search_text, match_case, whole_words, regex):
+		self.utility.find_all(search_text, match_case, whole_words, regex)
 		self.repaint()
 
 	# cancels the find mode
@@ -583,21 +594,21 @@ class Editor(Widget):
 		self.repaint()
 
 	# find next match
-	def find_next(self, search_text, match_case):
-		self.utility.find_next(search_text, match_case)
+	def find_next(self, search_text, match_case, whole_words, regex):
+		self.utility.find_next(search_text, match_case, whole_words, regex)
 		self.repaint()
 		
 	# find previous match
-	def find_previous(self, search_text, match_case):
-		self.utility.find_previous(search_text, match_case)
+	def find_previous(self, search_text, match_case, whole_words, regex):
+		self.utility.find_previous(search_text, match_case, whole_words, regex)
 		self.repaint()
 		
 	# replace next instance
-	def replace_next(self, search_text, replace_text, match_case):
-		self.utility.replace_next(search_text, replace_text, match_case)
+	def replace_next(self, search_text, replace_text, match_case, whole_words, regex):
+		self.utility.replace_next(search_text, replace_text, match_case, whole_words, regex)
 		self.repaint()
 		
 	# replace all instances
-	def replace_all(self, search_text, replace_text, match_case):
-		self.utility.replace_all(search_text, replace_text, match_case)
+	def replace_all(self, search_text, replace_text, match_case, whole_words, regex):
+		self.utility.replace_all(search_text, replace_text, match_case, whole_words, regex)
 		self.repaint()

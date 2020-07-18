@@ -34,6 +34,7 @@ These key combinations can be used even if no editor is currently active.
 |<kbd>Ctrl</kbd> + <kbd>F6</kbd>|Merge vertically|
 |<kbd>Ctrl</kbd> + <kbd>F7</kbd>|Close the active tab|
 |<kbd>Ctrl</kbd> + <kbd>F9</kbd>|Close all editors in the active-tab except the active-editor|
+|<kbd>Ctrl</kbd> + <kbd>[</kbd>|Show the command window|
 
 Apart from the above, selection and cursor-movement using <kbd>Shift</kbd> and/or arrow / <kbd>Home</kbd> / <kbd>End</kbd> keys, as well as Cut / Copy / Paste (using <kbd>Ctrl</kbd> + <kbd>X</kbd> / <kbd>C</kbd> / <kbd>V</kbd> respectively) work in all text-fields (wherever they occur in dialog-boxes).
 

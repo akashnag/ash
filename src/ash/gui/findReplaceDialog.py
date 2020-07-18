@@ -27,10 +27,14 @@ class FindReplaceDialog(Window):
 		self.txtReplace = TextField(self, 6, 2, 46)
 		
 		self.chkMatchCase = CheckBox(self, (7 if self.replace else 5), 2, "Match case")
+		self.chkWholeWords = CheckBox(self, (7 if self.replace else 5), 18, "Whole words")
+		self.chkRegex = CheckBox(self, (7 if self.replace else 5), 35, "Regex")
 		
 		self.add_widget("txtFind", self.txtFind)
 		if(self.replace): self.add_widget("txtReplace", self.txtReplace)
 		self.add_widget("chkMatchCase", self.chkMatchCase)
+		self.add_widget("chkWholeWords", self.chkWholeWords)
+		self.add_widget("chkRegex", self.chkRegex)
 
 	# show the window and start the event-loop
 	def show(self):
@@ -80,6 +84,8 @@ class FindReplaceDialog(Window):
 			search_text = str(self.get_widget("txtFind"))
 			replace_text = str(self.get_widget("txtReplace"))
 
+			log(f"{curses.keyname(ch)}")
+
 			if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
 				self.ed.cancel_find()
 				self.hide()
@@ -97,29 +103,30 @@ class FindReplaceDialog(Window):
 			elif(self.active_widget_index > -1):
 				aw = self.get_active_widget()
 				aw.perform_action(ch)
-				if(aw == self.txtFind or aw == self.chkMatchCase):
-					self.ed.find_all(str(self.txtFind), self.chkMatchCase.is_checked())
-					self.ed.find_next(str(self.txtFind), self.chkMatchCase.is_checked())
-					self.parent.repaint()
-					
+				if(aw != self.txtReplace):
+					self.ed.find_all(str(self.txtFind), self.chkMatchCase.is_checked(), self.chkWholeWords.is_checked(), self.chkRegex.is_checked())
+					self.ed.find_next(str(self.txtFind), self.chkMatchCase.is_checked(), self.chkWholeWords.is_checked(), self.chkRegex.is_checked())
+				
+
+			self.parent.repaint()
 			self.repaint()
-			self.win.refresh()
 			self.parent.win.refresh()
+
 			if(aw != None): aw.repaint()
 	
 	# <----------------------------- driver functions ------------------------------->
 
 	def handle_find_next_match(self, search_text):
-		self.ed.find_next(search_text, self.chkMatchCase.is_checked())
+		self.ed.find_next(search_text, self.chkMatchCase.is_checked(), self.chkWholeWords.is_checked(), self.chkRegex.is_checked())
 
 	def handle_find_previous_match(self, search_text):
-		self.ed.find_previous(search_text, self.chkMatchCase.is_checked())
+		self.ed.find_previous(search_text, self.chkMatchCase.is_checked(), self.chkWholeWords.is_checked(), self.chkRegex.is_checked())
 
 	def handle_replace(self, search_text, replace_text):
-		self.ed.replace_next(search_text, replace_text, self.chkMatchCase.is_checked())
+		self.ed.replace_next(search_text, replace_text, self.chkMatchCase.is_checked(), self.chkWholeWords.is_checked(), self.chkRegex.is_checked())
 
 	def handle_replace_all(self, search_text, replace_text):
-		self.ed.replace_all(search_text, replace_text, self.chkMatchCase.is_checked())
+		self.ed.replace_all(search_text, replace_text, self.chkMatchCase.is_checked(), self.chkWholeWords.is_checked(), self.chkRegex.is_checked())
 
 	# draw the window
 	def repaint(self):

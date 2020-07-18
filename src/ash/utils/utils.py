@@ -6,6 +6,7 @@
 # This module handles all utility functions
 
 from ash.utils import *
+import re
 
 # <------------------------- other functions ---------------------->
 
@@ -150,3 +151,45 @@ def get_sub_lex_list(data, start, end):
 			else:
 				sub_list.append( (begin - start, token_style, value) )
 	return sub_list
+
+# find a regex
+def find_regex(text, regex):
+	match_obj = re.search(regex, text)
+
+	if(match_obj != None):
+		span = match_obj.span()
+		start = span[0]
+		end = span[1]
+		mtext = text[start:end]
+		pos = mtext.find(search)
+		#mtext = text[start+pos:start+pos+len(search)]
+		return start+pos
+	else:
+		return -1
+
+# find a whole word
+def find_whole_word(text, search):
+	sep_list = "[]{}()+-*/%=<>.,/?;:'\"!|&^ "
+	separators = "[" + re.escape(sep_list) + "]"
+	x = search
+	while(x[0] in sep_list): x = x[1:]
+	while(x[-1] in sep_list): x = x[:-1]
+
+	s = re.escape(x)
+	regex = "^"+s+separators
+	regex += "|"+separators+s+"$"
+	regex += "|"+"^"+s+"$"
+	regex += "|"+separators+s+separators
+
+	match_obj = re.search(regex, text)
+
+	if(match_obj != None):
+		span = match_obj.span()
+		start = span[0]
+		end = span[1]
+		mtext = text[start:end]
+		pos = mtext.find(search)
+		#mtext = text[start+pos:start+pos+len(search)]
+		return start+pos
+	else:
+		return -1

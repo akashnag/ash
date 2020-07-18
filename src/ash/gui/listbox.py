@@ -19,7 +19,8 @@ class ListBox(Widget):
 		self.callback = callback
 		self.items = list()
 		self.tags = list()
-		self.theme = gc("formfield")
+		self.should_highlight = list()
+		self.theme = gc("global-default")
 		self.focus_theme = gc("formfield-focussed")
 		self.sel_blur_theme = gc("formfield-selection-blurred")
 		self.sel_index = -1
@@ -82,11 +83,17 @@ class ListBox(Widget):
 
 			if(i == self.sel_index):
 				if(self.is_in_focus):
-					self.parent.addstr(self.y + i - self.list_start, self.x, text, self.focus_theme)
+					style = self.focus_theme
+					if(self.should_highlight[i]): style |= curses.A_BOLD
+					self.parent.addstr(self.y + i - self.list_start, self.x, text, style)
 				else:
-					self.parent.addstr(self.y + i - self.list_start, self.x, text, self.sel_blur_theme)
-			else:				
-				self.parent.addstr(self.y + i - self.list_start, self.x, text, self.theme)
+					style = self.sel_blur_theme
+					if(self.should_highlight[i]): style |= curses.A_BOLD
+					self.parent.addstr(self.y + i - self.list_start, self.x, text, style)
+			else:
+				style = self.theme
+				if(self.should_highlight[i]): style = curses.A_BOLD | gc("global-highlighted")
+				self.parent.addstr(self.y + i - self.list_start, self.x, text, style)
 
 		if(count == 0): self.parent.addstr(self.y + (self.row_count // 2), self.x, ("" if self.placeholder_text == None else self.placeholder_text).center(self.width), gc("disabled"))
 	
@@ -123,9 +130,10 @@ class ListBox(Widget):
 		self.repaint()
 
 	# append an item to the list
-	def add_item(self, item, tag=None):
+	def add_item(self, item, tag=None, highlight=False):
 		self.items.append(item)
 		self.tags.append(tag)
+		self.should_highlight.append(highlight)
 		if(self.sel_index < 0): self.sel_index = 0
 		self.focussable = True
 		self.list_start = 0

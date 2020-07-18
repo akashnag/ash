@@ -71,6 +71,7 @@ class KeyBindings:
 		"MERGE_VERTICALLY"				: [ctrlfn(6), "Ctrl+F6", "Merge vertically"],
 		"CLOSE_ACTIVE_TAB"				: [ctrlfn(7), "Ctrl+F7", "Close the active tab"],
 		"CLOSE_ALL_EXCEPT_ACTIVE_EDITOR": [ctrlfn(9), "Ctrl+F9", "Close all but the active editor in the active tab"],
+		"SHOW_COMMAND_WINDOW"			: ["^[", "Ctrl+[", "Open the command window"],
 		
 		"REFRESH_DIRECTORY_TREE"		: ["^R", "Ctrl+R", "Refresh the directory tree"],
 		"CREATE_NEW_DIRECTORY"			: ["^D", "Ctrl+D", "Create a new directory under the selected directory"],
@@ -162,10 +163,10 @@ class KeyBindings:
 			key = temp[1][:-1]
 			temp = key.split(";")
 			pretty = temp[1].strip()
-			key = temp[0].strip()
+			key = temp[0]
 			
 			if(key.startswith("[") and key.endswith("]")):
-				key = key[1:-1].strip().split(",")
+				key = key[1:-1].split(",")
 				key_list = list()
 				for k in key:
 					key_list.append(k)

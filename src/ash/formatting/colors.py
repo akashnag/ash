@@ -58,6 +58,7 @@ def get_default_colors():
 	element_colors["status-7"] = ("darkgray", "white")
 	
 	element_colors["global-default"] = ("dimwhite", "darkgray")
+	element_colors["global-highlighted"] = ("white", "darkgray")
 	element_colors["global-keyword"] = ("blue", "darkgray")
 	element_colors["global-comment"] = ("green", "darkgray")
 	element_colors["global-string"] = ("orange", "darkgray")
@@ -103,7 +104,7 @@ def get_element_color_index(element_name):
 						"formfield", "formfield-focussed", "formfield-selection-blurred",
 						"inner-border", "messagebox-border", "messagebox-background", "disabled",
 						"status-0", "status-1",	"status-2", "status-3",	"status-4", "status-5",
-						"status-6", "status-7", "global-default", "global-keyword", "global-comment",
+						"status-6", "status-7", "global-default", "global-highlighted",  "global-keyword", "global-comment",
 						"global-string", "global-error", "global-function", "global-variable",
 						"global-punctuation", "global-integer", "global-float", "global-operator",
 						"global-builtin-function", "global-builtin-constant", "global-namespace",

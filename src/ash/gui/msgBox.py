@@ -95,7 +95,7 @@ class MessageBox(Window):
 			return MSGBOX_YES
 		elif(s == "n" and (self.type == MSGBOX_TYPE_YES_NO or self.type == MSGBOX_TYPE_YES_NO_CANCEL)):
 			return MSGBOX_NO
-		elif((s == "o" or is_newline(ch)) and (self.type == MSGBOX_TYPE_OK or self.type == MSGBOX_TYPE_OK_CANCEL)):
+		elif((s == "o" or KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")) and (self.type == MSGBOX_TYPE_OK or self.type == MSGBOX_TYPE_OK_CANCEL)):
 			return MSGBOX_OK
 		elif(s == "c" and (self.type == MSGBOX_TYPE_YES_NO_CANCEL or self.type == MSGBOX_TYPE_OK_CANCEL)):
 			return MSGBOX_CANCEL

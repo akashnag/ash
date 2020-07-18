@@ -13,6 +13,8 @@ from ash.core.editHistory import *
 from ash.formatting.syntaxHighlighting import *
 from ash.formatting.formatting import *
 
+import time
+
 BACKUP_FREQUENCY_SIZE	= 16		# backup after every 16 edits
 HISTORY_FREQUENCY_SIZE	= 8			# undo: every 8 edit operations
 
@@ -30,6 +32,10 @@ class Buffer:
 		self.undo_edit_count = 0
 		self.last_curpos = CursorPosition(0,0)
 		self.last_called = None
+
+		self.last_read_time = None
+		self.last_write_time = None
+		self.last_backup_time = None
 		
 		if(self.filename == None):
 			self.lines = list()
@@ -121,7 +127,8 @@ class Buffer:
 			if(ed != caller): ed.notify_update()
 		
 		self.last_curpos = curpos
-		self.last_caller = caller		
+		self.last_caller = caller
+		self.check_if_modified_externally()
 
 	# same as update() but forces the buffer to save changes to its edit-history,
 	# and to make a backup if desired
@@ -142,7 +149,16 @@ class Buffer:
 		self.last_curpos = curpos
 		self.last_caller = caller
 		caller.notify_self_update()
+		self.check_if_modified_externally()
 	
+	def check_if_modified_externally(self):
+		if(self.filename == None): return
+		last_time = max([self.last_read_time, self.last_write_time])
+		last_mod_time = BufferManager.get_last_modified(self.filename)
+		if(last_mod_time <= last_time): return
+		if(self.manager.app.ask_question("RELOAD", "File modified externally, reload?")):
+			self.reload_from_disk()
+
 	def decode_unicode(self):
 		if(self.undo_edit_count > 0): 		# add the latest change forcefully
 			self.history.add_change(self.lines, self.last_curpos)
@@ -171,6 +187,10 @@ class Buffer:
 		textFile = codecs.open(self.filename, "w", self.encoding)
 		textFile.write(data)
 		textFile.close()
+
+		self.last_write_time = time.time()
+		if(self.last_read_time == None): self.last_read_time = self.last_write_time
+
 		self.save_status = True
 		self.backup_file = os.path.dirname(self.filename) + "/.ash.b-" + get_file_title(self.filename)
 
@@ -245,6 +265,7 @@ class Buffer:
 		textFile = codecs.open(self.backup_file, "w", self.encoding)
 		textFile.write(data)
 		textFile.close()
+		self.last_backup_time = time.time()
 
 	# reads data from the assigned file on disk; optionally from a backup file instead
 	def read_file_from_disk(self, read_from_backup = False):
@@ -260,6 +281,9 @@ class Buffer:
 			textFile = codecs.open(filename, "r", self.encoding)
 			text = textFile.read()
 			textFile.close()
+
+			self.last_read_time = time.time()
+			if(self.last_write_time == None): self.last_write_time = self.last_read_time
 		except:
 			raise(AshException("error reading file: " + filename))
 			raise
@@ -458,3 +482,8 @@ class BufferManager:
 			if(pf == None): return True
 			if(str(pf).lower() not in SUPPORTED_ENCODINGS): return True
 			return False
+
+	# find the modified time of a file
+	@staticmethod
+	def get_last_modified(filename):
+		return os.path.getmtime(filename)

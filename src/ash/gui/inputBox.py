@@ -76,9 +76,9 @@ class InputBox(Window):
 
 	# check the response
 	def check_response(self, ch):
-		if(is_newline(ch)):
+		if(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
 			return str(self.get_widget("txtInput"))
-		elif(is_ctrl(ch, "Q")):
+		elif(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
 			return 0
 		else:
 			self.get_widget("txtInput").perform_action(ch)

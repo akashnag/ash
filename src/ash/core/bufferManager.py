@@ -161,7 +161,7 @@ class Buffer:
 	
 	# writes out the buffer to a file on disk
 	def write_to_disk(self, filename = None):
-		if(self.filename == None and filename == None): raise(Exception("Error 1: buffer.write_to_disk()"))
+		if(self.filename == None and filename == None): raise(AshException("Error 1: buffer.write_to_disk()"))
 		if(filename != None): self.filename = normalized_path(filename)		# update filename even if filename has changed
 		
 		self.formatter = SyntaxHighlighter(self.filename)
@@ -250,7 +250,7 @@ class Buffer:
 	def read_file_from_disk(self, read_from_backup = False):
 		filename = (self.backup_file if read_from_backup else self.filename)
 
-		if(self.manager.is_binary(filename)): raise(Exception("Error: buffer: attempting to read binary file"))
+		if(self.manager.is_binary(filename)): raise(AshException("Error: buffer: attempting to read binary file"))
 
 		if(not os.path.isfile(filename)):
 			textFile = codecs.open(filename, "w", self.encoding)
@@ -261,7 +261,7 @@ class Buffer:
 			text = textFile.read()
 			textFile.close()
 		except:
-			raise(Exception("error reading file: " + filename))
+			raise(AshException("error reading file: " + filename))
 			raise
 
 		self.render_data_to_lines(text)
@@ -298,7 +298,7 @@ class BufferManager:
 	
 	# creates a new buffer: either blank or from a file on disk
 	def create_new_buffer(self, filename = None, encoding = None, newline = "\n", has_backup = False):
-		if(self.does_file_have_its_own_buffer(filename)): raise(Exception("Error 5: buffermanager.create_new_buffer()"))
+		if(self.does_file_have_its_own_buffer(filename)): raise(AshException("Error 5: buffermanager.create_new_buffer()"))
 		if(encoding == None):
 			if(filename == None or not os.path.isfile(filename)):
 				encoding = "utf-8"
@@ -311,14 +311,14 @@ class BufferManager:
 	# map an editor to a buffer specified by its buffer ID
 	def attach_editor(self, buffer_id, editor):
 		if(buffer_id >= self.buffer_count):
-			raise(Exception("Error 2: buffermanager.attach_editor()"))
+			raise(AshException("Error 2: buffermanager.attach_editor()"))
 		else:
 			self.buffers[buffer_id].attach_editor(editor)
 
 	# removes an editor-mapping from a buffer specified by its buffer ID
 	def detach_editor(self, buffer_id, editor):
 		if(buffer_id >= self.buffer_count):
-			raise(Exception("Error 3: buffermanager.detach_editor()"))
+			raise(AshException("Error 3: buffermanager.detach_editor()"))
 		else:
 			self.buffers[buffer_id].detach_editor(editor)
 
@@ -329,7 +329,7 @@ class BufferManager:
 	# returns the display name of the specified buffer
 	def get_name(self, buffer_id):
 		if(buffer_id >= self.buffer_count):
-			raise(Exception("Error 6: buffermanager.get_name()"))
+			raise(AshException("Error 6: buffermanager.get_name()"))
 		else:			
 			return self.buffers[buffer_id].get_name()			
 
@@ -384,7 +384,7 @@ class BufferManager:
 		for bid, buffer in self.buffers.items():
 			if(not buffer.save_status):
 				if(buffer.filename == None):
-					if(not ignore_errors): raise(Exception("Error 4: buffermanager.write_all()"))
+					if(not ignore_errors): raise(AshException("Error 4: buffermanager.write_all()"))
 				else:
 					buffer.write_to_disk()
 

@@ -35,29 +35,26 @@ class ModalDialog(Window):
 				if(ch == -1): continue
 
 			if(self.active_widget_index < 0 or not self.get_active_widget().does_handle_tab()):
-				if((is_tab(ch) or ch == curses.KEY_BTAB or ch == curses.KEY_UP or ch == curses.KEY_DOWN)):
+				if(KeyBindings.is_key(ch, "FOCUS_NEXT") or KeyBindings.is_key(ch, "FOCUS_PREVIOUS")):
 					old_index = self.active_widget_index
-					if(is_tab(ch) or (ch == curses.KEY_DOWN and self.widgets[self.active_widget_index].type == WIDGET_TYPE_CHECKBOX)):
+					if(KeyBindings.is_key(ch, "FOCUS_NEXT")):
 						self.active_widget_index = self.get_next_focussable_widget_index()
-					elif(ch == curses.KEY_BTAB  or (ch == curses.KEY_UP and self.widgets[self.active_widget_index].type == WIDGET_TYPE_CHECKBOX)):
+					elif(KeyBindings.is_key(ch, "FOCUS_PREVIOUS")):
 						self.active_widget_index = self.get_previous_focussable_widget_index()
 					
 					if(old_index != self.active_widget_index):
 						if(old_index > -1): self.widgets[old_index].blur()
 						if(self.active_widget_index > -1): self.widgets[self.active_widget_index].focus()
 
-					if(ch == curses.KEY_UP or ch == curses.KEY_DOWN):
-						if(self.widgets[old_index].type == WIDGET_TYPE_CHECKBOX): ch = -1
-					else:
-						ch = -1
-				elif(is_ctrl_arrow(ch)):
-					if(is_ctrl_arrow(ch, "UP")):
+					ch = -1
+				elif(is_window_movement_command(ch)):
+					if(KeyBindings.is_key(ch, "MOVE_WINDOW_UP")):
 						if(self.y > 1): self.y -= 1
-					elif(is_ctrl_arrow(ch, "DOWN")):
+					elif(KeyBindings.is_key(ch, "MOVE_WINDOW_DOWN")):
 						if(self.y < self.parent.get_height() - self.get_height() - 1): self.y += 1
-					elif(is_ctrl_arrow(ch, "LEFT")):
+					elif(KeyBindings.is_key(ch, "MOVE_WINDOW_LEFT")):
 						if(self.x > 0): self.x -= 1
-					elif(is_ctrl_arrow(ch, "RIGHT")):
+					elif(KeyBindings.is_key(ch, "MOVE_WINDOW_RIGHT")):
 						if(self.x < self.parent.get_width() - self.get_width()): self.x += 1
 					
 					self.win.mvwin(self.y, self.x)

@@ -7,6 +7,7 @@
 
 from ash.gui import *
 from ash.gui.window import *
+from ash.utils.keyUtils import *
 
 MSGBOX_OK		= 1
 MSGBOX_CANCEL	= 2

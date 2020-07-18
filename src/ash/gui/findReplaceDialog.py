@@ -48,11 +48,11 @@ class FindReplaceDialog(Window):
 			if(ch == -1): continue
 			
 			if(self.active_widget_index < 0 or not self.get_active_widget().does_handle_tab()):
-				if((is_tab(ch) or ch == curses.KEY_BTAB)):
+				if(KeyBindings.is_key(ch, "FOCUS_NEXT") or KeyBindings.is_key(ch, "FOCUS_PREVIOUS")):
 					old_index = self.active_widget_index
-					if(is_tab(ch)):
+					if(KeyBindings.is_key(ch, "FOCUS_NEXT")):
 						self.active_widget_index = self.get_next_focussable_widget_index()
-					elif(ch == curses.KEY_BTAB):
+					elif(KeyBindings.is_key(ch, "FOCUS_PREVIOUS")):
 						self.active_widget_index = self.get_previous_focussable_widget_index()
 					
 					if(old_index != self.active_widget_index):
@@ -60,14 +60,14 @@ class FindReplaceDialog(Window):
 						if(self.active_widget_index > -1): self.widgets[self.active_widget_index].focus()
 
 					ch = -1
-				elif(is_ctrl_arrow(ch)):
-					if(is_ctrl_arrow(ch, "UP")):
+				elif(is_window_movement_command(ch)):
+					if(KeyBindings.is_key(ch, "MOVE_WINDOW_UP")):
 						if(self.y > 1): self.y -= 1
-					elif(is_ctrl_arrow(ch, "DOWN")):
+					elif(KeyBindings.is_key(ch, "MOVE_WINDOW_DOWN")):
 						if(self.y < self.parent.get_height() - self.get_height() - 1): self.y += 1
-					elif(is_ctrl_arrow(ch, "LEFT")):
+					elif(KeyBindings.is_key(ch, "MOVE_WINDOW_LEFT")):
 						if(self.x > 0): self.x -= 1
-					elif(is_ctrl_arrow(ch, "RIGHT")):
+					elif(KeyBindings.is_key(ch, "MOVE_WINDOW_RIGHT")):
 						if(self.x < self.parent.get_width() - self.get_width()): self.x += 1
 					
 					self.win.mvwin(self.y, self.x)
@@ -80,19 +80,19 @@ class FindReplaceDialog(Window):
 			search_text = str(self.get_widget("txtFind"))
 			replace_text = str(self.get_widget("txtReplace"))
 
-			if(is_ctrl(ch, "Q")):
+			if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
 				self.ed.cancel_find()
 				self.hide()
 				self.parent.repaint()
 				self.ed.focus()
 				return
-			elif(is_newline(ch)):						# Enter: next
+			elif(KeyBindings.is_key(ch, "FIND_NEXT")):
 				self.handle_find_next_match(search_text)
-			elif(is_func(ch, 7)):						# F7: previous
+			elif(KeyBindings.is_key(ch, "FIND_PREVIOUS")):
 				self.handle_find_previous_match(search_text)
-			elif(is_func(ch, 8)):						# F8: replace
+			elif(KeyBindings.is_key(ch, "REPLACE_NEXT")):
 				self.handle_replace(search_text, replace_text)
-			elif(is_ctrl_and_func(ch, 8)):				# Ctrl+F8: replace all
+			elif(KeyBindings.is_key(ch, "REPLACE_ALL")):
 				self.handle_replace_all(search_text, replace_text)
 			elif(self.active_widget_index > -1):
 				aw = self.get_active_widget()

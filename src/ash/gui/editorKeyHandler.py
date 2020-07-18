@@ -6,44 +6,45 @@
 # This module implements the key bindings for the text-editor widget
 
 from ash.gui import *
+from ash.utils.keyUtils import *
 
 class EditorKeyHandler:
 	def __init__(self, ed):
 		self.ed = ed
 	
-	def handle_ctrl_and_func_keys(self, ch):
-		if(is_ctrl(ch, "A")):
+	def handle_keys(self, ch):
+		if(KeyBindings.is_key(ch, "SELECT_ALL")):
 			self.handle_select_all()
-		elif(is_ctrl(ch, "C")):
+		elif(KeyBindings.is_key(ch, "COPY")):
 			self.handle_copy()
-		elif(is_ctrl(ch, "X")):
+		elif(KeyBindings.is_key(ch, "CUT")):
 			return self.handle_cut()
-		elif(is_ctrl(ch, "V")):
+		elif(KeyBindings.is_key(ch, "PASTE")):
 			return self.handle_paste()
-		elif(is_ctrl(ch, "S")):
+		elif(KeyBindings.is_key(ch, "SAVE")):
 			self.handle_save()
-		elif(is_ctrl(ch, "W")):
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_EDITOR")):
 			self.handle_save()
 			if(self.ed.buffer.filename != None): self.ed.parent.win.app.dialog_handler.invoke_quit()
-		elif(is_ctrl(ch, "G")):
+		elif(KeyBindings.is_key(ch, "GOTO_LINE")):
 			self.ed.parent.win.app.dialog_handler.invoke_go_to_line()
-		elif(is_ctrl(ch, "O")):
+		elif(KeyBindings.is_key(ch, "OPEN_FILE")):
 			self.ed.parent.win.app.dialog_handler.invoke_file_open()
-		elif(is_ctrl(ch, "N")):
+		elif(KeyBindings.is_key(ch, "NEW_BUFFER")):
 			self.ed.parent.win.app.dialog_handler.invoke_file_new()
-		elif(is_ctrl(ch, "F")):
+		elif(KeyBindings.is_key(ch, "SHOW_FIND")):
 			self.ed.parent.win.app.dialog_handler.invoke_find()			
-		elif(is_ctrl(ch, "H")):
+		elif(KeyBindings.is_key(ch, "SHOW_FIND_AND_REPLACE")):
 			self.ed.parent.win.app.dialog_handler.invoke_find_and_replace()
-		elif(is_ctrl(ch, "Z")):
+		elif(KeyBindings.is_key(ch, "UNDO")):
 			self.handle_undo()			
-		elif(is_ctrl(ch, "Y")):
+		elif(KeyBindings.is_key(ch, "REDO")):
 			self.handle_redo()
-		elif(is_ctrl(ch, "P")):
+		elif(KeyBindings.is_key(ch, "SHOW_PREFERENCES")):
 			self.ed.parent.win.app.dialog_handler.invoke_set_preferences()
-		elif(is_func(ch, 9)):					# F9
+		elif(KeyBindings.is_key(ch, "SAVE_AS")):
 			self.ed.parent.win.app.dialog_handler.invoke_file_save_as(self.ed.buffer)
-		elif(is_ctrl_and_func(ch, 8)):			# Ctrl+F8
+		elif(KeyBindings.is_key(ch, "DECODE_UNICODE")):
 			self.ed.buffer.decode_unicode()
 			return True
 
@@ -57,7 +58,8 @@ class EditorKeyHandler:
 		nlen = len(self.ed.buffer.lines)
 		nwlen = len(self.ed.rendered_lines)
 		
-		if(ch == curses.KEY_LEFT):
+		if(KeyBindings.is_key(ch, "MOVE_CURSOR_LEFT")):
+			# move cursor left
 			if(row == 0 and col == 0):
 				beep()
 			elif(col == 0):
@@ -66,7 +68,8 @@ class EditorKeyHandler:
 			else:
 				# move cursor back only if selection-mode is inactive
 				if(not self.ed.selection_mode): self.ed.curpos.x -= 1
-		elif(ch == curses.KEY_RIGHT):
+		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_RIGHT")):
+			# move cursor right
 			if(row == nlen-1 and col == clen):
 				beep()
 			elif(col == clen):
@@ -80,7 +83,8 @@ class EditorKeyHandler:
 					start, end = self.ed.get_selection_endpoints()
 					self.ed.curpos.y = end.y
 					self.ed.curpos.x = end.x
-		elif(ch == curses.KEY_DOWN):
+		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_DOWN")):
+			# move cursor down
 			if(not self.ed.word_wrap and row == nlen-1):
 				beep()
 			elif(self.ed.word_wrap and self.ed.rendered_curpos.y == nwlen - 1):
@@ -96,7 +100,8 @@ class EditorKeyHandler:
 						# cannot preserve column, so move to end
 						self.ed.curpos.x = len(self.ed.buffer.lines[row+1])
 					self.ed.curpos.y += 1
-		elif(ch == curses.KEY_UP):
+		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_UP")):
+			# move cursor up
 			if(not self.ed.word_wrap and row == 0):
 				beep()
 			elif(self.ed.word_wrap and self.ed.rendered_curpos.y == 0):
@@ -125,7 +130,8 @@ class EditorKeyHandler:
 	# handles Ctrl+Arrow key combinations
 	# behaviour: move to the next/previous separator position
 	def handle_ctrl_arrow_keys(self, ch):
-		if(is_ctrl_arrow(ch, "LEFT")):
+		if(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_PREVIOUS_WORD")):
+			# previous-word left
 			if(self.ed.curpos.x == 0):
 				beep()
 			else:
@@ -135,7 +141,8 @@ class EditorKeyHandler:
 						self.ed.curpos.x = i						
 						return
 				self.ed.curpos.x = 0
-		elif(is_ctrl_arrow(ch, "RIGHT")):
+		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_NEXT_WORD")):
+			# next-word right
 			nlen = len(self.ed.buffer.lines[self.ed.curpos.y])
 			if(self.ed.curpos.x == nlen):
 				beep()
@@ -160,7 +167,8 @@ class EditorKeyHandler:
 			self.ed.selection_mode = True
 			self.ed.sel_start = copy.copy(self.ed.curpos)
 		
-		if(ch == curses.KEY_SLEFT):
+		if(KeyBindings.is_key(ch, "SELECT_CHARACTER_LEFT")):
+			# select left
 			if(row == 0 and col == 0):
 				beep()
 			elif(col == 0):
@@ -168,7 +176,8 @@ class EditorKeyHandler:
 				self.ed.curpos.x = len(self.ed.buffer.lines[row-1])
 			else:
 				self.ed.curpos.x -= 1
-		elif(ch == curses.KEY_SRIGHT):
+		elif(KeyBindings.is_key(ch, "SELECT_CHARACTER_RIGHT")):
+			# select right
 			if(row == nlen-1 and col == clen):
 				beep()
 			elif(col == clen):
@@ -176,7 +185,8 @@ class EditorKeyHandler:
 				self.ed.curpos.x = 0
 			else:
 				self.ed.curpos.x += 1
-		elif(ch == curses.KEY_SF):			# down
+		elif(KeyBindings.is_key(ch, "SELECT_LINE_BELOW")):
+			# select below
 			if(not self.ed.word_wrap and row == nlen-1):
 				beep()
 			elif(self.ed.word_wrap and self.ed.rendered_curpos.y == nwlen - 1):
@@ -192,7 +202,8 @@ class EditorKeyHandler:
 						# cannot preserve column
 						self.ed.curpos.x = len(self.ed.buffer.lines[row+1])
 					self.ed.curpos.y += 1
-		elif(ch == curses.KEY_SR):			# up
+		elif(KeyBindings.is_key(ch, "SELECT LINE ABOVE")):
+			# select above
 			if(not self.ed.word_wrap and row == 0):
 				beep()
 			elif(self.ed.word_wrap and self.ed.rendered_curpos.y == 0):
@@ -275,20 +286,24 @@ class EditorKeyHandler:
 		self.ed.selection_mode = False
 
 		if(self.ed.word_wrap):
-			if(ch == curses.KEY_HOME):
+			if(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_START")):
+				# home
 				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][0]
-			elif(ch == curses.KEY_END):
+			elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_END")):
+				# end
 				extra = 0
 				if(self.ed.rendered_curpos.y == len(self.ed.col_spans)-1 or self.ed.col_spans[self.ed.rendered_curpos.y + 1][0] == 0): extra = 1
 				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][1] + extra
 		else:
-			if(ch == curses.KEY_HOME):
+			if(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_START")):
+				# home
 				# toggle between beginning of line and beginning of indented-code
 				if(self.ed.curpos.x == 0):
 					self.ed.curpos.x = len(self.ed.get_leading_whitespaces(self.ed.curpos.y))
 				else:
 					self.ed.curpos.x = 0
-			elif(ch == curses.KEY_END):
+			elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_END")):
+				# end
 				self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
 
 	# handles Shift+Home and Shift+End keys
@@ -298,14 +313,18 @@ class EditorKeyHandler:
 			self.ed.sel_start = copy.copy(self.ed.curpos)
 		
 		if(self.ed.word_wrap):
-			if(ch == curses.KEY_SHOME):
+			if(KeyBindings.is_key(ch, "SELECT_TILL_LINE_START")):
+				# shift+home
 				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][0]
-			elif(ch == curses.KEY_SEND):
+			elif(KeyBindings.is_key(ch, "SELECT_TILL_LINE_END")):
+				# shift+end
 				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][1]
 		else:
-			if(ch == curses.KEY_SHOME):
+			if(KeyBindings.is_key(ch, "SELECT_TILL_LINE_START")):
+				# shift+home
 				self.ed.curpos.x = 0
-			elif(ch == curses.KEY_SEND):
+			elif(KeyBindings.is_key(ch, "SELECT_TILL_LINE_END")):
+				# shift+end
 				self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
 		
 		self.ed.sel_end = copy.copy(self.ed.curpos)
@@ -314,20 +333,20 @@ class EditorKeyHandler:
 	# in selection mode: increase / decrease indent
 	def handle_tab_keys(self, ch):
 		if(self.ed.selection_mode):
-			if(is_tab(ch)):
+			if(KeyBindings.is_key(ch, "INSERT_TAB")):
 				return self.ed.shift_selection_right()
-			elif(ch == curses.KEY_BTAB):
+			elif(KeyBindings.is_key(ch, "DECREASE_INDENT")):
 				return self.ed.shift_selection_left()
 
 		col = self.ed.curpos.x
 		text = self.ed.buffer.lines[self.ed.curpos.y]
 
-		if(is_tab(ch)):
+		if(KeyBindings.is_key(ch, "INSERT_TAB")):
 			left = text[0:col] if col > 0 else ""
 			right = text[col:] if len(text) > 0 else ""
 			self.ed.buffer.lines[self.ed.curpos.y] = left + "\t" + right
 			self.ed.curpos.x += 1
-		elif(ch == curses.KEY_BTAB):
+		elif(KeyBindings.is_key(ch, "DECREASE_INDENT")):
 			if(col == 0):
 				beep()
 				return False
@@ -343,7 +362,7 @@ class EditorKeyHandler:
 		return True
 		
 	# handles ENTER / Ctrl+J
-	def handle_newline(self, ch):
+	def handle_newline(self):
 		if(self.ed.selection_mode): self.ed.utility.delete_selected_text()
 
 		text = self.ed.buffer.lines[self.ed.curpos.y]
@@ -398,7 +417,8 @@ class EditorKeyHandler:
 	def handle_page_navigation_keys(self, ch):
 		h = self.ed.height
 		nlen = len(self.ed.buffer.lines)
-		if(ch == curses.KEY_PPAGE):			# pg-up
+		if(KeyBindings.is_key(ch, "MOVE_TO_PREVIOUS_PAGE")):
+			# page up
 			if(self.ed.curpos.y == 0):
 				if(self.ed.curpos.x == 0):
 					beep()
@@ -410,7 +430,8 @@ class EditorKeyHandler:
 			else:
 				self.ed.curpos.y -= h-1
 			self.ed.curpos.x = 0
-		elif(ch == curses.KEY_NPAGE):		# pg-down
+		elif(KeyBindings.is_key(ch, "MOVE_TO_NEXT_PAGE")):
+			# page down
 			if(self.ed.curpos.y == nlen-1):
 				if(self.ed.curpos.x == len(self.ed.buffer.lines[nlen-1])):
 					beep()
@@ -427,10 +448,12 @@ class EditorKeyHandler:
 	def handle_ctrl_home_end_keys(self, ch):
 		if(self.ed.selection_mode): self.ed.selection_mode = False
 
-		if(is_keyname(ch, "HOM5")):		# Ctrl+Home
+		if(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_DOCUMENT_START")):
+			# CTRL+HOME
 			self.ed.curpos.y = 0
 			self.ed.curpos.x = 0
-		elif(is_keyname(ch, "END5")):	# Ctrl+End
+		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_DOCUMENT_END")):
+			# CTRL+END
 			self.ed.curpos.y = len(self.ed.buffer.lines)-1
 			self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
 	
@@ -442,7 +465,8 @@ class EditorKeyHandler:
 		
 		h = self.ed.height
 		nlen = len(self.ed.buffer.lines)
-		if(ch == curses.KEY_SPREVIOUS):			# Shift + pg-up
+		if(KeyBindings.is_key(ch, "SELECT_PAGE_ABOVE")):
+			# SHIFT+PGUP
 			if(self.ed.curpos.y == 0):
 				if(self.ed.curpos.x == 0):
 					beep()
@@ -456,7 +480,8 @@ class EditorKeyHandler:
 				self.ed.curpos.y -= h-1
 			self.ed.curpos.x = 0
 			self.ed.sel_end = copy.copy(self.ed.curpos)
-		elif(ch == curses.KEY_SNEXT):		# Shift + pg-down
+		elif(KeyBindings.is_key(ch, "SELECT_PAGE_BELOW")):
+			# SHIFT+PGDN
 			if(self.ed.curpos.y == nlen-1):
 				if(self.ed.curpos.x == len(self.ed.buffer.lines[nlen-1])):
 					beep()

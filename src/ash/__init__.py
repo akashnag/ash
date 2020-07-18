@@ -10,6 +10,9 @@ import copy
 import glob
 
 APP_VERSION			= "0.1.0-dev"
+APP_COPYRIGHT_TEXT	= "© Copyright 2020, Akash Nag. All rights reserved."
+APP_LICENSE_TEXT	= "Licensed under the MIT License."
+
 UNSAVED_BULLET		= "\u2022"
 TICK_MARK			= "\u2713"
 
@@ -33,6 +36,7 @@ MIN_EDITOR_HEIGHT	= 5
 # name of the log and configuration files
 LOG_FILE			= "log.txt"
 CONFIG_FILE			= os.path.expanduser("~/.ashedrc")
+KEY_BINDINGS_FILE	= os.path.expanduser("~/.ashedkeys")
 RECENT_FILES_RECORD	= "recentfiles.txt"
 
 recent_files_list 	= list()

@@ -98,20 +98,20 @@ class ListBox(Widget):
 		if(n == 0):
 			self.sel_index = -1
 			beep()
-		elif(ch == curses.KEY_UP):
+		elif(KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_UP")):
 			if(self.sel_index <= 0):
 				self.sel_index = 0
 			else:
 				self.sel_index = (self.sel_index - 1) % n
-		elif(ch == curses.KEY_DOWN):
+		elif(KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_DOWN")):
 			if(self.sel_index < n-1):
 				self.sel_index = (self.sel_index + 1) % n
-		elif(ch == curses.KEY_PPAGE):		# PgUp
+		elif(KeyBindings.is_key(ch, "LIST_MOVE_TO_PREVIOUS_PAGE")):
 			if(self.sel_index > self.row_count):
 				self.sel_index -= self.row_count
 			else:
 				self.sel_index = 0
-		elif(ch == curses.KEY_NPAGE):		# PgDown
+		elif(KeyBindings.is_key(ch, "LIST_MOVE_TO_NEXT_PAGE")):
 			if(self.sel_index < len(self.items) - self.row_count):
 				self.sel_index += min([self.row_count, len(self.items)-1])
 			else:

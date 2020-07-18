@@ -107,7 +107,14 @@ class TopLevelWindow(Window):
 			if(aed != None):
 				aed.perform_action(ch)
 				self.repaint()
-		
+	
+	# repaint background
+	def repaint_background(self):
+		self.win.addstr(0, 0, " " * self.width, gc("titlebar"))
+		for i in range(1, self.height-1):
+			self.win.addstr(i, 0, " " * self.width, gc("background"))
+		self.win.addstr(self.height-1, 0, " " * (self.width - 1), gc("background"))
+
 	# draws the window
 	def repaint(self, error_msg = None, caller=None):
 		curses.curs_set(False)
@@ -116,6 +123,7 @@ class TopLevelWindow(Window):
 		self.update_status()
 		self.readjust()
 		self.win.clear()
+		self.repaint_background()
 
 		if(error_msg == None):
 			if(self.status != None): self.status.repaint(self.win, self.width-1, self.height-1, 0)

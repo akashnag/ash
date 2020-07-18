@@ -134,7 +134,7 @@ class EditorUtility:
 	# performs word-wrapping on a given line, and returns the sub-lines formed thus
 	def soft_wrap(self, text, width, break_words):
 		# assumes 'text' does not contain newlines
-		if("\n" in text): raise(Exception("Newline found during wrap operation!"))
+		if("\n" in text): raise(AshException("Newline found during wrap operation!"))
 
 		separators = "~!@#$%^&*()-=+\\|[{]};:,<.>/? \t\n"
 		text += "\n"		# append newline to make life easier

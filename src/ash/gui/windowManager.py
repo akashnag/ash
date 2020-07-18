@@ -84,7 +84,7 @@ class TabNode:
 		self.type = type
 		self.win = win
 		self.area = area
-		if(self.type != TabNodeType.EDITOR): raise(Exception("TabNode:__init__() called with invalid NodeType"))
+		if(self.type != TabNodeType.EDITOR): raise(AshException("TabNode:__init__() called with invalid NodeType"))
 		if(existing_editor == None):			
 			self.editor = self.create_new_editor(bid, buffer)
 		else:
@@ -289,7 +289,7 @@ class WindowTab:
 			parent_node.merge_vertically(inactive_tab_node)
 			return True
 		
-		raise(Exception("Error in WindowTab:close_active_editor()"))
+		raise(AshException("Error in WindowTab:close_active_editor()"))
 	
 	def close_all_except_active_editor(self):
 		buffer = self.active_editor.buffer

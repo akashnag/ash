@@ -71,15 +71,15 @@ class DialogHandler:
 		self.app.dlgGoTo.show()
 
 	def go_to_key_handler(self, ch):
-		if(is_ctrl(ch, "Q")):
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
 			self.app.main_window.get_active_editor().curpos = copy.copy(self.app.old_goto_curpos)
 			self.app.dlgGoTo.hide()
 			self.app.main_window.repaint()
 		return ch
 
 	def go_to_live_preview_key_handler(self, ch):
-		if(is_newline(ch) or str(chr(ch)) in ".0123456789"):
-			isn = is_newline(ch)
+		if(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW") or str(chr(ch)) in ".0123456789"):
+			isn = KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")
 			line = str(self.app.dlgGoTo.get_widget("txtLineNumber"))
 			
 			if(len(line) == 0):
@@ -177,11 +177,11 @@ class DialogHandler:
 		self.app.dlgRecentFiles.show()
 
 	def recent_files_key_handler(self, ch):
-		if(is_ctrl(ch, "Q") or is_func(ch, 12)):
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW") or KeyBindings.is_key(ch, "SHOW_RECENT_FILES")):
 			self.app.dlgRecentFiles.hide()
 			self.app.main_window.repaint()
 			return -1
-		elif(is_newline(ch)):
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
 			mw = self.app.main_window
 
 			index = self.app.dlgRecentFiles.get_widget("lstRecentFiles").get_sel_index()
@@ -259,9 +259,9 @@ class DialogHandler:
 	def preferences_key_handler(self, ch):
 		aed = self.app.main_window.get_active_editor()
 
-		if(is_ctrl(ch, "Q")): 
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
 			self.app.dlgPreferences.hide()
-		elif(is_newline(ch) or is_ctrl(ch, "W")):
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
 			try:
 				tab_size = int(str(self.app.dlgPreferences.get_widget("txtTabSize")))
 			except:
@@ -313,17 +313,27 @@ class DialogHandler:
 		self.app.dlgHelpKeyBindings = ModalDialog(self.app.main_window, y, x, 20, 80, "HELP", self.help_key_bindings_key_handler)
 		lstKeys = ListBox(self.app.dlgHelpKeyBindings, 3, 2, 76, 16)
 
-		kbs = get_ash_key_bindings()
+		kbs = KeyBindings.get_list_of_bindings()
 		for kb in kbs:
 			key = kb[0].ljust(16)
 			desc = kb[1]
 			lstKeys.add_item(key + desc)
+		lstKeys.add_item(" ")
+		lstKeys.add_item("Custom colors can be set in $HOME/.ashedrc")
+		lstKeys.add_item("Custom key mappings can be set in $HOME/.ashedkeys")
+		lstKeys.add_item(" ")
+		lstKeys.add_item("Website:".ljust(16) + "https://akashnag.github.io/ash" )
+		lstKeys.add_item(" ")
+		lstKeys.add_item(APP_COPYRIGHT_TEXT)
+		lstKeys.add_item(APP_LICENSE_TEXT)
+		lstKeys.add_item(" ")
+		lstKeys.add_item(self.app.get_app_name())
 
 		self.app.dlgHelpKeyBindings.add_widget("lstKeys", lstKeys)
 		self.app.dlgHelpKeyBindings.show()
 
 	def help_key_bindings_key_handler(self, ch):
-		if(is_ctrl(ch, "Q")):
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
 			self.app.dlgHelpKeyBindings.hide()
 			self.app.main_window.repaint()
 			return -1
@@ -348,11 +358,11 @@ class DialogHandler:
 		
 		mw = self.app.main_window
 				
-		if(is_ctrl(ch, "Q")):
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
 			self.app.dlgProjectExplorer.hide()
 			mw.repaint()
 			return -1
-		elif(is_newline(ch)):
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
 			tag = lstFiles.get_sel_tag()		# format: {d/f}:path
 			if(tag == None): return -1
 			file_type = tag[0].lower()
@@ -417,11 +427,11 @@ class DialogHandler:
 		sel_index = lstActiveFiles.get_sel_index()
 		mw = self.app.main_window
 
-		if(is_ctrl(ch, "Q")):
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
 			self.app.dlgFileOpen.hide()
 			mw.repaint()
 			return -1
-		elif(is_newline(ch)):
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
 			is_buffer = False
 			sel_buffer = None
 
@@ -501,12 +511,12 @@ class DialogHandler:
 		self.app.dlgActiveTabs.show()
 
 	def show_active_tabs_key_handler(self, ch):
-		if(is_ctrl(ch, "Q")):
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
 			self.app.dlgActiveTabs.hide()
 			self.app.main_window.switch_to_tab(self.app.old_active_tab_index)
 			self.app.main_window.repaint()
 			return -1
-		elif(is_newline(ch) or is_ctrl(ch, "W")):
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
 			new_tab_index = self.app.dlgActiveTabs.get_widget("lstActiveTabs").get_sel_index()
 			self.app.dlgActiveTabs.hide()
 			self.app.main_window.switch_to_tab(new_tab_index)
@@ -544,10 +554,10 @@ class DialogHandler:
 		self.app.dlgSaveAs.show()
 
 	def file_save_as_key_handler(self, ch):
-		if(is_ctrl(ch, "Q")): 
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
 			self.app.dlgSaveAs.hide()
 			return -1
-		elif(is_newline(ch)):
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
 			buffer = self.app.dlgSaveAs_Buffer
 			self.app.dlgSaveAs.hide()
 			txtFileName = self.app.dlgSaveAs.get_widget("txtFileName")

@@ -29,6 +29,9 @@ def get_default_colors():
 	colors["magenta"] = (999, 0, 999)
 	colors["purple"] = (766, 520, 746)
 	colors["orange"] = (801, 562, 465)
+
+	element_colors["background"] = ("dimwhite", "darkgray")
+	element_colors["editor-background"] = ("dimwhite", "darkgray")
 	
 	element_colors["titlebar"] = ("white", "darkgray")
 	element_colors["outer-border"] = ("white", "darkgray")
@@ -94,7 +97,7 @@ def get_color_index(color_name):
 
 # returns the index for a specified colorable element-name
 def get_element_color_index(element_name):
-	element_names = ( 	"null",
+	element_names = ( 	"null", "background", "editor-background",
 						"titlebar", "outer-border", "line-number", "highlighted-line-number",
 						"selection", "highlight", "cursor",
 						"formfield", "formfield-focussed", "formfield-selection-blurred",
@@ -172,7 +175,7 @@ def set_colors(colors, element_colors):
 		try:
 			curses.init_pair(index, fgindex, bgindex)
 		except:
-			raise(Exception(str(index), str(fgindex), str(bgindex)))
+			raise(AshException(str(index), str(fgindex), str(bgindex)))
 
 # retrieve a curses.color_pair() object for a given color combination
 def gc(cp = "global-default"):

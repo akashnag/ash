@@ -51,7 +51,7 @@ class CheckBox(Widget):
 	# when keypress occurs: space toggles checkbox state
 	def perform_action(self, ch):
 		self.focus()
-		if(ch == ord(" ")):
+		if(KeyBindings.is_key(ch, "CHANGE_VALUE")):
 			self.checked = not self.checked
 			self.repaint()
 		else:

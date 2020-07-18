@@ -261,43 +261,54 @@ class TreeView(Widget):
 		n = len(self.items)
 		sel_item_obj = self.items[self.sel_index][1]
 
-		if(ch == curses.KEY_UP):
+		if(KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_UP")):
+			# UP ARROW
 			if(self.sel_index <= 0):
 				self.sel_index = 0
 			else:
 				self.sel_index = (self.sel_index - 1) % n
-		elif(ch == curses.KEY_DOWN):
+		elif(KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_DOWN")):
+			# DOWN ARROW
 			if(self.sel_index < n-1):
 				self.sel_index = (self.sel_index + 1) % n
-		elif(ch == curses.KEY_PPAGE):		# PgUp
+		elif(KeyBindings.is_key(ch, "LIST_MOVE_TO_PREVIOUS_PAGE")):
+			# PAGE UP
 			if(self.sel_index > self.row_count):
 				self.sel_index -= self.row_count
 			else:
 				self.sel_index = 0
-		elif(ch == curses.KEY_NPAGE):		# PgDown
+		elif(KeyBindings.is_key(ch, "LIST_MOVE_TO_NEXT_PAGE")):
+			# PAGE DOWN
 			if(self.sel_index < len(self.items) - self.row_count):
 				self.sel_index += min([self.row_count, len(self.items)-1])
 			else:
 				self.sel_index = len(self.items)-1
-		elif(str(chr(ch)) == "+" and sel_item_obj.is_dir() and sel_item_obj.expanded):
+		elif(KeyBindings.is_key(ch, "COLLAPSE_DIRECTORY")  and sel_item_obj.is_dir() and sel_item_obj.expanded):
+			# PLUS
 			sel_item_obj.collapse()
 			self.mini_refresh()
-		elif(str(chr(ch)) == "-" and sel_item_obj.is_dir() and not sel_item_obj.expanded):
+		elif(KeyBindings.is_key(ch, "EXPAND_DIRECTORY") and sel_item_obj.is_dir() and not sel_item_obj.expanded):
+			# MINUS
 			sel_item_obj.expand()
 			self.mini_refresh()
-		elif(is_ctrl(ch, "R")):
+		elif(KeyBindings.is_key(ch, "REFRESH_DIRECTORY_TREE")):
+			# REFRESH
 			self.refresh()
 			return
-		elif(is_ctrl(ch, "D")):
+		elif(KeyBindings.is_key(ch, "CREATE_NEW_DIRECTORY")):
+			# NEW DIRECTORY
 			self.create_new_directory()
-		elif(is_ctrl(ch, "N")):
+		elif(KeyBindings.is_key(ch, "CREATE_NEW_FILE")):
+			# NEW FILE
 			self.create_new_file()
-		elif(ch == curses.KEY_DC):
+		elif(KeyBindings.is_key(ch, "DELETE_FILE")):
+			# DELETE
 			if(self.sel_index == 0):
 				self.parent.parent.app.show_error("Cannot delete project root")
 			else:
 				self.delete_sel_item()
-		elif(is_func(ch, 2)):
+		elif(KeyBindings.is_key(ch, "RENAME_FILE")):
+			# RENAME
 			if(self.sel_index == 0):
 				self.parent.parent.app.show_error("Cannot rename project root")
 			else:

@@ -30,8 +30,10 @@ class AshEditorApp:
 		self.args = args
 		self.argc = len(args)
 		self.dialog_handler = DialogHandler(self)
+
 		log_init()
 		recent_files_init()
+		KeyBindings.load_key_bindings_from_file()
 	
 	def open_project(self, progress_handler = None):
 		add_opened_file_to_record(self.project_dir)
@@ -75,7 +77,6 @@ class AshEditorApp:
 			self.app_mode = APP_MODE_FILE
 			self.open_files_from_commandline_args(progress_handler)
 		
-
 	def run(self):		
 		ret_code = curses.wrapper(self.app_main)
 		return ret_code
@@ -139,10 +140,11 @@ class AshEditorApp:
 	# called on app_exit
 	def __destroy(self):
 		self.buffers.destroy()
+		KeyBindings.write_key_bindings_to_file()
 
 	# primary key handler to receive all key combinations from TopLevelWindow
 	def main_key_handler(self, ch):
-		#if(not is_ctrl(ch,"@") and self.show_error("You pressed: " + str(curses.keyname(ch)))):
+		#if(not KeyBindings.is_key(ch, "FORCE_QUIT") and self.show_error("You pressed: " + str(curses.keyname(ch)))):
 		#	self.main_window.repaint()
 		#	return -1
 		
@@ -152,91 +154,78 @@ class AshEditorApp:
 		#	(ii) and, return -1 to prevent it being handled again if a new active editor
 		#		 is created in the process of the handling
 
-		if(is_ctrl(ch, "@")): 
+		if(KeyBindings.is_key(ch, "FORCE_QUIT")): 
 			# force quits the app without saving
 			self.dialog_handler.invoke_forced_quit()
 			return -1
-		elif(is_ctrl(ch, "Q")): 
-			# quits the active editor or the app
+		elif(KeyBindings.is_key(ch, "CLOSE_EDITOR")):
+			# quits the active editor or the active tab (if no editor is active) or the app (if no tab is active)
 			self.dialog_handler.invoke_quit()
 			return -1
-		elif(is_func(ch, 11) or ch == curses.KEY_RESIZE):
+		elif(KeyBindings.is_key(ch, "RESIZE_WINDOW")):
 			self.readjust()
 			self.main_window.repaint()
 			return -1
-		elif(is_ctrl(ch, "T")):
+		elif(KeyBindings.is_key(ch, "SHOW_ACTIVE_TABS")):
 			self.dialog_handler.invoke_show_active_tabs()
 			return -1
-		elif(is_ctrl(ch, "E") and self.app_mode == APP_MODE_PROJECT):
+		elif(self.app_mode == APP_MODE_PROJECT and KeyBindings.is_key(ch, "SHOW_PROJECT_EXPLORER")):
 			# project explorer
 			self.dialog_handler.invoke_project_explorer()
 			return -1
-		elif(is_ctrl(ch, "N") and self.main_window.get_active_editor() == None):
+		elif(KeyBindings.is_key(ch, "NEW_BUFFER") and self.main_window.get_active_editor() == None):
 			# file-new
 			self.dialog_handler.invoke_file_new()
 			return -1
-		elif(is_ctrl(ch, "O") and self.main_window.get_active_editor() == None):
+		elif(KeyBindings.is_key(ch, "OPEN_FILE") and self.main_window.get_active_editor() == None):
 			# file-open
 			self.dialog_handler.invoke_file_open()
 			return -1		
-		elif(is_func(ch)):
-			# F1: help
-			# F2: recent files
-			# F3: previous editor
-			# F4: next editor
-			# F5: previous tab
-			# F6: next tab
-			# Ctrl+F1: show/hide filenames in non-active editors
-			# Ctrl+F2: create new tab
-			# Ctrl+F3: split horizontally
-			# Ctrl+F4: split vertically
-			# Ctrl+F5: merge horizontally
-			# Ctrl+F6: merge horizontally
-			# Ctrl+F7: close current tab
-			# Ctrl+F9: close all but the active-editor (only in the active-tab)
-
-			fn = get_func_key(ch)
-			
-			if(fn == 1):
-				self.dialog_handler.invoke_help_key_bindings()
-				return -1
-			elif(fn == 2):
-				self.dialog_handler.invoke_recent_files()
-				return -1
-			elif(fn == 3):
-				self.main_window.switch_to_previous_editor()
-				return -1
-			elif(fn == 4):
-				self.main_window.switch_to_next_editor()
-				return -1
-			elif(fn == 5):
-				self.main_window.switch_to_previous_tab()
-				return -1
-			elif(fn == 6):
-				self.main_window.switch_to_next_tab()
-				return -1
-			elif(is_ctrl_and_func(ch, 1)):
-				self.main_window.toggle_filename_visibility()
-				return -1
-			elif(is_ctrl_and_func(ch, 2)):
-				self.main_window.add_blank_tab()
-				return -1	
-			elif(is_ctrl_and_func(ch, 3)):
-				self.main_window.split_horizontally()
-				return -1
-			elif(is_ctrl_and_func(ch, 4)):
-				self.main_window.split_vertically()
-				return -1
-			elif(is_ctrl_and_func(ch, 5)):
-				self.main_window.merge_horizontally()
-				return -1
-			elif(is_ctrl_and_func(ch, 6)):
-				self.main_window.merge_vertically()
-				return -1
-			elif(is_ctrl_and_func(ch, 9)):
-				self.main_window.close_all_except_active_editor()
-				return -1
-			
+		if(KeyBindings.is_key(ch, "SHOW_HELP")):
+			self.dialog_handler.invoke_help_key_bindings()
+			return -1
+		elif(KeyBindings.is_key(ch, "SHOW_RECENT_FILES")):
+			self.dialog_handler.invoke_recent_files()
+			return -1
+		elif(KeyBindings.is_key(ch, "SWITCH_TO_PREVIOUS_EDITOR")):
+			self.main_window.switch_to_previous_editor()
+			return -1
+		elif(KeyBindings.is_key(ch, "SWITCH_TO_NEXT_EDITOR")):
+			self.main_window.switch_to_next_editor()
+			return -1
+		elif(KeyBindings.is_key(ch, "SWITCH_TO_PREVIOUS_TAB")):
+			self.main_window.switch_to_previous_tab()
+			return -1
+		elif(KeyBindings.is_key(ch, "SWITCH_TO_NEXT_TAB")):
+			self.main_window.switch_to_next_tab()
+			return -1
+		elif(KeyBindings.is_key(ch, "TOGGLE_FILENAMES_IN_EDITORS")):
+			self.main_window.toggle_filename_visibility()
+			return -1
+		elif(KeyBindings.is_key(ch, "CREATE_NEW_TAB")):
+			self.main_window.add_blank_tab()
+			return -1	
+		elif(KeyBindings.is_key(ch, "SPLIT_HORIZONTALLY")):
+			self.main_window.split_horizontally()
+			return -1
+		elif(KeyBindings.is_key(ch, "SPLIT_VERTICALLY")):
+			self.main_window.split_vertically()
+			return -1
+		elif(KeyBindings.is_key(ch, "MERGE_HORIZONTALLY")):
+			self.main_window.merge_horizontally()
+			return -1
+		elif(KeyBindings.is_key(ch, "MERGE_VERTICALLY")):
+			self.main_window.merge_vertically()
+			return -1
+		elif(KeyBindings.is_key(ch, "CLOSE_ALL_EXCEPT_ACTIVE_EDITOR")):
+			self.main_window.close_all_except_active_editor()
+			return -1
+		elif(KeyBindings.is_key(ch, "SHOW_PROJECT_FIND")):
+			self.show_error("TODO: Project-wide find")
+			return -1
+		elif(KeyBindings.is_key(ch, "SHOW_PROJECT_FIND_AND_REPLACE")):
+			self.show_error("TODO: Project-wide find and replace")
+			return -1
 
 		return ch
 

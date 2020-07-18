@@ -42,6 +42,7 @@ class Editor(Widget):
 		self.sel_start = CursorPosition(0,0)
 		self.sel_end = CursorPosition(0,0)
 		self.highlighted_text = None
+		self.find_match_case = False
 		self.find_mode = False
 		
 		# set default tab size
@@ -175,36 +176,34 @@ class Editor(Widget):
 
 		edit_made = False
 
-		if(ch == curses.KEY_BACKSPACE):
+		if(KeyBindings.is_key(ch, "DELETE_CHARACTER_LEFT")):
 			edit_made = self.keyHandler.handle_backspace_key(ch)
-		elif(ch == curses.KEY_DC):
+		elif(KeyBindings.is_key(ch, "DELETE_CHARACTER_RIGHT")):
 			edit_made = self.keyHandler.handle_delete_key(ch)
-		elif(ch in [ curses.KEY_HOME, curses.KEY_END ]):
+		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_START") or KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_END")):
 			self.keyHandler.handle_home_end_keys(ch)
-		elif(ch in [ curses.KEY_SHOME, curses.KEY_SEND ]):
+		elif(KeyBindings.is_key(ch, "SELECT_TILL_LINE_START") or KeyBindings.is_key(ch, "SELECT_TILL_LINE_END")):
 			self.keyHandler.handle_shift_home_end_keys(ch)
-		elif(is_keyname(ch, "HOM5") or is_keyname(ch, "END5")):
+		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_DOCUMENT_START") or KeyBindings.is_key(ch, "MOVE_CURSOR_TO_DOCUMENT_END")):
 			self.keyHandler.handle_ctrl_home_end_keys(ch)
-		elif(ch in [ curses.KEY_LEFT, curses.KEY_RIGHT, curses.KEY_UP, curses.KEY_DOWN ]):
+		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_LEFT") or KeyBindings.is_key(ch, "MOVE_CURSOR_RIGHT") or KeyBindings.is_key(ch, "MOVE_CURSOR_UP") or KeyBindings.is_key(ch, "MOVE_CURSOR_DOWN")):
 			self.keyHandler.handle_arrow_keys(ch)
-		elif(ch in [ curses.KEY_PPAGE, curses.KEY_NPAGE ]):
+		elif(KeyBindings.is_key(ch, "MOVE_TO_PREVIOUS_PAGE") or KeyBindings.is_key(ch, "MOVE_TO_NEXT_PAGE")):
 			self.keyHandler.handle_page_navigation_keys(ch)
-		elif(ch in [ curses.KEY_SPREVIOUS, curses.KEY_SNEXT ]):
+		elif(KeyBindings.is_key(ch, "SELECT_PAGE_ABOVE") or KeyBindings.is_key(ch, "SELECT_PAGE_BELOW")):
 			self.keyHandler.handle_shift_page_navigation_keys(ch)
-		elif(ch in [ curses.KEY_SLEFT, curses.KEY_SRIGHT, curses.KEY_SR, curses.KEY_SF ]):
+		elif(KeyBindings.is_key(ch, "SELECT_CHARACTER_LEFT") or KeyBindings.is_key(ch, "SELECT_CHARACTER_RIGHT") or KeyBindings.is_key(ch, "SELECT_LINE_ABOVE") or KeyBindings.is_key(ch, "SELECT_LINE_BELOW")):
 			self.keyHandler.handle_shift_arrow_keys(ch)
-		elif(is_ctrl_arrow(ch, "LEFT") or is_ctrl_arrow(ch, "RIGHT")):
+		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_PREVIOUS_WORD") or KeyBindings.is_key(ch, "MOVE_CURSOR_TO_NEXT_WORD")):
 			self.keyHandler.handle_ctrl_arrow_keys(ch)
-		elif(is_tab(ch) or ch == curses.KEY_BTAB):
+		elif(KeyBindings.is_key(ch, "INSERT_TAB") or KeyBindings.is_key(ch, "DECREASE_INDENT")):
 			edit_made = self.keyHandler.handle_tab_keys(ch)
-		elif(is_newline(ch)):
-			edit_made = self.keyHandler.handle_newline(ch)
+		elif(KeyBindings.is_key(ch, "NEWLINE")):
+			edit_made = self.keyHandler.handle_newline()
 		elif(str(chr(ch)) in self.charset):
 			edit_made = self.keyHandler.handle_printable_character(ch)
-		elif(is_ctrl_or_func(ch)):
-			edit_made = self.keyHandler.handle_ctrl_and_func_keys(ch)
 		else:
-			beep()
+			edit_made = self.keyHandler.handle_keys(ch)
 		
 		if(edit_made): 
 			self.buffer.update(self.curpos, self)
@@ -330,6 +329,12 @@ class Editor(Widget):
 
 		return curpos_col - self.col_start		# visible curpos position w.r.t. screen
 	
+	# repaint background
+	def repaint_background(self):
+		for y in range(self.y, self.y + self.height):
+			self.parent.addstr(y, self.x, " " * (1 + self.line_number_width), gc("line-number"))
+			self.parent.addstr(y, self.x + self.line_number_width + 1, " " * self.width, gc("editor-background"))		
+
 	# the primary draw routine for the editor
 	def repaint(self):
 		# check conditions where no repaint is necessary
@@ -339,6 +344,8 @@ class Editor(Widget):
 		if(self.col_start < 0 or self.col_end <= self.col_start): return
 		if(self.buffer == None): return
 				
+		self.repaint_background()
+
 		# get the data to be displayed after performing tab-expansion and word-wrapping
 		if(self.word_wrap):
 			self.rendered_lines = self.sub_lines

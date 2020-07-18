@@ -100,13 +100,15 @@ class TextField(Widget):
 
 	# handles LeftArrow/RightArrow
 	def handle_arrow_keys(self, ch):
-		if(ch == curses.KEY_LEFT):
+		if(KeyBindings.is_key(ch, "MOVE_CURSOR_LEFT")):
+			# KEY LEFT
 			self.selection_mode = False
 			if(self.curpos > 0): 
 				self.curpos -= 1
 			else:
 				beep()
-		elif(ch == curses.KEY_RIGHT):
+		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_RIGHT")):
+			# KEY RIGHT
 			self.selection_mode = False
 			if(self.curpos < len(self.text)): 
 				self.curpos += 1
@@ -115,10 +117,12 @@ class TextField(Widget):
 
 	# handles Home/End
 	def handle_home_end_keys(self, ch):
-		if(ch == curses.KEY_END):
+		if(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_END")):
+			# END
 			self.selection_mode = False
 			self.curpos = len(self.text)
-		elif(ch == curses.KEY_HOME):
+		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_START")):
+			# HOME
 			self.selection_mode = False
 			self.curpos = 0
 
@@ -128,9 +132,11 @@ class TextField(Widget):
 			self.selection_mode = True
 			self.sel_start = self.curpos
 		
-		if(ch == curses.KEY_SHOME):
+		if(KeyBindings.is_key(ch, "SELECT_TILL_LINE_START")):
+			# SHIFT+HOME
 			self.curpos = 0
-		elif(ch == curses.KEY_SEND):
+		elif(KeyBindings.is_key(ch, "SELECT_TILL_LINE_END")):
+			# SHIFT+END
 			self.curpos = len(self.text)
 		
 		self.sel_end = self.curpos
@@ -141,12 +147,14 @@ class TextField(Widget):
 			self.selection_mode = True
 			self.sel_start = self.curpos
 
-		if(ch == curses.KEY_SLEFT):
+		if(KeyBindings.is_key(ch, "SELECT_CHARACTER_LEFT")):
+			# SHIFT+LEFT
 			if(self.curpos > 0): 
 				self.curpos -= 1
 			else:
 				beep()
-		if(ch == curses.KEY_SRIGHT):
+		if(KeyBindings.is_key(ch, "SELECT_CHARACTER_RIGHT")):
+			# SHIFT+RIGHT
 			if(self.curpos < len(self.text)): 
 				self.curpos += 1
 			else:
@@ -180,25 +188,25 @@ class TextField(Widget):
 		if(not self.is_in_focus): self.focus()
 		if(ch == -1): return None
 		
-		if(ch == curses.KEY_BACKSPACE):
+		if(KeyBindings.is_key(ch, "DELETE_CHARACTER_LEFT")):
 			self.handle_backspace()
-		elif(ch == curses.KEY_DC):
+		elif(KeyBindings.is_key(ch, "DELETE_CHARACTER_RIGHT")):
 			self.handle_delete()
-		elif(ch in [ curses.KEY_HOME, curses.KEY_END ]):
+		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_START") or KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_END")):
 			self.handle_home_end_keys(ch)
-		elif(ch in [ curses.KEY_LEFT, curses.KEY_RIGHT ]):
+		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_LEFT") or KeyBindings.is_key(ch, "MOVE_CURSOR_RIGHT")):
 			self.handle_arrow_keys(ch)
-		elif(ch in [ curses.KEY_SHOME, curses.KEY_SEND ]):
+		elif(KeyBindings.is_key(ch, "SELECT_TILL_LINE_START") or KeyBindings.is_key(ch, "SELECT_TILL_LINE_END")):
 			self.handle_shift_home_end_keys(ch)
-		elif(ch in [ curses.KEY_SLEFT, curses.KEY_SRIGHT ]):
+		elif(KeyBindings.is_key(ch, "SELECT_CHARACTER_LEFT") or KeyBindings.is_key(ch, "SELECT_CHARACTER_RIGHT")):
 			self.handle_shift_arrow_keys(ch)
-		elif(is_ctrl(ch, "A")):
+		elif(KeyBindings.is_key(ch, "SELECT_ALL")):
 			self.handle_select_all()
-		elif(is_ctrl(ch, "C")):
+		elif(KeyBindings.is_key(ch, "COPY")):
 			self.handle_copy()
-		elif(is_ctrl(ch, "X")):
+		elif(KeyBindings.is_key(ch, "CUT")):
 			self.handle_cut()
-		elif(is_ctrl(ch, "V")):
+		elif(KeyBindings.is_key(ch, "PASTE")):
 			self.handle_paste()
 		else:
 			char = str(chr(ch))

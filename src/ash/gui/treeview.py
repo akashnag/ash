@@ -101,22 +101,13 @@ class TreeView(Widget):
 	def refresh(self, maintain_selindex = False):
 		self.git_repo.refresh(True)
 		self.refresh_glob()
-		self.ensure_files_have_buffers()
 		self.tree_root = self.form_tree()
 		self.form_list_items()
 		if(not maintain_selindex): self.sel_index = 0
 		self.start = 0
 		self.end = min([self.row_count, len(self.items)])
 		self.repaint()
-
-	# create buffers for all text-files in the tree if they do not exist
-	def ensure_files_have_buffers(self):		
-		for f in self.files:
-			if(BufferManager.is_binary(f)): continue
-			has_backup = BufferManager.backup_exists(f)
-			if(not self.buffer_manager.does_file_have_its_own_buffer(f)):
-				self.buffer_manager.create_new_buffer(filename=f, has_backup=has_backup)
-
+	
 	# finds all files and subdirectories in the tree
 	def refresh_glob(self):
 		self.files = list()
@@ -180,7 +171,7 @@ class TreeView(Widget):
 				if(self.search_text != None and str(c).lower().find(self.search_text) < 0): continue
 				if(not BufferManager.is_binary(c.path)):
 					buffer = self.buffer_manager.get_buffer_by_filename(c.path)
-					save_status = buffer.save_status
+					save_status = buffer.save_status if buffer != None else True
 					extra_space += (LINE_HORIZONTAL * (INDENT_SIZE-3)) + " " + ("" if save_status else UNSAVED_BULLET) + " "
 				else:
 					extra_space += (LINE_HORIZONTAL * (INDENT_SIZE-3)) + "   "

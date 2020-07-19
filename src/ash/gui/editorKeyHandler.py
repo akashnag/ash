@@ -24,8 +24,7 @@ class EditorKeyHandler:
 		elif(KeyBindings.is_key(ch, "SAVE")):
 			self.handle_save()
 		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_EDITOR")):
-			self.handle_save()
-			if(self.ed.buffer.filename != None): self.ed.parent.win.app.dialog_handler.invoke_quit()
+			self.save_and_close()
 		elif(KeyBindings.is_key(ch, "GOTO_LINE")):
 			self.ed.parent.win.app.dialog_handler.invoke_go_to_line()
 		elif(KeyBindings.is_key(ch, "OPEN_FILE")):
@@ -49,6 +48,10 @@ class EditorKeyHandler:
 			return True
 
 		return False
+
+	def save_and_close(self):
+		self.handle_save()
+		if(self.ed.buffer.filename != None): self.ed.parent.win.app.dialog_handler.invoke_quit()
 
 	# handle the 4 arrow keys
 	def handle_arrow_keys(self, ch):

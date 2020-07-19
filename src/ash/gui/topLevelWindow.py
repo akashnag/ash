@@ -249,3 +249,15 @@ class TopLevelWindow(Window):
 
 	def get_active_tab_index(self):
 		return self.window_manager.get_active_tab_index()
+
+	def reload_active_buffer_from_disk(self):
+		self.window_manager.reload_active_buffer_from_disk()
+		self.repaint()
+
+	def save_and_close_active_editor(self):
+		aed = self.window_manager.get_active_editor()
+		if(aed != None): aed.keyHandler.save_and_close()
+
+	def save_active_editor(self):
+		aed = self.window_manager.get_active_editor()
+		if(aed != None): aed.keyHandler.handle_save()

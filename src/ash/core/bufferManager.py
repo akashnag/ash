@@ -6,6 +6,7 @@
 # This module implements the Buffer Management Interface
 
 from ash.core import *
+from ash.core.ashException import *
 from ash.core.logger import *
 from ash.gui.cursorPosition import *
 from ash.core.editHistory import *
@@ -15,8 +16,9 @@ from ash.formatting.formatting import *
 
 import time
 
-BACKUP_FREQUENCY_SIZE	= 16		# backup after every 16 edits
-HISTORY_FREQUENCY_SIZE	= 8			# undo: every 8 edit operations
+LARGE_FILE_THRESHOLD	= 1024 * 1024		# large file if size > 1 MB
+BACKUP_FREQUENCY_SIZE	= 16				# backup after every 16 edits
+HISTORY_FREQUENCY_SIZE	= 8					# undo: every 8 edit operations
 
 # Buffer class: encapsulates a single buffer/file
 class Buffer:
@@ -158,6 +160,8 @@ class Buffer:
 		if(last_mod_time <= last_time): return
 		if(self.manager.app.ask_question("RELOAD", "File modified externally, reload?")):
 			self.reload_from_disk()
+		else:
+			self.last_read_time = self.last_mod_time
 
 	def decode_unicode(self):
 		if(self.undo_edit_count > 0): 		# add the latest change forcefully
@@ -278,12 +282,18 @@ class Buffer:
 			textFile.close()
 
 		try:
-			textFile = codecs.open(filename, "r", self.encoding)
-			text = textFile.read()
-			textFile.close()
+			if(int(os.stat(filename).st_size) > LARGE_FILE_THRESHOLD):
+				text = self.manager.app.load_file(filename, self.encoding)
+				if(text == None): raise(AshFileReadAbortedException(filename))
+			else:
+				textFile = codecs.open(filename, "r", self.encoding)
+				text = textFile.read()
+				textFile.close()
 
 			self.last_read_time = time.time()
 			if(self.last_write_time == None): self.last_write_time = self.last_read_time
+		except AshFileReadAbortedException as e:
+			raise
 		except:
 			raise(AshException("error reading file: " + filename))
 			raise
@@ -328,9 +338,13 @@ class BufferManager:
 				encoding = "utf-8"
 			else:
 				encoding = predict_file_encoding(filename)
-		self.buffers[self.buffer_count] = Buffer(self, self.buffer_count, filename, encoding, newline, has_backup)
-		self.buffer_count += 1
-		return (self.buffer_count - 1, self.buffers[self.buffer_count - 1])
+		try:
+			self.buffers[self.buffer_count] = Buffer(self, self.buffer_count, filename, encoding, newline, has_backup)
+			self.buffer_count += 1
+			return (self.buffer_count - 1, self.buffers[self.buffer_count - 1])
+		except AshFileReadAbortedException as e:
+			self.buffers[self.buffer_count] = None
+			return (None, None)
 
 	# map an editor to a buffer specified by its buffer ID
 	def attach_editor(self, buffer_id, editor):

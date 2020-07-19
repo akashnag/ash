@@ -3,49 +3,56 @@
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
-# This module implements the InputBox window
+# This module implements a file load progress window
 
+from ash import *
 from ash.gui import *
 from ash.gui.window import *
-from ash.gui.textfield import *
 
-class InputBox(Window):
-	def __init__(self, parent, title, prompt, default = "", width = 0):
-		msg_lines, msg_len = get_message_dimensions(prompt)
-		msg_len = max([msg_len, len(title), len("Y(ES) | N(O) | (C)ANCEL")])
-		msg_len = max([msg_len, width])
-		y, x = get_center_coords(parent, msg_lines + 5, msg_len + 4)
+LOAD_STEP		= 1024			# bytes to read in each step
 
-		super().__init__(y, x, msg_lines + 5, msg_len + 4, title)
+class FileLoader(Window):
+	def __init__(self, parent, filename, encoding):
+		y, x = get_center_coords(parent, 6, 50)
+		super().__init__(y, x, 6, 50, "LOADING FILE")
 		self.type = type
 		self.parent = parent.stdscr
 		self.border_theme = gc("outer-border")
 		self.theme = gc("outer-border")
-		self.prompt = prompt
-		self.title = title
-		self.default = default
 		self.win = curses.newwin(self.height, self.width, self.y, self.x)
-		self.add_widget("txtInput", TextField(self, self.height-2, 2, self.width-4, self.default))
+		self.filename = filename
+		self.encoding = encoding
+		self.bytes_read = 0
+		self.total_size = 0
 		
-
 	# show the window and start the event-loop
-	def show(self):
+	def load(self):
 		curses.curs_set(False)
 		self.win.keypad(True)
 		self.win.timeout(0)		
 		self.repaint()
 
-		# start of the event loop	
+		activeFile = codecs.open(self.filename, "r", self.encoding)
+		self.total_size = int(os.stat(self.filename).st_size)
+		self.bytes_read = 0
+		data = ""
+
 		while(True):
-			ch = self.win.getch()
-			if(ch > -1): 
-				response = self.check_response(ch)
-				if(response == 0):
-					self.win.clear()
-					return ""
-				elif(response != None):
-					self.win.clear()
-					return response				
+			ch = self.win.getch()			
+			
+			if(ch > -1 and KeyBindings.is_key(ch, "CANCEL_OPERATION")):
+				activeFile.close()
+				return None
+			else:
+				read_data = activeFile.read(LOAD_STEP)
+				if(len(read_data) == 0): break
+				self.bytes_read += len(read_data)
+				data += read_data
+				self.repaint()
+		
+		activeFile.close()
+		self.win.clear()
+		return data
 		
 	# draw the window
 	def repaint(self):
@@ -62,18 +69,13 @@ class InputBox(Window):
 
 		self.win.addstr(2, 1, BORDER_HORIZONTAL * (self.width-2), self.theme)
 		self.win.addstr(1, 2, self.title, curses.A_BOLD | self.theme)
-		
-		lines = self.prompt.splitlines()
-		i = 3
-		n = len(lines)
-		for k in range(n):
-			self.win.addstr(i, 2, lines[k], (self.theme if k < n-1 else curses.A_BOLD | self.theme))
-			i += 1
 
-		self.win.attroff(self.theme)
-		for w in self.widgets:
-			w.repaint()
-		self.win.refresh()
+		if(self.total_size > 0):
+			fn = get_file_title(self.filename)
+			self.win.addstr(3, 2, (fn if len(fn) <= 46 else fn[0:46]), self.theme)
+			w = int((self.bytes_read / self.total_size) * (self.width - 4))
+			self.win.addstr(4, 2, "\u2588" * w, self.theme)		
+			self.win.refresh()
 
 	# check the response
 	def check_response(self, ch):

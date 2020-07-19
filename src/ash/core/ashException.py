@@ -9,7 +9,7 @@ from ash.core.logger import *
 
 class AshException(Exception):
 	def __init__(self, error_msg):
-		super().init__(error_msg)
+		super().__init__(error_msg)
 		self.error_msg = error_msg
 		log(self.error_msg)
 

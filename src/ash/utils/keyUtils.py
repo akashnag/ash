@@ -31,6 +31,7 @@ class KeyBindings:
 	BINDINGS = {
 		"CLOSE_WINDOW" 					: ["^Q", "Ctrl+Q", "Close the active window"],
 		"FORCE_QUIT"					: ["^@", "Ctrl+@", "Discard all unsaved changes and quit ash"],
+		"CANCEL_OPERATION"				: ["^C", "Ctrl+C", "Cancel ongoing operation if any"],
 		"FOCUS_NEXT"					: ["^I", "Tab/Ctrl+I", "Switch focus to the next element in the active window"],
 		"FOCUS_PREVIOUS"				: ["KEY_BTAB", "Shift+Tab", "Switch focus to the previous element in the active window"],
 		"CHANGE_VALUE"					: [" ", "Space", "Change the selected item / toggle checkbox"],

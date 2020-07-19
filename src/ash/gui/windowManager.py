@@ -508,3 +508,7 @@ class WindowManager:
 
 	def toggle_filename_visibility(self):
 		self.show_filenames = not self.show_filenames
+
+	def reload_active_buffer_from_disk(self):
+		aed = self.get_active_editor()
+		if(aed != None): aed.buffer.reload_from_disk()

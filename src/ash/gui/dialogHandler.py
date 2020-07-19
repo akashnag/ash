@@ -211,6 +211,7 @@ class DialogHandler:
 			sel_buffer = self.app.buffers.get_buffer_by_filename(filename)
 			if(sel_buffer == None):
 				sel_bid, sel_buffer = self.app.buffers.create_new_buffer(filename=filename, has_backup=BufferManager.backup_exists(filename))
+				if(sel_bid == None or sel_buffer == None): return -1		# cancelled by user
 			
 			self.app.dlgRecentFiles.hide()
 			mw.invoke_activate_editor(sel_buffer.id, sel_buffer)
@@ -395,6 +396,7 @@ class DialogHandler:
 			sel_buffer = self.app.buffers.get_buffer_by_filename(filename)
 			if(sel_buffer == None):
 				sel_bid, sel_buffer = self.app.buffers.create_new_buffer(filename=filename, has_backup=BufferManager.backup_exists(filename))
+				if(sel_bid == None or sel_buffer == None): return -1		# cancelled by user
 			
 			self.app.dlgProjectExplorer.hide()
 			mw.invoke_activate_editor(sel_buffer.id, sel_buffer)
@@ -489,6 +491,7 @@ class DialogHandler:
 					# create buffer from file
 					backup_status = BufferManager.backup_exists(filename)
 					sel_bid, sel_buffer = self.app.buffers.create_new_buffer(filename=filename, encoding=sel_encoding, has_backup=backup_status)
+					if(sel_bid == None or sel_buffer == None): return -1		# cancelled by user
 				
 			# at this point, buffer exists in sel_buffer
 			mw.invoke_activate_editor(sel_buffer.id, sel_buffer)

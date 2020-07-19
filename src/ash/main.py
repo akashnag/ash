@@ -24,6 +24,7 @@ from ash.gui.topLevelWindow import *
 from ash.gui.msgBox import *
 from ash.gui.inputBox import *
 from ash.gui.dialogHandler import *
+from ash.gui.fileLoader import *
 
 class AshEditorApp:
 	def __init__(self, ash_dir, args):
@@ -229,7 +230,7 @@ class AshEditorApp:
 			self.show_error("TODO: Project-wide find and replace")
 			return -1
 		elif(KeyBindings.is_key(ch, "SHOW_COMMAND_WINDOW")):
-			self.command_interpreter.interpret_command(self.prompt("COMMAND", "Enter command:"))
+			self.command_interpreter.interpret_command(self.prompt("COMMAND", "Enter command:", width=50))
 			
 		return ch
 
@@ -270,9 +271,9 @@ class AshEditorApp:
 			beep()
 
 	# displays an inputbox
-	def prompt(self, title, prompt, default = ""):
+	def prompt(self, title, prompt, default = "", width = 0):
 		try:
-			self.inputBox = InputBox(self, title, prompt, default)
+			self.inputBox = InputBox(self, title, prompt, default, width)
 		except:
 			self.warn_insufficient_screen_space()
 			raise
@@ -280,6 +281,17 @@ class AshEditorApp:
 		response = self.inputBox.show()
 		self.main_window.repaint()
 		return response
+
+	def load_file(self, filename, encoding):
+		try:
+			self.fileLoader = FileLoader(self, filename, encoding)
+		except:
+			self.warn_insufficient_screen_space()
+			raise
+
+		data = self.fileLoader.load()
+		self.main_window.repaint()
+		return data
 
 	# checks if buffer is up-to-date with file on disk
 	def is_file_already_loaded(self, filename):

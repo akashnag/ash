@@ -357,9 +357,18 @@ class DialogHandler:
 			self.app.warn_insufficient_screen_space()
 			return
 		self.app.dlgProjectExplorer = ModalDialog(self.app.main_window, y, x, 20, 80, "PROJECT EXPLORER", self.project_explorer_key_handler)
-		lstFiles = TreeView(self.app.dlgProjectExplorer, 3, 2, 76, 16, self.app.buffers, self.app.project_dir)
-		self.app.dlgProjectExplorer.add_widget("lstFiles", lstFiles)
+		
+		lstFiles = TreeView(self.app.dlgProjectExplorer, 4, 2, 76, 15, self.app.buffers, self.app.project_dir)
+		txtSearchFile = TextField(self.app.dlgProjectExplorer, 3, 2, 76, callback=self.project_explorer_search_text_changed)
+		
+		self.app.dlgProjectExplorer.add_widget("txtSearchFile", txtSearchFile)
+		self.app.dlgProjectExplorer.add_widget("lstFiles", lstFiles)		
 		self.app.dlgProjectExplorer.show()
+
+	def project_explorer_search_text_changed(self, ch):
+		lstFiles = self.app.dlgProjectExplorer.get_widget("lstFiles")
+		search_text = str(self.app.dlgProjectExplorer.get_widget("txtSearchFile"))
+		lstFiles.search(search_text)
 
 	def project_explorer_key_handler(self, ch):
 		lstFiles = self.app.dlgProjectExplorer.get_widget("lstFiles")

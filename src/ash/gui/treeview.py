@@ -25,7 +25,7 @@ class TreeNode:
 		if(self.type == "f"):
 			self.children = None
 		else:
-			self.children = list()
+			self.children = list()		
 
 	# return True if the node represents a directory
 	def is_dir(self):
@@ -94,6 +94,7 @@ class TreeView(Widget):
 		self.sel_blur_theme = gc("formfield-selection-blurred")		
 		self.is_in_focus = False
 		self.git_repo = GitRepo(self.project_dir)
+		self.search_text = None
 		self.refresh()
 
 	# refresh the tree
@@ -176,6 +177,7 @@ class TreeView(Widget):
 			gs = "  "
 			gsc = None
 			if(not c.is_dir()): 
+				if(self.search_text != None and str(c).lower().find(self.search_text) < 0): continue
 				if(not BufferManager.is_binary(c.path)):
 					buffer = self.buffer_manager.get_buffer_by_filename(c.path)
 					save_status = buffer.save_status
@@ -317,6 +319,13 @@ class TreeView(Widget):
 			beep()
 
 		self.repaint()
+
+	def search(self, search_text):
+		if(search_text != None):
+			search_text = search_text.strip().lower()
+			if(len(search_text) == 0): search_text = None
+		self.search_text = search_text
+		self.mini_refresh()
 
 	# refresh on collapse/expand operation
 	def mini_refresh(self):

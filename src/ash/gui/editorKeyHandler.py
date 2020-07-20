@@ -32,7 +32,10 @@ class EditorKeyHandler:
 		elif(KeyBindings.is_key(ch, "NEW_BUFFER")):
 			self.ed.parent.win.app.dialog_handler.invoke_file_new()
 		elif(KeyBindings.is_key(ch, "SHOW_FIND")):
-			self.ed.parent.win.app.dialog_handler.invoke_find()			
+			if(self.ed.find_mode):
+				self.ed.find_mode = False
+			else:
+				self.ed.parent.win.app.dialog_handler.invoke_find()			
 		elif(KeyBindings.is_key(ch, "SHOW_FIND_AND_REPLACE")):
 			self.ed.parent.win.app.dialog_handler.invoke_find_and_replace()
 		elif(KeyBindings.is_key(ch, "UNDO")):
@@ -94,10 +97,13 @@ class EditorKeyHandler:
 				beep()
 			else:
 				if(self.ed.word_wrap):
-					if(self.ed.col_spans[self.ed.rendered_curpos.y + 1][0] == 0):
-						self.ed.curpos.y += 1
-					
-					self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y + 1][0]
+					try:
+						if(self.ed.col_spans[self.ed.rendered_curpos.y + 1][0] == 0):
+							self.ed.curpos.y += 1
+
+						self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y + 1][0]
+					except:
+						pass
 				else:
 					if(self.ed.curpos.x > len(self.ed.buffer.lines[row+1])):
 						# cannot preserve column, so move to end

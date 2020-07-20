@@ -89,7 +89,7 @@ class TopLevelWindow(Window):
 		self.win.keypad(True)
 		self.win.timeout(0)
 		self.repaint(welcome_msg)
-
+		
 		while(self.win != None):
 			ch = self.win.getch()
 			if(ch == -1): continue
@@ -228,12 +228,12 @@ class TopLevelWindow(Window):
 		self.window_manager.switch_to_previous_editor()
 		self.repaint()
 
-	def split_horizontally(self):
-		self.window_manager.split_horizontally()
+	def split_horizontally(self, new_bid = None):
+		self.window_manager.split_horizontally(new_bid)
 		self.repaint()
 
-	def split_vertically(self):
-		self.window_manager.split_vertically()
+	def split_vertically(self, new_bid = None):
+		self.window_manager.split_vertically(new_bid)
 		self.repaint()
 
 	def merge_horizontally(self):
@@ -261,3 +261,25 @@ class TopLevelWindow(Window):
 	def save_active_editor(self):
 		aed = self.window_manager.get_active_editor()
 		if(aed != None): aed.keyHandler.handle_save()
+
+	def open_in_new_tab(self, filename, curpos, highlight_info = None):
+		buffer = self.app.buffers.get_buffer_by_filename(filename)
+		if(buffer == None):
+			bid, buffer = self.app.buffers.create_new_buffer(filename, has_backup=BufferManager.backup_exists(filename))
+		else:
+			bid = buffer.id
+
+		self.window_manager.add_tab_with_buffer(bid, buffer)
+		aed = self.window_manager.get_active_editor()
+
+		if(curpos != None): 	
+			aed.curpos = copy.copy(curpos)
+
+		if(highlight_info != None):
+			search_text = highlight_info.get("search_text")
+			match_case = highlight_info.get("match_case")
+			whole_words = highlight_info.get("whole_words")
+			is_regex = highlight_info.get("is_regex")
+			aed.find_all(search_text, match_case, whole_words, is_regex)
+
+		self.repaint()

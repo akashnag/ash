@@ -35,7 +35,7 @@ class FileLoader(Window):
 		activeFile = codecs.open(self.filename, "r", self.encoding)
 		self.total_size = int(os.stat(self.filename).st_size)
 		self.bytes_read = 0
-		data = ""
+		lines = list()
 
 		while(True):
 			ch = self.win.getch()			
@@ -44,15 +44,15 @@ class FileLoader(Window):
 				activeFile.close()
 				return None
 			else:
-				read_data = activeFile.read(LOAD_STEP)
+				read_data = activeFile.readline()
 				if(len(read_data) == 0): break
 				self.bytes_read += len(read_data)
-				data += read_data
+				lines.append(read_data[:-1])
 				self.repaint()
 		
 		activeFile.close()
 		self.win.clear()
-		return data
+		return lines
 		
 	# draw the window
 	def repaint(self):

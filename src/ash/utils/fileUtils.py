@@ -30,6 +30,7 @@ def filter_child_directories(parent_dir, dir_list):
 # get the file name of a file with respect to project_dir (keeps the project_dir name)
 def get_relative_file_title(project_dir, filename):
 	if(filename == None): return ""
+	if(not filename.startswith(project_dir)): return filename
 	pos = project_dir.rfind("/")
 	if(pos == 0):
 		return filename[pos:]
@@ -39,6 +40,7 @@ def get_relative_file_title(project_dir, filename):
 # get the file name of a file with respect to project_dir (removes the project_dir name)
 def get_relative_file_title2(project_dir, filename):
 	if(filename == None): return ""
+	if(not filename.startswith(project_dir)): return filename
 	if(project_dir == "/"):
 		return filename[1:]
 	else:

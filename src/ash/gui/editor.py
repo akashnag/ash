@@ -43,6 +43,8 @@ class Editor(Widget):
 		self.sel_end = CursorPosition(0,0)
 		self.highlighted_text = None
 		self.find_match_case = False
+		self.find_whole_words = False
+		self.find_regex = False
 		self.find_mode = False
 		
 		# set default tab size
@@ -454,15 +456,15 @@ class Editor(Widget):
 				text = text[0:tlen-(last_x-allowed_last_x)]
 				tlen = len(text)
 
-			self.parent.addstr(offset_y, offset_x, text, style)
-				
+			if(tlen > 0): self.parent.addstr(offset_y, offset_x, text, style)
+
 			if(offset_y == self.vcurpos[0] and self.vcurpos[1] >= offset_x and self.vcurpos[1] <= offset_x + tlen):
 				char_pos = self.vcurpos[1] - offset_x
 				if(char_pos >= tlen):
 					char_under_cursor = " "
 				else:
 					char_under_cursor = text[char_pos]
-					
+
 			offset_x += tlen
 		
 		self.highlight(offset_y, init_offset_x, vtext)
@@ -472,6 +474,7 @@ class Editor(Widget):
 		else:
 			if(offset_y == self.vcurpos[0] and n==0):
 				self.parent.addstr(offset_y, self.vcurpos[1], " ", gc("cursor") if self.is_in_focus else gc())
+			
 
 
 	def highlight(self, offset_y, offset_x, vtext):
@@ -481,10 +484,10 @@ class Editor(Widget):
 		
 		corpus = (vtext if self.find_match_case else lower_vtext)
 		
-		if(self.find_regex):
+		if(self.find_regex or self.find_match_case):
 			search = self.highlighted_text
 		else:
-			search = (self.highlighted_text if self.find_match_case else lower_htext)
+			search = lower_htext
 
 		pos = -1
 		while(True):
@@ -492,7 +495,6 @@ class Editor(Widget):
 				pos = find_regex(corpus[pos+1:], search)
 			elif(self.find_whole_words):
 				pos = find_whole_word(corpus[pos+1:], search)
-				log(f"found {search} at {pos}")
 			else:
 				pos = corpus.find(search, pos+1)
 
@@ -522,10 +524,6 @@ class Editor(Widget):
 			count = end.x - start.x
 
 		return " {" + str(count) + "}"
-
-	# returns the string representation of the document
-	def __str__(self):
-		return self.buffer.get_data()
 
 	# returns information about editor-state
 	def get_info(self):

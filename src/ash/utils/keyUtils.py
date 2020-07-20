@@ -122,8 +122,8 @@ class KeyBindings:
 		"SELECT_PAGE_ABOVE"				: ["KEY_SPREVIOUS", "Shift+PgUp", "Select the page above"],
 		"SELECT_PAGE_BELOW"				: ["KEY_SNEXT", "Shift+PgDown", "Select the page below"],
 
-		"SHOW_PROJECT_FIND"				: [fn(12), "F12", "Shows the find window for searching the entire project"],
-		"SHOW_PROJECT_FIND_AND_REPLACE" : [ctrlfn(12), "Ctrl+F12", "Shows the find & replace window for the entire project"]
+		"SHOW_PROJECT_FIND"				: [fn(12), "F12", "Shows the find window for searching in all active buffers"],
+		"SHOW_PROJECT_FIND_AND_REPLACE" : [ctrlfn(12), "Ctrl+F12", "Shows the find & replace window for all active buffers"]
 	}
 
 	@classmethod

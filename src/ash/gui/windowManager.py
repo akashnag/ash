@@ -111,6 +111,7 @@ class TabNode:
 	def create_new_editor(self, bid = None, buffer = None):
 		ed = Editor(self, self.area)
 		if(bid == None): bid, buffer = self.tab.manager.app.buffers.create_new_buffer()
+		if(bid != None and buffer == None): buffer = self.tab.manager.app.buffers.get_buffer_by_id(bid)
 		ed.set_buffer(bid, buffer)
 		return ed
 
@@ -191,28 +192,27 @@ class TabNode:
 			self.children[1].repaint(show_filenames, active_editor)
 			self.parent.draw_junction(self)
 
-	def split_horizontally(self):
+	def split_horizontally(self, new_bid = None):
 		if(self.type != TabNodeType.EDITOR): return
 		split_area1, split_area2, self.border_x = self.area.split_horizontally()
 		y, x, height, width = split_area1.unpack()
-		self.editor.resize(y, x, height, width, True)
-		
+		self.editor.resize(y, x, height, width, True)		
 		self.children = [ 
 			TabNode(self.tab, self, self.win, TabNodeType.EDITOR, split_area1, self.editor),
-			TabNode(self.tab, self, self.win, TabNodeType.EDITOR, split_area2)
+			TabNode(self.tab, self, self.win, TabNodeType.EDITOR, split_area2, bid=new_bid)
 		]
 		self.editor = None
 		self.type = TabNodeType.HORIZONTAL_SPLIT
 		return self.children[0].editor
 
-	def split_vertically(self):
+	def split_vertically(self, new_bid = None):
 		if(self.type != TabNodeType.EDITOR): return
 		split_area1, split_area2, self.border_y = self.area.split_vertically()
 		y, x, height, width = split_area1.unpack()
 		self.editor.resize(y, x, height, width, True)
 		self.children = [ 
 			TabNode(self.tab, self, self.win, TabNodeType.EDITOR, split_area1, self.editor),
-			TabNode(self.tab, self, self.win, TabNodeType.EDITOR, split_area2)
+			TabNode(self.tab, self, self.win, TabNodeType.EDITOR, split_area2, bid=new_bid)
 		]
 		self.editor = None
 		self.type = TabNodeType.VERTICAL_SPLIT
@@ -344,14 +344,14 @@ class WindowTab:
 	def repaint(self):				# Called from WindowManager
 		self.root.repaint(self.manager.show_filenames, self.active_editor)
 
-	def split_horizontally(self):
+	def split_horizontally(self, new_bid = None):
 		self.active_editor.blur()
-		self.active_editor = self.active_editor.parent.split_horizontally()
+		self.active_editor = self.active_editor.parent.split_horizontally(new_bid)
 		self.active_editor.focus()
 
-	def split_vertically(self):
+	def split_vertically(self, new_bid = None):
 		self.active_editor.blur()
-		self.active_editor = self.active_editor.parent.split_vertically()
+		self.active_editor = self.active_editor.parent.split_vertically(new_bid)
 		self.active_editor.focus()
 
 	# this function is both called by TopLevelWindow (caller=None) and by TabNode (caller!=None)
@@ -498,13 +498,13 @@ class WindowManager:
 		if(self.active_tab_index == -1): return
 		self.tabs[self.active_tab_index].merge_vertically()
 
-	def split_horizontally(self):
+	def split_horizontally(self, new_bid = None):
 		if(self.active_tab_index == -1): return
-		self.tabs[self.active_tab_index].split_horizontally()		
+		self.tabs[self.active_tab_index].split_horizontally(new_bid)
 
-	def split_vertically(self):
+	def split_vertically(self, new_bid = None):
 		if(self.active_tab_index == -1): return
-		self.tabs[self.active_tab_index].split_vertically()
+		self.tabs[self.active_tab_index].split_vertically(new_bid)
 
 	def toggle_filename_visibility(self):
 		self.show_filenames = not self.show_filenames

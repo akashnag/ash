@@ -3,38 +3,37 @@
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
-# This module implements the Find & Replace dialog
+# This module implements the Find & Replace dialog for entire project
 
 from ash.gui import *
 from ash.gui.window import *
+from ash.gui.groupedListbox import *
 from ash.gui.textfield import *
 from ash.gui.checkbox import *
 
-class FindReplaceDialog(Window):
-	def __init__(self, parent, y, x, ed, replace = False):
-		super().__init__(y, x, (9 if replace else 7), 50, ("FIND AND REPLACE" if replace else "FIND"))
-		self.ed = ed
+class ProjectFindReplaceDialog(Window):
+	def __init__(self, parent, y, x, buffers, replace = False):
+		super().__init__(y, x, 20, 70, ("SEARCH AND REPLACE IN ALL FILES" if replace else "SEARCH IN ALL FILES"))
+		self.buffers = buffers
 		self.parent = parent
 		self.theme = gc("outer-border")
 		self.win = None
-		self.ed.find_mode = True
 		self.replace = replace
 		
-		init_text = ""
-		if(ed.selection_mode): init_text = ed.get_selected_text().replace("\n", "")
-				
-		self.txtFind = TextField(self, 4, 2, 46, init_text)
-		if(self.replace): self.txtReplace = TextField(self, 6, 2, 46)
+		self.txtFind = TextField(self, 4, 2, 66)
+		if(self.replace): self.txtReplace = TextField(self, 6, 2, 66)
 		
 		self.chkMatchCase = CheckBox(self, (7 if self.replace else 5), 2, "Match case")
 		self.chkWholeWords = CheckBox(self, (7 if self.replace else 5), 18, "Whole words")
 		self.chkRegex = CheckBox(self, (7 if self.replace else 5), 35, "Regex")
+		self.lstResults = GroupedListBox(self, (8 if self.replace else 6), 2, 66, (11 if self.replace else 13), "No results")
 		
 		self.add_widget("txtFind", self.txtFind)
 		if(self.replace): self.add_widget("txtReplace", self.txtReplace)
 		self.add_widget("chkMatchCase", self.chkMatchCase)
 		self.add_widget("chkWholeWords", self.chkWholeWords)
 		self.add_widget("chkRegex", self.chkRegex)
+		self.add_widget("lstResults", self.lstResults)
 
 	# show the window and start the event-loop
 	def show(self):
@@ -47,7 +46,7 @@ class FindReplaceDialog(Window):
 		self.repaint()
 
 		# start of the event loop	
-		while(True):
+		while(self.win != None):
 			ch = self.win.getch()
 			if(ch == -1): continue
 			
@@ -85,46 +84,46 @@ class FindReplaceDialog(Window):
 			if(self.replace): replace_text = str(self.txtReplace)
 
 			if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
-				self.ed.cancel_find()
 				self.hide()
 				self.parent.repaint()
-				self.ed.focus()
 				return
-			elif(KeyBindings.is_key(ch, "FIND_NEXT")):
-				self.handle_find_next_match(search_text)
-			elif(KeyBindings.is_key(ch, "FIND_PREVIOUS")):
-				self.handle_find_previous_match(search_text)
-			elif(self.replace and KeyBindings.is_key(ch, "REPLACE_NEXT")):
-				self.handle_replace(search_text, replace_text)
 			elif(self.replace and KeyBindings.is_key(ch, "REPLACE_ALL")):
 				self.handle_replace_all(search_text, replace_text)
 			elif(self.active_widget_index > -1):
 				aw = self.get_active_widget()
 				aw.perform_action(ch)
-				if(not self.replace or aw != self.txtReplace):
-					self.ed.find_all(str(self.txtFind), self.chkMatchCase.is_checked(), self.chkWholeWords.is_checked(), self.chkRegex.is_checked())
-					self.ed.find_next(str(self.txtFind), self.chkMatchCase.is_checked(), self.chkWholeWords.is_checked(), self.chkRegex.is_checked())
-				
-
+				if(self.replace and aw != self.txtReplace and aw != self.lstResults):
+					self.handle_find_all(str(self.txtFind))
+				elif(aw != self.lstResults):
+					self.handle_find_all(str(self.txtFind))				
+					
 			self.parent.repaint()
 			self.repaint()
 			self.parent.win.refresh()
 
 			if(aw != None): aw.repaint()
 	
-	# <----------------------------- driver functions ------------------------------->
-
-	def handle_find_next_match(self, search_text):
-		self.ed.find_next(search_text, self.chkMatchCase.is_checked(), self.chkWholeWords.is_checked(), self.chkRegex.is_checked())
-
-	def handle_find_previous_match(self, search_text):
-		self.ed.find_previous(search_text, self.chkMatchCase.is_checked(), self.chkWholeWords.is_checked(), self.chkRegex.is_checked())
-
-	def handle_replace(self, search_text, replace_text):
-		self.ed.replace_next(search_text, replace_text, self.chkMatchCase.is_checked(), self.chkWholeWords.is_checked(), self.chkRegex.is_checked())
-
+	def handle_find_all(self, search_text):
+		if(len(search_text.strip()) == 0):
+			search_results = None
+		else:
+			search_results = self.buffers.find_all(search_text, self.chkMatchCase.is_checked(), self.chkWholeWords.is_checked(), self.chkRegex.is_checked())
+		self.lstResults.display(search_results, self.parent.app.buffers)
+		
 	def handle_replace_all(self, search_text, replace_text):
-		self.ed.replace_all(search_text, replace_text, self.chkMatchCase.is_checked(), self.chkWholeWords.is_checked(), self.chkRegex.is_checked())
+		c, fc = self.buffers.replace_all(search_text, replace_text, self.chkMatchCase.is_checked(), self.chkWholeWords.is_checked(), self.chkRegex.is_checked())
+		self.parent.app.show_error(f"{c} occurrences were replaced in {fc} buffers", False)
+
+	def handle_fileopen(self, filename, curpos):			# called from groupedlistbox
+		highlight_info = {
+			"search_text": str(self.txtFind),
+			"match_case": self.chkMatchCase.is_checked(),
+			"whole_words": self.chkWholeWords.is_checked(),
+			"is_regex": self.chkRegex.is_checked()
+		}
+		self.parent.open_in_new_tab(filename, curpos, highlight_info)
+		self.hide()
+		self.parent.repaint()
 
 	# draw the window
 	def repaint(self):

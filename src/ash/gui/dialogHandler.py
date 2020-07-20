@@ -11,6 +11,7 @@ from ash.gui import *
 from ash.core.bufferManager import *
 from ash.gui.modalDialog import *
 from ash.gui.findReplaceDialog import *
+from ash.gui.projectFindReplaceDialog import *
 from ash.gui.checkbox import *
 from ash.gui.listbox import *
 from ash.gui.textfield import *
@@ -19,6 +20,36 @@ from ash.gui.treeview import TreeView
 class DialogHandler:
 	def __init__(self, app):
 		self.app = app
+
+	# <--------------------------- Project-Wide Find and Replace --------------------------------->
+
+	def invoke_project_find(self):
+		mw = self.app.main_window
+		self.app.readjust()
+
+		try:
+			y, x = get_center_coords(self.app, 20, 70)
+		except:
+			self.app.warn_insufficient_screen_space()			
+			return
+
+		self.app.dlgProjectFind = ProjectFindReplaceDialog(mw, y, x, self.app.buffers)
+		self.app.dlgProjectFind.show()
+		mw.repaint()
+
+	def invoke_project_find_and_replace(self):
+		mw = self.app.main_window
+		self.app.readjust()
+
+		try:
+			y, x = get_center_coords(self.app, 20, 70)
+		except:
+			self.app.warn_insufficient_screen_space()			
+			return
+
+		self.app.dlgProjectFindReplace = ProjectFindReplaceDialog(mw, y, x, self.app.buffers, True)
+		self.app.dlgProjectFindReplace.show()
+		mw.repaint()
 
 	# <----------------------------------- Find and Replace --------------------------------->
 

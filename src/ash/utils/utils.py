@@ -6,7 +6,10 @@
 # This module handles all utility functions
 
 from ash.utils import *
+
 import re
+import select
+import sys
 
 # <------------------------- other functions ---------------------->
 
@@ -94,13 +97,16 @@ def translate_line_number(line_num, cum_lengths):
 def should_highlight(cur_row, line_num, cum_lengths, last_printed):
 	if(cur_row == line_num): return True
 	
-	lower = cum_lengths[last_printed - 1]
-	cb = cum_lengths[last_printed] - cum_lengths[last_printed - 1]
-	upper = lower + cb - 1
+	try:
+		lower = cum_lengths[last_printed - 1]
+		cb = cum_lengths[last_printed] - cum_lengths[last_printed - 1]
+		upper = lower + cb - 1
 
-	if(cur_row >= lower and cur_row <= upper):
-		return True
-	else:
+		if(cur_row >= lower and cur_row <= upper):
+			return True
+		else:
+			return False
+	except:
 		return False
 
 # expand tabs in a list of lines
@@ -161,9 +167,7 @@ def find_regex(text, regex):
 		start = span[0]
 		end = span[1]
 		mtext = text[start:end]
-		pos = mtext.find(search)
-		#mtext = text[start+pos:start+pos+len(search)]
-		return start+pos
+		return start
 	else:
 		return -1
 
@@ -193,3 +197,22 @@ def find_whole_word(text, search):
 		return start+pos
 	else:
 		return -1
+
+# read data from stdin pipe
+#def read_piped_data():
+#	data = ""
+#	while(not sys.stdin.isatty()):
+#		x = sys.stdin.read(1)
+#		if(len(x) == 0): break
+#		data += x
+#	return (data if len(data) > 0 else None)
+
+def read_piped_data():
+	data = ""
+	while(sys.stdin in select.select([sys.stdin,],[],[],0.0)[0]):
+		x = sys.stdin.read(1)
+		if(len(x) == 0): break
+		data += x
+
+	sys.stdin = open("/dev/tty")
+	return (data if len(data) > 0 else None)

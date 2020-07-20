@@ -22,7 +22,7 @@ HISTORY_FREQUENCY_SIZE	= 8					# undo: every 8 edit operations
 
 # Buffer class: encapsulates a single buffer/file
 class Buffer:
-	def __init__(self, manager, id, filename = None, encoding = "utf-8", newline = "\n", has_backup = False):
+	def __init__(self, manager, id, filename = None, encoding = "utf-8", has_backup = False):
 		self.manager = manager
 		self.id = id
 		self.filename = normalized_path(filename)
@@ -55,17 +55,12 @@ class Buffer:
 			self.formatter = SyntaxHighlighter(self.filename)
 		
 		self.history = EditHistory(self.lines, CursorPosition(0,0))
-		self.newline = newline
 		if(self.encoding == None): self.encoding = "utf-8"
 
 	# set the text encoding for the buffer
 	def set_encoding(self, encoding):
 		self.encoding = encoding
 
-	# set the newline character to be used
-	def set_newline(self, newline):
-		self.newline = newline
-	
 	# attach an editor to the list of editors mapped to this buffer
 	def attach_editor(self, editor):
 		if(editor not in self.editors): self.editors.append(editor)
@@ -179,6 +174,13 @@ class Buffer:
 		for ed in self.editors:
 			ed.notify_update()
 	
+	# write out a copy
+	def write_a_copy(self, filename, encoding = "utf-8"):
+		textFile = codecs.open(filename, "w", encoding)
+		for line in self.lines:
+			textFile.write(line + "\n")
+		textFile.close()
+
 	# writes out the buffer to a file on disk
 	def write_to_disk(self, filename = None):
 		if(self.filename == None and filename == None): raise(AshException("Error 1: buffer.write_to_disk()"))
@@ -187,11 +189,8 @@ class Buffer:
 		self.formatter = SyntaxHighlighter(self.filename)
 		self.display_name = None
 
-		data = self.get_data()
-		textFile = codecs.open(self.filename, "w", self.encoding)
-		textFile.write(data)
-		textFile.close()
-
+		self.write_a_copy(self.filename, self.encoding)
+		
 		self.last_write_time = time.time()
 		if(self.last_read_time == None): self.last_read_time = self.last_write_time
 
@@ -221,10 +220,6 @@ class Buffer:
 				sloc += 1
 
 		return (nlines, nlines - sloc)
-
-	# returns the entire data (all lines) of the buffer as a single string
-	def get_data(self):
-		return self.newline.join(self.lines)
 
 	# reloads the file from disk
 	def reload_from_disk(self):
@@ -265,10 +260,7 @@ class Buffer:
 	# makes a backup of the data
 	def make_backup(self):
 		if(self.backup_file == None): return
-		data = self.get_data()
-		textFile = codecs.open(self.backup_file, "w", self.encoding)
-		textFile.write(data)
-		textFile.close()
+		self.write_a_copy(self.backup_file, self.encoding)
 		self.last_backup_time = time.time()
 
 	# reads data from the assigned file on disk; optionally from a backup file instead
@@ -283,11 +275,15 @@ class Buffer:
 
 		try:
 			if(int(os.stat(filename).st_size) > LARGE_FILE_THRESHOLD):
-				text = self.manager.app.load_file(filename, self.encoding)
+				self.lines = self.manager.app.load_file(filename, self.encoding)
 				if(text == None): raise(AshFileReadAbortedException(filename))
 			else:
+				self.lines = list()
 				textFile = codecs.open(filename, "r", self.encoding)
-				text = textFile.read()
+				data  = " "
+				while(len(data) > 0):
+					data = textFile.readline()
+					self.lines.append(data[:-1])
 				textFile.close()
 
 			self.last_read_time = time.time()
@@ -298,8 +294,6 @@ class Buffer:
 			raise(AshException("error reading file: " + filename))
 			raise
 
-		self.render_data_to_lines(text)
-		
 		if(not read_from_backup): 
 			self.backup_file = os.path.dirname(self.filename) + "/.ash.b-" + get_file_title(self.filename)
 			self.save_status = True
@@ -323,6 +317,47 @@ class Buffer:
 				self.lines.append(line)
 			if(text.endswith("\n")): self.lines.append("")
 
+	def find_all(self, search_text, match_case, whole_words, is_regex):
+		# return a list of tuples(line_index, pos)
+		search_results = list()
+		for line_index, line in enumerate(self.lines):
+			lower_text = line.lower()
+			lower_stext = search_text.lower()
+			
+			corpus = (line if match_case else lower_text)
+			
+			if(is_regex or match_case):
+				search = search_text
+			else:
+				search = lower_stext
+
+			pos = -1
+			while(True):
+				if(is_regex):
+					pos = find_regex(corpus[pos+1:], search)
+				elif(whole_words):
+					pos = find_whole_word(corpus[pos+1:], search)
+				else:
+					pos = corpus.find(search, pos+1)
+
+				if(pos >= 0):
+					search_results.append( (line_index, pos) )
+				else:
+					break
+		return search_results
+
+	def replace_all(self, search_result, length, replace_text):
+		count = 0
+		for result in search_result:
+			line_index = result[0]
+			pos = result[1]
+			data = self.lines[line_index]
+			self.lines[line_index] = data[0:pos] + replace_text + data[pos+length:]
+			self.save_status = False
+			count += 1
+		self.major_update(self.last_curpos, None, True)
+		return count
+
 # Buffer Manager class: for keeping track of the list of all active buffers
 class BufferManager:
 	def __init__(self, app):
@@ -331,7 +366,7 @@ class BufferManager:
 		self.buffer_count = 0
 	
 	# creates a new buffer: either blank or from a file on disk
-	def create_new_buffer(self, filename = None, encoding = None, newline = "\n", has_backup = False):
+	def create_new_buffer(self, filename = None, encoding = None, has_backup = False):
 		if(self.does_file_have_its_own_buffer(filename)): raise(AshException("Error 5: buffermanager.create_new_buffer()"))
 		if(encoding == None):
 			if(filename == None or not os.path.isfile(filename)):
@@ -339,12 +374,21 @@ class BufferManager:
 			else:
 				encoding = predict_file_encoding(filename)
 		try:
-			self.buffers[self.buffer_count] = Buffer(self, self.buffer_count, filename, encoding, newline, has_backup)
+			self.buffers[self.buffer_count] = Buffer(self, self.buffer_count, filename, encoding, has_backup)
 			self.buffer_count += 1
 			return (self.buffer_count - 1, self.buffers[self.buffer_count - 1])
-		except AshFileReadAbortedException as e:
-			self.buffers[self.buffer_count] = None
-			return (None, None)
+		except:
+			raise(Exception(f"ERROR: filename={filename}"))
+		#except AshFileReadAbortedException as e:
+		#	self.buffers[self.buffer_count] = None
+		#	return (None, None)
+
+	# creates a new buffer: either blank or from a file on disk
+	def create_new_buffer_from_data(self, data):
+		self.buffers[self.buffer_count] = Buffer(self, self.buffer_count, None, "utf-8", False)
+		self.buffers[self.buffer_count].render_data_to_lines(data)
+		self.buffer_count += 1
+		return (self.buffer_count - 1, self.buffers[self.buffer_count - 1])
 
 	# map an editor to a buffer specified by its buffer ID
 	def attach_editor(self, buffer_id, editor):
@@ -471,6 +515,24 @@ class BufferManager:
 		for bid, buffer in self.buffers.items():
 			buffer_list.append( (bid, buffer.save_status, buffer.get_name()) )
 		return buffer_list
+
+	def find_all(self, search_text, match_case, whole_words, is_regex):
+		search_results = dict()
+		for bid, buffer in self.buffers.items():
+			search_results[bid] = buffer.find_all(search_text, match_case, whole_words, is_regex)
+		return search_results
+
+	def replace_all(self, search_text, replace_text, match_case, whole_words, is_regex):
+		search_results = self.find_all(search_text, search_text, match_case, whole_words, is_regex)
+		count = 0
+		buffer_count = 0
+		for bid, buffer in self.buffers.items():
+			info = search_results.get(bid)
+			if(info != None): 
+				x = buffer.replace_all(info, len(search_text), replace_text)
+				count += x
+				if(x > 0): buffer_count += 1
+		return(count, buffer_count)
 
 	# checks to see if a backup file for a given filename exists
 	# backup files start with a ".ash.b-" prefix and reside in the same directory as its

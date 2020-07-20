@@ -9,7 +9,7 @@ import sys
 import copy
 import glob
 
-APP_VERSION			= "0.1.0-dev"
+__version__			= "0.1.0-dev"
 APP_COPYRIGHT_TEXT	= "© Copyright 2020, Akash Nag. All rights reserved."
 APP_LICENSE_TEXT	= "Licensed under the MIT License."
 
@@ -38,5 +38,6 @@ LOG_FILE			= "log.txt"
 CONFIG_FILE			= os.path.expanduser("~/.ashedrc")
 KEY_BINDINGS_FILE	= os.path.expanduser("~/.ashedkeys")
 RECENT_FILES_RECORD	= "recentfiles.txt"
+MAX_RECENT_RECORD	= 100
 
 recent_files_list 	= list()

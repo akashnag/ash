@@ -8,6 +8,7 @@
 from ash import *
 
 import time
+import signal
 
 from ash.core.bufferManager import *
 from ash.core.logger import *
@@ -71,6 +72,9 @@ class AshEditorApp:
 		
 		if(self.argc == 1):
 			self.app_mode = APP_MODE_FILE
+			self.piped_data = read_piped_data()
+			if(self.piped_data != None):
+				self.buffers.create_new_buffer_from_data(self.piped_data)
 		elif(self.argc == 2 and os.path.isdir(self.args[1])):			
 			self.app_mode = APP_MODE_PROJECT
 			self.project_dir = str(os.path.abspath(self.args[1]))
@@ -79,7 +83,7 @@ class AshEditorApp:
 			self.app_mode = APP_MODE_FILE
 			self.open_files_from_commandline_args(progress_handler)
 		
-	def run(self):		
+	def run(self):
 		ret_code = curses.wrapper(self.app_main)
 		return ret_code
 
@@ -91,11 +95,11 @@ class AshEditorApp:
 
 	# returns the version of Ash
 	def get_app_version(self):
-		return APP_VERSION
+		return ash.__version__
 
 	# returns the name of the application
 	def get_app_name(self):
-		return "ash-" + APP_VERSION
+		return "ash-" + self.get_app_version()
 	
 	# initialize the GUI
 	def app_main(self, stdscr):
@@ -106,15 +110,15 @@ class AshEditorApp:
 		curses.raw()
 		
 		# create main window
-		self.main_window = TopLevelWindow(self, self.stdscr, "ash " + APP_VERSION, self.main_key_handler)
+		self.main_window = TopLevelWindow(self, self.stdscr, "ash " + self.get_app_version(), self.main_key_handler)
 		self.command_interpreter = CommandInterpreter(self, self.main_window)
 
 		# adjust sizes
 		self.readjust()
-		
+
 		# load files
 		self.load_files(self.progress_handler)
-
+		
 		if(self.app_mode == APP_MODE_FILE):
 			if(len(self.buffers) > 0):
 				bid = 0
@@ -123,7 +127,7 @@ class AshEditorApp:
 			elif(len(self.buffers) == 0):
 				self.main_window.add_blank_tab()
 		
-		welcome_msg = f"ash-{APP_VERSION} | F1: Help"
+		welcome_msg = f"ash-{self.get_app_version()} | F1: Help"
 		if(self.screen_width < MIN_WIDTH or self.screen_height < MIN_HEIGHT):
 			welcome_msg = f"insufficient screen space, ash may crash unexpectedly; reqd.: {MIN_WIDTH}x{MIN_HEIGHT}"
 
@@ -224,10 +228,10 @@ class AshEditorApp:
 			self.main_window.close_all_except_active_editor()
 			return -1
 		elif(KeyBindings.is_key(ch, "SHOW_PROJECT_FIND")):
-			self.show_error("TODO: Project-wide find")
+			self.dialog_handler.invoke_project_find()
 			return -1
 		elif(KeyBindings.is_key(ch, "SHOW_PROJECT_FIND_AND_REPLACE")):
-			self.show_error("TODO: Project-wide find and replace")
+			self.dialog_handler.invoke_project_find_and_replace()
 			return -1
 		elif(KeyBindings.is_key(ch, "SHOW_COMMAND_WINDOW")):
 			self.command_interpreter.interpret_command(self.prompt("COMMAND", "Enter command:", width=50))

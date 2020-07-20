@@ -23,12 +23,12 @@ class EditorUtility:
 			self.ed.buffer.lines[start.y] = self.ed.buffer.lines[start.y][0:start.x] + self.ed.buffer.lines[start.y][end.x:]
 			self.ed.curpos.x -= len(del_text)
 		else:
-			del_text = self.ed.buffer.lines[start.y][start.x:] + self.ed.buffer.newline
+			del_text = self.ed.buffer.lines[start.y][start.x:] + "\n"
 						
 			# delete entire lines between selection start and end
 			lc = end.y - start.y - 1
 			while(lc > 0):
-				del_text += self.ed.buffer.lines[start.y+1] + self.ed.buffer.newline
+				del_text += self.ed.buffer.lines[start.y+1] + "\n"
 				self.ed.buffer.lines.pop(start.y + 1)
 				self.ed.curpos.y -= 1
 				end.y -= 1
@@ -61,9 +61,9 @@ class EditorUtility:
 			sel_len = end.x - start.x
 			sel_text = self.ed.buffer.lines[start.y][start.x:end.x]
 		else:
-			sel_text = self.ed.buffer.lines[start.y][start.x:] + self.ed.buffer.newline
+			sel_text = self.ed.buffer.lines[start.y][start.x:] + "\n"
 			for row in range(start.y+1, end.y):
-				sel_text += self.ed.buffer.lines[row] + self.ed.buffer.newline
+				sel_text += self.ed.buffer.lines[row] + "\n"
 			sel_text += self.ed.buffer.lines[end.y][0:end.x]
 
 		return sel_text

@@ -1,6 +1,6 @@
 ![ash logo](./assets/banner.png)
 
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/akashnag/ash/blob/master/LICENSE.md) ![Downloads](https://img.shields.io/github/downloads/akashnag/ash/total)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/akashnag/ash/blob/master/LICENSE.md) ![Downloads](https://img.shields.io/github/downloads/akashnag/ash/total) ![Size](https://img.shields.io/github/size/akashnag/ash/dist/ash-editor-0.1.0.dev4.tar.gz) ![SLOC](https://sloc.xyz/github/akashnag/ash)
 
 **ash** is a simple and clean terminal-based text editor, that aims to be easy to use with modern key-bindings. It is capable of handling multiple files simultaneously and has a wide array of modern features. Here is a picture of **ash** editing this README file:
 
@@ -50,13 +50,15 @@ The following is a list of features available in **ash**:
 - View list of recent files
 - Syntax highlighting (partially implemented)
 - Git integration
+- Command palette
 
-**Future goals:**
+**Roadmap:**
 
-- Macros and command-palette
-- Autocompletion/Suggestions
-- Integrated terminal
 - Plugin system
+- Reading from standard input
+- Autocompletion/Suggestions
+- Macros
+- Integrated terminal
 
 ## Installation
 

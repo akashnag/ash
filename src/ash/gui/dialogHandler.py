@@ -259,12 +259,12 @@ class DialogHandler:
 		self.app.readjust()
 		
 		try:
-			y, x = get_center_coords(self.app, 16, 35)
+			y, x = get_center_coords(self.app, 17, 35)
 		except:
 			self.app.warn_insufficient_screen_space()
 			return
 
-		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 16, 35, "PREFERENCES", self.preferences_key_handler)
+		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 17, 35, "PREFERENCES", self.preferences_key_handler)
 		current_tab_size = str(aed.tab_size)
 		txtTabSize = TextField(self.app.dlgPreferences, 3, 2, 31, current_tab_size, True)
 		lstEncodings = ListBox(self.app.dlgPreferences, 5, 2, 31, 6)
@@ -272,6 +272,7 @@ class DialogHandler:
 		chkWordWrap = CheckBox(self.app.dlgPreferences, 13, 2, "Word wrap")
 		chkHardWrap = CheckBox(self.app.dlgPreferences, 13, 18, "Hard wrap")
 		chkStylize = CheckBox(self.app.dlgPreferences, 14, 2, "Syntax highlighting")
+		chkAutoClose = CheckBox(self.app.dlgPreferences, 15, 2, "Complete matching pairs")
 		
 		for enc in SUPPORTED_ENCODINGS:
 			lstEncodings.add_item(("  " if aed.buffer.encoding != enc else TICK_MARK + " ") +  enc)
@@ -280,6 +281,7 @@ class DialogHandler:
 		chkWordWrap.set_value(aed.word_wrap)
 		chkHardWrap.set_value(aed.hard_wrap)
 		chkStylize.set_value(aed.should_stylize)
+		chkAutoClose.set_value(aed.auto_close)
 		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index(aed.buffer.encoding)
 		
 		self.app.dlgPreferences.add_widget("txtTabSize", txtTabSize)
@@ -288,6 +290,7 @@ class DialogHandler:
 		self.app.dlgPreferences.add_widget("chkWordWrap", chkWordWrap)
 		self.app.dlgPreferences.add_widget("chkHardWrap", chkHardWrap)
 		self.app.dlgPreferences.add_widget("chkStylize", chkStylize)
+		self.app.dlgPreferences.add_widget("chkAutoClose", chkAutoClose)
 		
 		self.app.dlgPreferences.show()
 
@@ -308,6 +311,7 @@ class DialogHandler:
 			word_wrap = self.app.dlgPreferences.get_widget("chkWordWrap").is_checked()
 			hard_wrap = self.app.dlgPreferences.get_widget("chkHardWrap").is_checked()
 			stylize = self.app.dlgPreferences.get_widget("chkStylize").is_checked()
+			auto_close = self.app.dlgPreferences.get_widget("chkAutoClose").is_checked()
 
 			self.app.dlgPreferences.hide()
 
@@ -315,12 +319,8 @@ class DialogHandler:
 				self.app.show_error("TAB SIZE", "Incorrect tab size: should be in [1,9]")
 				return -1
 
-			aed.tab_size = tab_size
 			aed.buffer.set_encoding(SUPPORTED_ENCODINGS[encoding_index])
-			aed.toggle_line_numbers(show_line_numbers)
-			aed.set_wrap(word_wrap, hard_wrap)
-			aed.toggle_stylize(stylize)
-
+			aed.set_preferences(tab_size, show_line_numbers, word_wrap, hard_wrap, stylize, auto_close)
 			self.app.main_window.repaint()
 			aed.repaint()
 			return -1

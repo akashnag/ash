@@ -8,9 +8,6 @@
 from ash.gui import *
 from ash.gui.cursorPosition import *
 
-import pyximport; pyximport.install(language_level=3)
-from ash.core.screen import *
-
 class EditorUtility:
 	def __init__(self, ed):
 		self.ed = ed

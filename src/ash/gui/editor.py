@@ -56,6 +56,8 @@ class Editor(Widget):
 		# set wrap options
 		self.word_wrap = False
 		self.hard_wrap = False
+
+		self.auto_close = True
 		
 		self.is_in_focus = False
 
@@ -80,12 +82,16 @@ class Editor(Widget):
 	def destroy(self):			# called by TopLevelWindow.close_active_editor()
 		self.buffer.detach_editor(self)
 
-	def set_wrap(self, word_wrap, hard_wrap):
+	def set_preferences(self, tab_size, show_line_numbers, word_wrap, hard_wrap, stylize, auto_close):
 		self.word_wrap = word_wrap
-		self.hard_wrap = hard_wrap	
+		self.hard_wrap = hard_wrap
+		self.should_stylize = stylize
+		self.auto_close = auto_close
+		self.show_line_numbers = show_line_numbers
+		if(self.screen != None): self.screen.toggle_line_numbers(self.show_line_numbers)
 		self.reset()
 		self.repaint()
-
+	
 	# resize editor
 	def resize(self, y, x, height, width, forced=False):
 		if(not forced and height == self.height and width == self.width): return
@@ -246,16 +252,6 @@ class Editor(Widget):
 			"whole_words": self.find_whole_words,
 			"is_regex": self.find_regex
 		})		
-
-	# turns on/off line numbers
-	def toggle_line_numbers(self, show_numbers):
-		self.show_line_numbers = show_numbers
-		if(self.screen != None): self.screen.toggle_line_numbers(self.show_line_numbers)
-		self.repaint()
-
-	def toggle_stylize(self, stylize):
-		self.should_stylize = stylize
-		self.repaint()
 
 	# <--------------------- stub functions ---------------------->
 

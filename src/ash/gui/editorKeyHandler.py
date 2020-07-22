@@ -249,26 +249,30 @@ class EditorKeyHandler:
 	def handle_printable_character(self, ch):
 		sch = str(chr(ch))
 		
-		if(self.ed.selection_mode): 
-			del_text = self.ed.utility.delete_selected_text()
-
+		if(self.ed.auto_close):
 			# if parenthesis or quotes, put selected-text in between them
 			open = "([{\'\"\`"
 			close = ")]}\'\"\`"
 
 			pos = open.find(sch)
 			if(pos > -1):
-				old_clipboard = clipboard.paste()
-				del_text = open[pos] + del_text + close[pos]
-				clipboard.copy(del_text)
-				self.handle_paste()
-				clipboard.copy(old_clipboard)
-				return True
+				if(self.ed.selection_mode):
+					del_text = self.ed.utility.delete_selected_text()
+					old_clipboard = clipboard.paste()
+					del_text = open[pos] + del_text + close[pos]
+					clipboard.copy(del_text)
+					self.handle_paste()
+					clipboard.copy(old_clipboard)
+					return True
+				else:
+					sch = open[pos] + close[pos]
 
+		if(self.ed.selection_mode): del_text = self.ed.utility.delete_selected_text()
 		text = self.ed.buffer.lines[self.ed.curpos.y]
 		col = self.ed.curpos.x
 		left = text[0:col] if col > 0 else ""
 		right = text[col:] if len(text) > 0 else ""
+				
 		self.ed.buffer.lines[self.ed.curpos.y] = left + sch + right
 		self.ed.curpos.x += 1
 

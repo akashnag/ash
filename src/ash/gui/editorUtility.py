@@ -8,23 +8,29 @@
 from ash.gui import *
 from ash.gui.cursorPosition import *
 
+import pyximport; pyximport.install(language_level=3)
+from ash.core.screen import *
+
 class EditorUtility:
 	def __init__(self, ed):
 		self.ed = ed
 
 	# delete the selected text
 	def delete_selected_text(self):
-		start, end = self.ed.get_selection_endpoints()
+		if(not self.ed.selection_mode): return
+		start, end = self.ed.screen.get_selection_endpoints(self.ed.sel_start, self.ed.sel_end)
 		del_text = ""
 
 		if(start.y == end.y):
 			sel_len = end.x - start.x
 			del_text = self.ed.buffer.lines[start.y][start.x:end.x]
+			if(len(del_text) > 0): self.ed.buffer.add_change(self.ed.curpos)
 			self.ed.buffer.lines[start.y] = self.ed.buffer.lines[start.y][0:start.x] + self.ed.buffer.lines[start.y][end.x:]
-			self.ed.curpos.x -= len(del_text)
+			self.ed.curpos = copy.copy(start)
 		else:
 			del_text = self.ed.buffer.lines[start.y][start.x:] + "\n"
-						
+			if(len(del_text) > 0): self.ed.buffer.add_change(self.ed.curpos)
+			
 			# delete entire lines between selection start and end
 			lc = end.y - start.y - 1
 			while(lc > 0):
@@ -47,6 +53,8 @@ class EditorUtility:
 			self.ed.curpos.y = start.y
 			self.ed.curpos.x = len(self.ed.buffer.lines[start.y])
 			self.ed.buffer.lines[start.y] += text
+
+		self.ed.curpos.x = max([0, self.ed.curpos.x])
 		
 		# turn off selection mode
 		self.ed.selection_mode = False
@@ -54,7 +62,8 @@ class EditorUtility:
 
 	# returns the selected text
 	def get_selected_text(self):
-		start, end = self.ed.get_selection_endpoints()
+		if(not self.ed.selection_mode): return ""
+		start, end = self.ed.screen.get_selection_endpoints(self.ed.sel_start, self.ed.sel_end)
 		sel_text = ""
 
 		if(start.y == end.y):
@@ -68,9 +77,17 @@ class EditorUtility:
 
 		return sel_text
 
+	# returns the length of the selection (for showing in status bar)
+	def get_selection_length_as_string(self):
+		count = len(self.get_selected_text())
+		if(count == 0):
+			return ""
+		else:
+			return " {" + str(count) + "}"
+
 	# increase indent of selected lines
 	def shift_selection_right(self):
-		start, end = self.ed.get_selection_endpoints()
+		start, end = self.ed.screen.get_selection_endpoints(self.ed.sel_start, self.ed.sel_end)
 		for i in range(start.y, end.y+1):
 			self.ed.buffer.lines[i] = "\t" + self.ed.buffer.lines[i]
 		self.ed.curpos.x += 1
@@ -81,7 +98,7 @@ class EditorUtility:
 
 	# decrease indent of selected lines
 	def shift_selection_left(self):
-		start, end = self.ed.get_selection_endpoints()
+		start, end = self.ed.screen.get_selection_endpoints(self.ed.sel_start, self.ed.sel_end)
 
 		# check if all lines have at least 1 indent
 		has_tab_in_all = True
@@ -96,8 +113,7 @@ class EditorUtility:
 				self.ed.buffer.lines[i] = self.ed.buffer.lines[i][1:]
 			self.ed.curpos.x -= 1
 			self.ed.sel_start.x -= 1
-			self.ed.sel_end.x -= 1
-			
+			self.ed.sel_end.x -= 1			
 			return True
 		else:
 			return False
@@ -119,114 +135,7 @@ class EditorUtility:
 	# returns the block of leading whitespaces on a given rendered line 
 	def get_leading_whitespaces_rendered(self, line_index):
 		return self.get_leading_whitespaces_from_text(self.ed.rendered_lines[line_index])
-		
-	# returns the selection endpoints in the correct order
-	def get_selection_endpoints(self):
-		forward_sel = is_start_before_end(self.ed.sel_start, self.ed.sel_end)
-		if(forward_sel):
-			start = copy.copy(self.ed.sel_start)
-			end = copy.copy(self.ed.sel_end)
-		else:
-			start = copy.copy(self.ed.sel_end)
-			end = copy.copy(self.ed.sel_start)
-		return (start, end)
-
-	# performs word-wrapping on a given line, and returns the sub-lines formed thus
-	def soft_wrap(self, text, width, break_words):
-		# assumes 'text' does not contain newlines
-		if("\n" in text): raise(AshException("Newline found during wrap operation!"))
-
-		separators = "~!@#$%^&*()-=+\\|[{]};:,<.>/? \t\n"
-		text += "\n"		# append newline to make life easier
-		n = len(text) - 1
-		lines = list()
-		while(n > width):
-			sub = text[0:width]
-			if(sub[-1] in separators or text[width] == "\n"):
-				# we are lucky to have the line end in a separator
-				lines.append(sub)
-				text = text[width:]
-				n -= width
-				if(text == "\n"): text = ""
-			else:
-				ls = len(sub)
-				rsub = sub[::-1]		# reverse the string
-				index = next((i for i, ch in enumerate(rsub) if ch in separators), None)
-				if(index == None):
-					# no separator found before intended line-break
-					if(break_words):
-						# breaking words are allowed: switch to hard-wrap
-						lines.append(sub)
-						text = text[width:]
-						n -= width
-						if(text == "\n"): text = ""
-					else:
-						# breaking words are not allowed: find next separator position
-						index = next((i for i, ch in enumerate(text) if ch in separators), None)
-						# index will never be None bcoz we have appended newline to end
-						if(text[index] == "\n"):
-							lines.append(text[0:index])
-							text = ""
-							n = 0
-						else:
-							sub = text[0:index+1]
-							text = text[index+1:]
-							lines.append(sub)
-							n -= index+1
-				else:
-					sub = text[0:ls-index]
-					lines.append(sub)
-					text = text[ls-index:]
-					n -= (ls-index)
-		
-		lines.append(text[0:n])
-		return lines
-
-	# returns the list of sub-lines formed from wrapping a given line
-	# high-level function: calles soft_wrap() internally
-	def wrapped(self, line, width, word_wrap, break_words):
-		sub_lines = list()
-		if(not word_wrap):
-			sub_lines.append(line)
-		else:
-			sub_lines = self.soft_wrap(line, width, break_words)
-		return sub_lines
-
-	# returns the cursor position in a wrapped document given its actual position in the raw document
-	def get_wrapped_curpos(self, sublines, x):
-		if(len(sublines) <= 1): return (0,x)
-
-		i = 0
-		vpos = -1
-		cpos = x
-		for l in sublines:
-			if(cpos < len(l)):
-				vpos = i
-				break
-			else:
-				cpos -= len(l)
-			i += 1
-
-		return (vpos, cpos)
-
-	def get_rendered_pos(self, orig_pos):
-		colspans = self.ed.grouped_colspans[orig_pos.y]
-		cumlength = self.ed.cum_sub_line_lengths[orig_pos.y]
-		y = cumlength
-		x = 0
-		found = False
-		for i, cs in enumerate(colspans):
-			if(orig_pos.x >= cs[0] and orig_pos.x <= cs[1]):
-				found = True
-				y += i
-				x = (orig_pos.x - cs[0])
-				break
-		if(not found):
-			y += len(colspans) - 1
-			x = colspans[len(colspans)-1][1] + 1
-		rendered_pos = CursorPosition(y,x)
-		return rendered_pos
-
+	
 	# finds all text in the given document
 	def find_all(self, s, match_case, whole_words, regex):
 		self.ed.find_mode = (True if len(s) > 0 else False)

@@ -28,7 +28,8 @@ setup(
 		'Pygments>=2.3.1',
 		'pyperclip>=1.8.0',
 		'Send2Trash>=1.5.0',
-		'GitPython>=3.1.7'
+		'GitPython>=3.1.7',
+		'Cython>=0.29.21'
 	],
     packages=['ash', 'ash.core', 'ash.utils', 'ash.formatting', 'ash.gui'],
     package_dir = { 'ash': 'src/ash', 'ash.core': 'src/ash/core', 'ash.utils': 'src/ash/utils', 'ash.formatting': 'src/ash/formatting', 'ash.gui': 'src/ash/gui'},

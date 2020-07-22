@@ -38,7 +38,7 @@ def get_default_colors():
 	element_colors["line-number"] = ("lightgray", "darkgray")
 	element_colors["highlighted-line-number"] = ("white", "darkgray")
 	element_colors["selection"] = ("darkgray", "yellow")
-	element_colors["highlight"] = ("white", "magenta")
+	element_colors["highlight"] = ("darkgray", "magenta")
 	element_colors["formfield"] = ("cyan", "darkgray")
 	element_colors["formfield-focussed"] = ("darkgray", "cyan")
 	element_colors["formfield-selection-blurred"] = ("darkgray", "dimwhite")

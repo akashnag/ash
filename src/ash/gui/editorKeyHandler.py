@@ -58,82 +58,16 @@ class EditorKeyHandler:
 
 	# handle the 4 arrow keys
 	def handle_arrow_keys(self, ch):
-		row = self.ed.curpos.y
-		col = self.ed.curpos.x
-		clen = len(self.ed.buffer.lines[row])
-		nlen = len(self.ed.buffer.lines)
-		nwlen = len(self.ed.rendered_lines)
-		
 		if(KeyBindings.is_key(ch, "MOVE_CURSOR_LEFT")):
-			# move cursor left
-			if(row == 0 and col == 0):
-				beep()
-			elif(col == 0):
-				self.ed.curpos.y -= 1
-				self.ed.curpos.x = len(self.ed.buffer.lines[row-1])
-			else:
-				# move cursor back only if selection-mode is inactive
-				if(not self.ed.selection_mode): self.ed.curpos.x -= 1
+			self.ed.curpos = self.ed.screen.get_curpos_after_move_left(self.ed.curpos, self.ed.tab_size, self.ed.word_wrap, self.ed.hard_wrap)
 		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_RIGHT")):
-			# move cursor right
-			if(row == nlen-1 and col == clen):
-				beep()
-			elif(col == clen):
-				self.ed.curpos.y += 1
-				self.ed.curpos.x = 0
-			else:
-				if(not self.ed.selection_mode):
-					self.ed.curpos.x += 1
-				else:
-					# move cursor to the end of selection
-					start, end = self.ed.get_selection_endpoints()
-					self.ed.curpos.y = end.y
-					self.ed.curpos.x = end.x
+			self.ed.curpos = self.ed.screen.get_curpos_after_move_right(self.ed.curpos, self.ed.tab_size, self.ed.word_wrap, self.ed.hard_wrap)			
 		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_DOWN")):
-			# move cursor down
-			if(not self.ed.word_wrap and row == nlen-1):
-				beep()
-			elif(self.ed.word_wrap and self.ed.rendered_curpos.y == nwlen - 1):
-				beep()
-			else:
-				if(self.ed.word_wrap):
-					try:
-						if(self.ed.col_spans[self.ed.rendered_curpos.y + 1][0] == 0):
-							self.ed.curpos.y += 1
-
-						self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y + 1][0]
-					except:
-						pass
-				else:
-					if(self.ed.curpos.x > len(self.ed.buffer.lines[row+1])):
-						# cannot preserve column, so move to end
-						self.ed.curpos.x = len(self.ed.buffer.lines[row+1])
-					self.ed.curpos.y += 1
+			self.ed.curpos = self.ed.screen.get_curpos_after_move_down(self.ed.curpos, self.ed.tab_size, self.ed.word_wrap, self.ed.hard_wrap)			
 		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_UP")):
-			# move cursor up
-			if(not self.ed.word_wrap and row == 0):
-				beep()
-			elif(self.ed.word_wrap and self.ed.rendered_curpos.y == 0):
-				beep()
-			else:
-				if(self.ed.word_wrap):
-					if(self.ed.col_spans[self.ed.rendered_curpos.y][0] == 0):
-						self.ed.curpos.y -= 1
-					
-					self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y - 1][0]
-				else:
-					if(self.ed.curpos.x > len(self.ed.buffer.lines[row-1])):
-						# cannot preserve column, so move to end
-						self.ed.curpos.x = len(self.ed.buffer.lines[row-1])
-					self.ed.curpos.y -= 1
-
+			self.ed.curpos = self.ed.screen.get_curpos_after_move_up(self.ed.curpos, self.ed.tab_size, self.ed.word_wrap, self.ed.hard_wrap)
+			
 		self.ed.selection_mode = False		# turn off selection mode
-
-		# ensure cursor position does not exceed editor/document limits
-		self.ed.curpos.x = min([self.ed.curpos.x, len(self.ed.buffer.lines[self.ed.curpos.y])])
-		self.ed.curpos.x = max(0, self.ed.curpos.x)
-		self.ed.curpos.y = min([self.ed.curpos.y, len(self.ed.buffer.lines)-1])
-		self.ed.curpos.y = max(0, self.ed.curpos.y)
 
 	
 	# handles Ctrl+Arrow key combinations
@@ -166,74 +100,19 @@ class EditorKeyHandler:
 	# handles Shift+Arrow key combinations
 	# behaviour: initiates/extends text selection
 	def handle_shift_arrow_keys(self, ch):
-		row = self.ed.curpos.y
-		col = self.ed.curpos.x
-		nlen = len(self.ed.buffer.lines)
-		clen = len(self.ed.buffer.lines[row])
-		nwlen = len(self.ed.rendered_lines)
-
 		if(not self.ed.selection_mode):
 			self.ed.selection_mode = True
 			self.ed.sel_start = copy.copy(self.ed.curpos)
 		
 		if(KeyBindings.is_key(ch, "SELECT_CHARACTER_LEFT")):
-			# select left
-			if(row == 0 and col == 0):
-				beep()
-			elif(col == 0):
-				self.ed.curpos.y -= 1
-				self.ed.curpos.x = len(self.ed.buffer.lines[row-1])
-			else:
-				self.ed.curpos.x -= 1
+			self.ed.curpos = self.ed.screen.get_curpos_after_move_left(self.ed.curpos, self.ed.tab_size, self.ed.word_wrap, self.ed.hard_wrap)
 		elif(KeyBindings.is_key(ch, "SELECT_CHARACTER_RIGHT")):
-			# select right
-			if(row == nlen-1 and col == clen):
-				beep()
-			elif(col == clen):
-				self.ed.curpos.y += 1
-				self.ed.curpos.x = 0
-			else:
-				self.ed.curpos.x += 1
+			self.ed.curpos = self.ed.screen.get_curpos_after_move_right(self.ed.curpos, self.ed.tab_size, self.ed.word_wrap, self.ed.hard_wrap)			
 		elif(KeyBindings.is_key(ch, "SELECT_LINE_BELOW")):
-			# select below
-			if(not self.ed.word_wrap and row == nlen-1):
-				beep()
-			elif(self.ed.word_wrap and self.ed.rendered_curpos.y == nwlen - 1):
-				beep()
-			else:
-				if(self.ed.word_wrap):
-					if(self.ed.col_spans[self.ed.rendered_curpos.y + 1][0] == 0):
-						self.ed.curpos.y += 1
-					
-					self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y + 1][0]
-				else:
-					if(self.ed.curpos.x > len(self.ed.buffer.lines[row+1])):
-						# cannot preserve column
-						self.ed.curpos.x = len(self.ed.buffer.lines[row+1])
-					self.ed.curpos.y += 1
-		elif(KeyBindings.is_key(ch, "SELECT LINE ABOVE")):
-			# select above
-			if(not self.ed.word_wrap and row == 0):
-				beep()
-			elif(self.ed.word_wrap and self.ed.rendered_curpos.y == 0):
-				beep()
-			else:
-				if(self.ed.word_wrap):
-					if(self.ed.col_spans[self.ed.rendered_curpos.y][0] == 0):
-						self.ed.curpos.y -= 1
-					
-					self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y - 1][0]
-				else:
-					if(self.ed.curpos.x > len(self.ed.buffer.lines[row-1])):
-						# cannot preserve column
-						self.ed.curpos.x = len(self.ed.buffer.lines[row-1])
-					self.ed.curpos.y -= 1
-
-		# ensure cursor does not exceed bounds
-		self.ed.curpos.x = min([self.ed.curpos.x, len(self.ed.buffer.lines[self.ed.curpos.y])])
-		self.ed.curpos.x = max(0, self.ed.curpos.x)
-		self.ed.curpos.y = min([self.ed.curpos.y, len(self.ed.buffer.lines)-1])
-		self.ed.curpos.y = max(0, self.ed.curpos.y)
+			self.ed.curpos = self.ed.screen.get_curpos_after_move_down(self.ed.curpos, self.ed.tab_size, self.ed.word_wrap, self.ed.hard_wrap)			
+		elif(KeyBindings.is_key(ch, "SELECT_LINE_ABOVE")):
+			self.ed.curpos = self.ed.screen.get_curpos_after_move_up(self.ed.curpos, self.ed.tab_size, self.ed.word_wrap, self.ed.hard_wrap)
+		
 		self.ed.sel_end = copy.copy(self.ed.curpos)
 
 	# handles DEL key press: delete a character to the right
@@ -294,48 +173,22 @@ class EditorKeyHandler:
 	def handle_home_end_keys(self, ch):
 		self.ed.selection_mode = False
 
-		if(self.ed.word_wrap):
-			if(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_START")):
-				# home
-				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][0]
-			elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_END")):
-				# end
-				extra = 0
-				if(self.ed.rendered_curpos.y == len(self.ed.col_spans)-1 or self.ed.col_spans[self.ed.rendered_curpos.y + 1][0] == 0): extra = 1
-				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][1] + extra
-		else:
-			if(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_START")):
-				# home
-				# toggle between beginning of line and beginning of indented-code
-				if(self.ed.curpos.x == 0):
-					self.ed.curpos.x = len(self.ed.get_leading_whitespaces(self.ed.curpos.y))
-				else:
-					self.ed.curpos.x = 0
-			elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_END")):
-				# end
-				self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
-
+		if(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_START")):
+			self.ed.curpos = self.ed.screen.get_curpos_after_move_home(self.ed.curpos, self.ed.tab_size, self.ed.word_wrap, self.ed.hard_wrap)
+		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_END")):
+			self.ed.curpos = self.ed.screen.get_curpos_after_move_end(self.ed.curpos, self.ed.tab_size, self.ed.word_wrap, self.ed.hard_wrap)
+		
 	# handles Shift+Home and Shift+End keys
 	def handle_shift_home_end_keys(self, ch):
 		if(not self.ed.selection_mode):
 			self.ed.selection_mode = True
 			self.ed.sel_start = copy.copy(self.ed.curpos)
 		
-		if(self.ed.word_wrap):
-			if(KeyBindings.is_key(ch, "SELECT_TILL_LINE_START")):
-				# shift+home
-				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][0]
-			elif(KeyBindings.is_key(ch, "SELECT_TILL_LINE_END")):
-				# shift+end
-				self.ed.curpos.x = self.ed.col_spans[self.ed.rendered_curpos.y][1]
-		else:
-			if(KeyBindings.is_key(ch, "SELECT_TILL_LINE_START")):
-				# shift+home
-				self.ed.curpos.x = 0
-			elif(KeyBindings.is_key(ch, "SELECT_TILL_LINE_END")):
-				# shift+end
-				self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
-		
+		if(KeyBindings.is_key(ch, "SELECT_TILL_LINE_START")):
+			self.ed.curpos = self.ed.screen.get_curpos_after_move_home(self.ed.curpos, self.ed.tab_size, self.ed.word_wrap, self.ed.hard_wrap)
+		elif(KeyBindings.is_key(ch, "SELECT_TILL_LINE_END")):
+			self.ed.curpos = self.ed.screen.get_curpos_after_move_end(self.ed.curpos, self.ed.tab_size, self.ed.word_wrap, self.ed.hard_wrap)
+
 		self.ed.sel_end = copy.copy(self.ed.curpos)
 
 	# handles TAB/Ctrl+I and Shift+TAB keys
@@ -393,7 +246,6 @@ class EditorKeyHandler:
 		return True
 			
 	# handles printable characters in the charset
-	# TO DO: add support for Unicode
 	def handle_printable_character(self, ch):
 		sch = str(chr(ch))
 		
@@ -418,7 +270,7 @@ class EditorKeyHandler:
 		left = text[0:col] if col > 0 else ""
 		right = text[col:] if len(text) > 0 else ""
 		self.ed.buffer.lines[self.ed.curpos.y] = left + sch + right
-		self.ed.curpos.x += 1		
+		self.ed.curpos.x += 1
 
 		return True
 			
@@ -458,11 +310,9 @@ class EditorKeyHandler:
 		if(self.ed.selection_mode): self.ed.selection_mode = False
 
 		if(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_DOCUMENT_START")):
-			# CTRL+HOME
 			self.ed.curpos.y = 0
 			self.ed.curpos.x = 0
 		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_DOCUMENT_END")):
-			# CTRL+END
 			self.ed.curpos.y = len(self.ed.buffer.lines)-1
 			self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
 	
@@ -475,7 +325,6 @@ class EditorKeyHandler:
 		h = self.ed.height
 		nlen = len(self.ed.buffer.lines)
 		if(KeyBindings.is_key(ch, "SELECT_PAGE_ABOVE")):
-			# SHIFT+PGUP
 			if(self.ed.curpos.y == 0):
 				if(self.ed.curpos.x == 0):
 					beep()
@@ -490,7 +339,6 @@ class EditorKeyHandler:
 			self.ed.curpos.x = 0
 			self.ed.sel_end = copy.copy(self.ed.curpos)
 		elif(KeyBindings.is_key(ch, "SELECT_PAGE_BELOW")):
-			# SHIFT+PGDN
 			if(self.ed.curpos.y == nlen-1):
 				if(self.ed.curpos.x == len(self.ed.buffer.lines[nlen-1])):
 					beep()
@@ -507,11 +355,11 @@ class EditorKeyHandler:
 		
 	def handle_undo(self):
 		self.ed.buffer.do_undo()
-		self.ed.parent.repaint(caller=self)
+		self.ed.parent.bottom_up_repaint()
 
 	def handle_redo(self):
 		self.ed.buffer.do_redo()
-		self.ed.parent.repaint(caller=self)
+		self.ed.parent.bottom_up_repaint()
 
 	def handle_save(self):
 		if(not self.ed.buffer.save_status):

@@ -77,6 +77,11 @@ class Buffer:
 	def has_file(self):
 		return (False if self.filename == None else True)
 
+	def add_change(self, curpos):
+		self.history.add_change(self.lines, curpos)
+		self.undo_edit_count = 0
+		self.last_curpos = curpos
+
 	# revert the buffer to its previous state
 	def do_undo(self):
 		if(self.undo_edit_count > 0): 		# add the latest change forcefully
@@ -145,7 +150,6 @@ class Buffer:
 
 		self.last_curpos = curpos
 		self.last_caller = caller
-		caller.notify_self_update()
 		self.check_if_modified_externally()
 	
 	def check_if_modified_externally(self):
@@ -377,11 +381,9 @@ class BufferManager:
 			self.buffers[self.buffer_count] = Buffer(self, self.buffer_count, filename, encoding, has_backup)
 			self.buffer_count += 1
 			return (self.buffer_count - 1, self.buffers[self.buffer_count - 1])
-		except:
-			raise(Exception(f"ERROR: filename={filename}"))
-		#except AshFileReadAbortedException as e:
-		#	self.buffers[self.buffer_count] = None
-		#	return (None, None)
+		except AshFileReadAbortedException as e:
+			self.buffers[self.buffer_count] = None
+			return (None, None)
 
 	# creates a new buffer: either blank or from a file on disk
 	def create_new_buffer_from_data(self, data):

@@ -259,18 +259,19 @@ class DialogHandler:
 		self.app.readjust()
 		
 		try:
-			y, x = get_center_coords(self.app, 16, 30)
+			y, x = get_center_coords(self.app, 16, 35)
 		except:
 			self.app.warn_insufficient_screen_space()
 			return
 
-		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 16, 30, "PREFERENCES", self.preferences_key_handler)
+		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 16, 35, "PREFERENCES", self.preferences_key_handler)
 		current_tab_size = str(aed.tab_size)
-		txtTabSize = TextField(self.app.dlgPreferences, 3, 2, 26, current_tab_size, True)
-		lstEncodings = ListBox(self.app.dlgPreferences, 5, 2, 26, 6)
+		txtTabSize = TextField(self.app.dlgPreferences, 3, 2, 31, current_tab_size, True)
+		lstEncodings = ListBox(self.app.dlgPreferences, 5, 2, 31, 6)
 		chkShowLineNumbers = CheckBox(self.app.dlgPreferences, 12, 2, "Show line numbers")
-		chkWordWrap = CheckBox(self.app.dlgPreferences, 13, 2, "Word Wrap")
-		chkHardWrap = CheckBox(self.app.dlgPreferences, 14, 2, "Hard Wrap")
+		chkWordWrap = CheckBox(self.app.dlgPreferences, 13, 2, "Word wrap")
+		chkHardWrap = CheckBox(self.app.dlgPreferences, 13, 18, "Hard wrap")
+		chkStylize = CheckBox(self.app.dlgPreferences, 14, 2, "Syntax highlighting")
 		
 		for enc in SUPPORTED_ENCODINGS:
 			lstEncodings.add_item(("  " if aed.buffer.encoding != enc else TICK_MARK + " ") +  enc)
@@ -278,6 +279,7 @@ class DialogHandler:
 		chkShowLineNumbers.set_value(aed.show_line_numbers)
 		chkWordWrap.set_value(aed.word_wrap)
 		chkHardWrap.set_value(aed.hard_wrap)
+		chkStylize.set_value(aed.should_stylize)
 		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index(aed.buffer.encoding)
 		
 		self.app.dlgPreferences.add_widget("txtTabSize", txtTabSize)
@@ -285,6 +287,7 @@ class DialogHandler:
 		self.app.dlgPreferences.add_widget("chkShowLineNumbers", chkShowLineNumbers)
 		self.app.dlgPreferences.add_widget("chkWordWrap", chkWordWrap)
 		self.app.dlgPreferences.add_widget("chkHardWrap", chkHardWrap)
+		self.app.dlgPreferences.add_widget("chkStylize", chkStylize)
 		
 		self.app.dlgPreferences.show()
 
@@ -304,6 +307,7 @@ class DialogHandler:
 			show_line_numbers = self.app.dlgPreferences.get_widget("chkShowLineNumbers").is_checked()
 			word_wrap = self.app.dlgPreferences.get_widget("chkWordWrap").is_checked()
 			hard_wrap = self.app.dlgPreferences.get_widget("chkHardWrap").is_checked()
+			stylize = self.app.dlgPreferences.get_widget("chkStylize").is_checked()
 
 			self.app.dlgPreferences.hide()
 
@@ -315,6 +319,7 @@ class DialogHandler:
 			aed.buffer.set_encoding(SUPPORTED_ENCODINGS[encoding_index])
 			aed.toggle_line_numbers(show_line_numbers)
 			aed.set_wrap(word_wrap, hard_wrap)
+			aed.toggle_stylize(stylize)
 
 			self.app.main_window.repaint()
 			aed.repaint()

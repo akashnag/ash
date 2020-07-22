@@ -15,3 +15,12 @@ class AshException(Exception):
 
 	def __str__(self):
 		return self.error_msg
+
+class AshFileReadAbortedException(Exception):
+	def __init__(self, filename):
+		self.error_msg = f"Error in reading file: {filename}"
+		super().__init__(self.error_msg)
+		log(self.error_msg)
+
+	def __str__(self):
+		return self.error_msg

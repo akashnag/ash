@@ -149,6 +149,7 @@ class DialogHandler:
 	# <----------------------------------- Close Editor/App --------------------------------->
 
 	def invoke_forced_quit(self):
+		self.app.session_storage.destroy()
 		self.app.main_window.hide()
 
 	def invoke_quit(self):
@@ -161,9 +162,9 @@ class DialogHandler:
 		
 		if(unsaved_count == 0):
 			if(editor_count <= 1 and am == APP_MODE_FILE):
-				mw.hide()
+				self.invoke_forced_quit()
 			elif(editor_count == 0 and am == APP_MODE_PROJECT):
-				mw.hide()
+				self.invoke_forced_quit()
 			else:
 				mw.close_active_editor()
 		else:
@@ -175,7 +176,7 @@ class DialogHandler:
 			if(response == None): return
 			if(response): self.app.buffers.write_all_wherever_possible()
 			
-			mw.hide()
+			self.invoke_forced_quit()
 			
 	# <--------------------------- Recent Files List ------------------------------>
 
@@ -502,7 +503,8 @@ class DialogHandler:
 					self.app.dlgFileOpen.hide()
 					self.app.app_mode = APP_MODE_PROJECT
 					self.app.project_dir = filename
-					self.app.open_project(self.app.progress_handler)
+					# do not ask to restore session because files may have been modified already (since ash is already running and user may have been working on those files) and restoring edit history may clear that
+					self.app.open_project(self.app.progress_handler, False)
 					mw.repaint()
 					return -1
 

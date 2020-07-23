@@ -33,11 +33,9 @@ MIN_HEIGHT			= 22
 MIN_EDITOR_WIDTH	= 15
 MIN_EDITOR_HEIGHT	= 5
 
-# name of the log and configuration files
-LOG_FILE			= "log.txt"
-CONFIG_FILE			= os.path.expanduser("~/.ashedrc")
-KEY_BINDINGS_FILE	= os.path.expanduser("~/.ashedkeys")
-RECENT_FILES_RECORD	= "recentfiles.txt"
-MAX_RECENT_RECORD	= 100
-
-recent_files_list 	= list()
+# path to the application data directory and configuration files
+APP_DATA_DIR		= os.path.join(os.getenv("HOME"), ".ash-editor")
+LOG_FILE 			= os.path.join(APP_DATA_DIR, "log.txt")
+KEY_BINDINGS_FILE	= os.path.join(APP_DATA_DIR, "keymappings.txt")
+THEME_FILE			= os.path.join(APP_DATA_DIR, "theme.txt")
+SESSION_FILE		= os.path.join(APP_DATA_DIR, "session.dat")

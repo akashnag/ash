@@ -101,3 +101,5 @@ These key combinations work when the Project Explorer dialog-box is active:
 ## Other features
 
 **ash** also provides certain shortcuts for helping in editing code. It has support for auto-indentation when the previous line is indented. Also, pressing any of theese keys: <kbd>\`</kbd> <kbd>\'</kbd> <kbd>\"</kbd> <kbd>\(</kbd> <kbd>\{</kbd> <kbd>\[</kbd> while some text is selected, will cause **ash** to enclose the selected text within the pair of matching quotes/brackets.
+
+All of these key bindings can be changed by editing the file `~/.ash-editor/keymappings.txt`.

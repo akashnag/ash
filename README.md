@@ -10,7 +10,7 @@
 
 ## Table of Contents
 
-- [Design Goals](#design-goals)
+- [Features](#features)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Installing **ash**](#installing-ash)
@@ -25,40 +25,44 @@
 
 - - -
 
-## Design Goals
-
-The following is a list of design goals for **ash**:
-
-- Easy to use
-- Clean and intuitive interface
-- Minimal dependencies
-- Common keybindings
-
-**Features:**
+## Features
 
 The following is a list of features available in **ash**:
 
+- Easy to use, clean and intuitive interface
+- Common key bindings (Help on F1, Arrow keys for movement, Shift+Arrow/Home/End/PgUp/PgDown for selecting text, cut/copy/paste using Ctrl+X/C/V, undo/redo using Ctrl+Z/Y, find/replace/goto using Ctrl+F/H/G, etc.)
+- Support for remapping key bindings to your taste
 - Common editor features such as undo/redo, line numbers, find-replace, cut-copy-paste, etc.
 - True support for wrapping (both hard & soft) with intuitive cursor movements along wrapped text
 - Auto-backup
 - Support for Unicode
 - Project mode (opening a directory instead of individual files)
-- Support for splits/windows
+- Complete session (for projects) and undo persistence (turned on for projects opened directly from command-line)
+- Live search
+- Support for search/replace in **all** open files
+- Support for searching using regular expressions
+- Auto-indentation, Select+Tab/Shift-Tab to increase/decrease indent
+- Auto insertion of matching braces/quotes and auto-enclosure when text is selected and braces/quotes are typed
+- Support for unlimited splits per tab (subject to screen size) and support for unlimited tabs
 - Support for various text-encodings
+- Checks (live) and reloads (if user permits) files which have been modified externally
 - Selection highlighting (highlights text under selection wherever they occur in the document)
 - Color scheme customization
-- View list of recent files
-- Syntax highlighting (partially implemented)
-- Git integration
+- View list of recent files, view project explorer (in project mode)
+- Syntax highlighting (limited)
+- Git integration (shows untracked, modified files, etc.)
 - Command palette
 
-**Roadmap:**
+**Roadmap for the future:**
+
+The following features will be implemented gradually:
 
 - Plugin system
 - Reading from standard input
 - Autocompletion/Suggestions
 - Macros
 - Integrated terminal
+- Mouse support
 
 ## Installation
 
@@ -92,6 +96,8 @@ The above command downloads **ash** and installs it locally on your system. To b
 
 #### Install the latest stable release
 
+**Note: the stable release may not contain all features listed above**
+
 Go to the **ash** [Website](https://akashnag.github.io/ash) and download the latest stable release. Then extract the downloaded tar-ball into a folder and once inside that folder, open up your terminal from there and execute:
 
 ```bash
@@ -100,7 +106,7 @@ $ sudo pip3 install .
 
 #### Install the latest nightly release
 
-Go to the **ash** [Website](https://akashnag.github.io/ash) and download the latest nightly release. Then extract the downloaded tar-ball into a folder and once inside that folder, open up your terminal from there and execute:
+The nightly builds contains all the latest features of ash. Go to the **ash** [Website](https://akashnag.github.io/ash) and download the latest nightly release. Then extract the downloaded tar-ball into a folder and once inside that folder, open up your terminal from there and execute:
 
 ```bash
 $ sudo pip3 install .
@@ -137,7 +143,7 @@ Since **ash** is still under development, prebuilt binaries are not yet availabl
 
 ## Colors
 
-If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `.ashedrc` file inside your home directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.ashedrc`.
+If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `theme.txt` file inside your home directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.ash-editor/theme.txt`.
 
 ## Usage
 
@@ -171,7 +177,7 @@ See the [Key Bindings](KEYBINDINGS.md) for help on how to navigate in ash.
 
 If you find any bugs, please report them. I am also happy to accept pull requests from anyone for either bug-fixes, performance improvements, or for implementing the not-yet-implemented features listed above. Please consider contributing towards new features **only when** the features listed above have been fully implemented. For more information on what features to implement and the project structure, see the [Contribution Guidelines](CONTRIBUTING.md)
 
-You can use the [GitHub issue tracker](https://github.com/akashnag/ash/issues) to report bugs, ask questions, or suggest new features.
+You can use the [GitHub issue tracker](https://github.com/akashnag/ash/issues) to report bugs, ask questions, or suggest new features. You can include the log if that is relevant, which can be found in `~/.ash-editor/log.txt`.
 
 For discussions related to the development roadmap and the **ash** editor in general, you can join the [Gitter chat](https://gitter.im/akashnag/ash).
 

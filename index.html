@@ -68,27 +68,32 @@
 			
 				<hr/>
 				<h2><a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h2>
-				<ul>
-					<li>Easy to use</li>
-					<li>Clean and intuitive interface</li>
-					<li>Minimal dependencies</li>
-					<li>Common keybindings</li>
-				</ul>
-
-				<p>The following is a list of features available in <strong>ash</strong>:</p>
+				<p>The following is a list of features available in <strong>ash</strong> (Note: all these features are available in the nightly build but may not be available in the stable release):</p>
 				
 				<ul>
+					<li>Easy to use, clean and intuitive interface</li>
+					<li>Common key bindings (Help on F1, Arrow keys for movement, Shift+Arrow/Home/End/PgUp/PgDown for selecting text, cut/copy/paste using Ctrl+X/C/V, undo/redo using Ctrl+Z/Y, find/replace/goto using Ctrl+F/H/G, etc.)</li>
+					<li>Support for remapping key bindings to your taste</li>
 					<li>Common editor features such as undo/redo, line numbers, find-replace, cut-copy-paste, etc.</li>
-					<li>True support for wrapping (both hard &amp; soft) with intuitive cursor movements along wrapped text</li>
+					<li>True support for wrapping (both hard & soft) with intuitive cursor movements along wrapped text</li>
 					<li>Auto-backup</li>
 					<li>Support for Unicode</li>
 					<li>Project mode (opening a directory instead of individual files)</li>
-					<li>Support for splits/windows</li>
+					<li>Complete session (for projects) and undo persistence (turned on for projects opened directly from command-line)</li>
+					<li>Live search</li>
+					<li>Support for search/replace in <strong>all</strong> open files</li>
+					<li>Support for searching using regular expressions</li>
+					<li>Auto-indentation, Select+Tab/Shift-Tab to increase/decrease indent</li>
+					<li>Auto insertion of matching braces/quotes and auto-enclosure when text is selected and braces/quotes are typed</li>
+					<li>Support for unlimited splits per tab (subject to screen size) and support for unlimited tabs</li>
 					<li>Support for various text-encodings</li>
-					<li>Syntax highlighting (partially implemented)</li>
+					<li>Checks (live) and reloads (if user permits) files which have been modified externally</li>
 					<li>Selection highlighting (highlights text under selection wherever they occur in the document)</li>
 					<li>Color scheme customization</li>
-					<li>Git integration</li>
+					<li>View list of recent files, view project explorer (in project mode)</li>
+					<li>Syntax highlighting (limited)</li>
+					<li>Git integration (shows untracked, modified files, etc.)</li>
+					<li>Command palette</li>
 				</ul>
 
 				<h2><a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
@@ -105,12 +110,20 @@ $ sudo apt install python3-pip
 				</div>
 				
 				<h3><a id="installing-ash" class="anchor" href="#installing-ash" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installing ash</h3>
-				<p>Download the latest stable/nightly release by clicking the Download button at the top-left corner of this page which will download a <code>.tar.gz</code> file.
-  				Once downloaded, extract it a folder, and once inside that folder (make sure it contains the file <code>setup.py</code>), execute the following:</p>
-
+				<p>You can either directly install the latest stable release using:</p>
 				<div class="highlight highlight-source-shell">
 <pre>
 $ sudo pip3 install ash-editor
+</pre>
+				</div>
+					
+				
+				<p>Alternatively, you could download the latest stable/nightly release by clicking the Download button at the top-left corner of this page which will download a <code>.tar.gz</code> file.
+  				Once downloaded, extract it a folder, and once inside that folder (make sure it contains the file <code>setup.py</code>), open up your terminal and execute the following:</p>
+
+				<div class="highlight highlight-source-shell">
+<pre>
+$ sudo pip3 install .
 </pre>
 				</div>
 
@@ -129,7 +142,7 @@ $ sudo pip3 uninstall ash-editor
 				<p>Since <strong>ash</strong> is still under development, prebuilt binaries are not yet available. You can use PyInstaller or similar tools to build one for your system.</p>
 				
 				<h2><a id="colors" class="anchor" href="#colors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Colors</h2>
-				<p>If you are using the default Ubuntu terminal, to enable 256 make sure your <code>TERM</code> variable is set to <code>xterm-256color</code>. After <strong>ash</strong> runs for the first time, it creates a <code>.ashedrc</code> file inside your home directory. You can edit that file directly to change how <strong>ash</strong> looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset <strong>ash</strong> to its default colors, delete the configuration file using: <code>rm ~/.ashedrc</code>.</p>
+				<p>If you are using the default Ubuntu terminal, to enable 256 make sure your <code>TERM</code> variable is set to <code>xterm-256color</code>. After <strong>ash</strong> runs for the first time, it creates a <code>theme.txt</code> file inside your home directory. You can edit that file directly to change how <strong>ash</strong> looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset <strong>ash</strong> to its default colors, delete the configuration file using: <code>rm ~/.ash-editor/theme.txt</code>.</p>
 
 				<h2><a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
 				<p>Once you have downloaded the <strong>ash</strong> source code, and set it up as detailed above, you are ready to use it.</p>

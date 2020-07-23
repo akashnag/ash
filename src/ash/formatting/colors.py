@@ -5,6 +5,7 @@
 
 # This module handles all color formatting for the application
 
+import ash
 from ash.formatting import *
 
 # multiplier constant for translation to/from RGB
@@ -119,7 +120,7 @@ def get_element_color_index(element_name):
 
 # writes the current color scheme to the configuration file
 def write_to_config(colors, element_colors):
-	configFile = open(CONFIG_FILE, "wt")
+	configFile = open(ash.THEME_FILE, "wt")
 	for name, rgb in colors.items():
 		configFile.write("color-" + name + " = rgb(" + str(int(rgb[0] // MULTIPLIER)) + ", " + str(int(rgb[1] // MULTIPLIER)) + ", " + str(int(rgb[2] // MULTIPLIER)) + ")\n")
 	for name, pair in element_colors.items():
@@ -128,13 +129,13 @@ def write_to_config(colors, element_colors):
 
 # loads color scheme from the configuration file
 def load_config(colors = None, element_colors = None):
-	if(not os.path.isfile(CONFIG_FILE)):
+	if(not os.path.isfile(ash.THEME_FILE)):
 		return (colors, element_colors)
 	
 	if(colors == None): colors = dict()
 	if(element_colors == None): element_colors = dict()
 
-	configFile = open(CONFIG_FILE, "rt")
+	configFile = open(ash.THEME_FILE, "rt")
 	config = configFile.read().splitlines()
 	configFile.close()
 
@@ -186,7 +187,7 @@ def gc(cp = "global-default"):
 def init_colors():
 	colors, element_colors = get_default_colors()
 
-	if(not os.path.isfile(CONFIG_FILE)):
+	if(not os.path.isfile(ash.THEME_FILE)):
 		write_to_config(colors, element_colors)
 		set_colors(colors, element_colors)
 	else:

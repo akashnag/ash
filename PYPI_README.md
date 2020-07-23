@@ -10,7 +10,7 @@
 
 ## Table of Contents
 
-- [Design Goals](#design-goals)
+- [Features](#features)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Installing **ash**](#installing-ash)
@@ -24,38 +24,44 @@
 
 - - -
 
-## Design Goals
-
-The following is a list of design goals for **ash**:
-
-- Easy to use
-- Clean and intuitive interface
-- Minimal dependencies
-- Common keybindings
-
-**Features:**
+## Features
 
 The following is a list of features available in **ash**:
 
+- Easy to use, clean and intuitive interface
+- Common key bindings (Help on F1, Arrow keys for movement, Shift+Arrow/Home/End/PgUp/PgDown for selecting text, cut/copy/paste using Ctrl+X/C/V, undo/redo using Ctrl+Z/Y, find/replace/goto using Ctrl+F/H/G, etc.)
+- Support for remapping key bindings to your taste
 - Common editor features such as undo/redo, line numbers, find-replace, cut-copy-paste, etc.
 - True support for wrapping (both hard & soft) with intuitive cursor movements along wrapped text
 - Auto-backup
 - Support for Unicode
 - Project mode (opening a directory instead of individual files)
-- Support for splits/windows
+- Complete session (for projects) and undo persistence (turned on for projects opened directly from command-line)
+- Live search
+- Support for search/replace in **all** open files
+- Support for searching using regular expressions
+- Auto-indentation, Select+Tab/Shift-Tab to increase/decrease indent
+- Auto insertion of matching braces/quotes and auto-enclosure when text is selected and braces/quotes are typed
+- Support for unlimited splits per tab (subject to screen size) and support for unlimited tabs
 - Support for various text-encodings
+- Checks (live) and reloads (if user permits) files which have been modified externally
 - Selection highlighting (highlights text under selection wherever they occur in the document)
 - Color scheme customization
-- View list of recent files
-- Syntax highlighting (partially implemented)
-- Git integration
+- View list of recent files, view project explorer (in project mode)
+- Syntax highlighting (limited)
+- Git integration (shows untracked, modified files, etc.)
+- Command palette
 
-**Future goals:**
+**Roadmap for the future:**
 
-- Macros and command-palette
-- Autocompletion/Suggestions
-- Integrated terminal
+The following features will be implemented gradually:
+
 - Plugin system
+- Reading from standard input
+- Autocompletion/Suggestions
+- Macros
+- Integrated terminal
+- Mouse support
 
 ## Installation
 
@@ -87,7 +93,7 @@ $ sudo pip3 uninstall ash-editor
 
 ## Colors
 
-If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `.ashedrc` file inside your home directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.ashedrc`.
+If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `theme.txt` file inside your home directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.ash-editor/theme.txt`.
 
 ## Usage
 

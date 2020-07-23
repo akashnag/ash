@@ -34,14 +34,20 @@ class AshEditorApp:
 		self.argc = len(args)
 		self.dialog_handler = DialogHandler(self)
 
+		# create the application data directory
+		if(not os.path.exists(APP_DATA_DIR)): os.mkdir(APP_DATA_DIR)
+
 		log_init()
-		recent_files_init()
 		KeyBindings.load_key_bindings_from_file()
 	
-	def open_project(self, progress_handler = None):
-		add_opened_file_to_record(self.project_dir)
+	def open_project(self, progress_handler = None, ask_to_restore_session = True):
+		# add project path to recent record
+		self.session_storage.add_opened_file_to_record(self.project_dir)
+
+		# find all files
 		all_files = glob.glob(self.project_dir + "/**/*", recursive=True)
 
+		# create buffers for each file
 		for i, f in enumerate(all_files):
 			if(not os.path.isfile(f)): continue
 			if(should_ignore_file(f)): continue
@@ -52,8 +58,15 @@ class AshEditorApp:
 			if(progress_handler != None): 
 				progress = ( ( i / len(all_files) ) * 100 )
 				progress_handler("Loading...", progress)
-		if(progress_handler != None): progress_handler("Ready", None)
 
+		# check if session exists, ask user if they want to restore it
+		if(ask_to_restore_session and self.session_storage.does_project_have_saved_session(self.project_dir)):
+			if(self.ask_question("RESTORE SESSION", "Do you want to restore the session for this project?")):
+				self.session_storage.set_project_session(self.project_dir)
+
+		# complete load process
+		if(progress_handler != None): progress_handler("Ready", None)
+		
 	def open_files_from_commandline_args(self, progress_handler = None):
 		for i in range(1, len(self.args)):
 			if(os.path.isdir(self.args[i])): continue			
@@ -68,8 +81,6 @@ class AshEditorApp:
 		if(progress_handler != None): progress_handler("Ready", None)
 
 	def load_files(self, progress_handler = None):
-		self.buffers = BufferManager(self)
-		
 		if(self.argc == 1):
 			self.app_mode = APP_MODE_FILE
 			self.piped_data = read_piped_data()
@@ -109,8 +120,12 @@ class AshEditorApp:
 		init_colors()
 		curses.raw()
 		
-		# create main window
+		# create main window, BufferManager and SessionStorage objects
+		self.buffers = BufferManager(self)
 		self.main_window = TopLevelWindow(self, self.stdscr, "ash " + self.get_app_version(), self.main_key_handler)
+		self.session_storage = SessionStorage(self, self.main_window.window_manager, self.buffers)
+		
+		# create command interpreter object
 		self.command_interpreter = CommandInterpreter(self, self.main_window)
 
 		# adjust sizes

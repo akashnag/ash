@@ -10,7 +10,7 @@ from ash.core.ashException import *
 from ash.core.logger import *
 from ash.gui.cursorPosition import *
 from ash.core.editHistory import *
-
+from ash.core.sessionStorage import *
 from ash.formatting.syntaxHighlighting import *
 from ash.formatting.formatting import *
 
@@ -203,7 +203,8 @@ class Buffer:
 
 		self.backup_edit_count = 0
 		self.undo_edit_count = 0
-		if(self.manager.app.app_mode != APP_MODE_PROJECT): add_opened_file_to_record(self.filename)
+		if(self.manager.app.app_mode != APP_MODE_PROJECT): 
+			self.manager.app.session_storage.add_opened_file_to_record(self.filename)
 
 		return self.manager.merge_if_required(self.id)
 
@@ -259,6 +260,9 @@ class Buffer:
 		if(self.backup_file != None and os.path.isfile(self.backup_file)): 
 			os.remove(self.backup_file)
 
+	def get_persistent_data(self):
+		return ProjectBufferData(self.filename, self.backup_edit_count, self.undo_edit_count, self.history, max([self.last_read_time, self.last_write_time]))
+		
 	# <------------------- private functions ---------------------->
 
 	# makes a backup of the data
@@ -307,7 +311,8 @@ class Buffer:
 		self.backup_edit_count = 0
 		self.undo_edit_count = 0
 		
-		if(not read_from_backup and self.manager.app.app_mode != APP_MODE_PROJECT): add_opened_file_to_record(self.filename)
+		if(not read_from_backup and self.manager.app.app_mode != APP_MODE_PROJECT): 
+			self.manager.app.session_storage.add_opened_file_to_record(self.filename)
 		return 0
 
 	# splits the raw-data (read from a file) into separate lines
@@ -535,6 +540,25 @@ class BufferManager:
 				count += x
 				if(x > 0): buffer_count += 1
 		return(count, buffer_count)
+
+	def get_persistent_data(self, project_dir):
+		pdata = list()
+		for bid, buffer in self.buffers.items():
+			if(buffer.filename != None and buffer.filename.startswith(project_dir + "/")):
+				pdata.append(buffer.get_persistent_data())
+		return pdata
+
+	def set_persistent_data(self, buffer_data_list):
+		for buffer_data in buffer_data_list:
+			filename = buffer_data.filename
+			buffer = self.get_buffer_by_filename(filename)
+
+			last_mod_time = BufferManager.get_last_modified(filename)
+			if(last_mod_time > buffer_data.last_write_time): continue			# ignore undo history since file modified externally
+
+			buffer.backup_edit_count = buffer_data.backup_edit_count
+			buffer.undo_edit_count = buffer_data.undo_edit_count
+			buffer.history = buffer_data.history
 
 	# checks to see if a backup file for a given filename exists
 	# backup files start with a ".ash.b-" prefix and reside in the same directory as its

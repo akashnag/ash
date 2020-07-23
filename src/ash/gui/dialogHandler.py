@@ -268,12 +268,13 @@ class DialogHandler:
 		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 17, 35, "PREFERENCES", self.preferences_key_handler)
 		current_tab_size = str(aed.tab_size)
 		txtTabSize = TextField(self.app.dlgPreferences, 3, 2, 31, current_tab_size, True)
-		lstEncodings = ListBox(self.app.dlgPreferences, 5, 2, 31, 6)
-		chkShowLineNumbers = CheckBox(self.app.dlgPreferences, 12, 2, "Show line numbers")
-		chkWordWrap = CheckBox(self.app.dlgPreferences, 13, 2, "Word wrap")
-		chkHardWrap = CheckBox(self.app.dlgPreferences, 13, 18, "Hard wrap")
-		chkStylize = CheckBox(self.app.dlgPreferences, 14, 2, "Syntax highlighting")
-		chkAutoClose = CheckBox(self.app.dlgPreferences, 15, 2, "Complete matching pairs")
+		lstEncodings = ListBox(self.app.dlgPreferences, 5, 2, 31, 5)
+		chkShowLineNumbers = CheckBox(self.app.dlgPreferences, 11, 2, "Show line numbers")
+		chkWordWrap = CheckBox(self.app.dlgPreferences, 12, 2, "Word wrap")
+		chkHardWrap = CheckBox(self.app.dlgPreferences, 12, 18, "Hard wrap")
+		chkStylize = CheckBox(self.app.dlgPreferences, 13, 2, "Syntax highlighting")
+		chkAutoClose = CheckBox(self.app.dlgPreferences, 14, 2, "Complete matching pairs")
+		chkShowScrollbars = CheckBox(self.app.dlgPreferences, 15, 2, "Show scrollbars")
 		
 		for enc in SUPPORTED_ENCODINGS:
 			lstEncodings.add_item(("  " if aed.buffer.encoding != enc else TICK_MARK + " ") +  enc)
@@ -283,6 +284,7 @@ class DialogHandler:
 		chkHardWrap.set_value(aed.hard_wrap)
 		chkStylize.set_value(aed.should_stylize)
 		chkAutoClose.set_value(aed.auto_close)
+		chkShowScrollbars.set_value(aed.show_scrollbars)
 		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index(aed.buffer.encoding)
 		
 		self.app.dlgPreferences.add_widget("txtTabSize", txtTabSize)
@@ -292,6 +294,7 @@ class DialogHandler:
 		self.app.dlgPreferences.add_widget("chkHardWrap", chkHardWrap)
 		self.app.dlgPreferences.add_widget("chkStylize", chkStylize)
 		self.app.dlgPreferences.add_widget("chkAutoClose", chkAutoClose)
+		self.app.dlgPreferences.add_widget("chkShowScrollbars", chkShowScrollbars)
 		
 		self.app.dlgPreferences.show()
 
@@ -313,6 +316,7 @@ class DialogHandler:
 			hard_wrap = self.app.dlgPreferences.get_widget("chkHardWrap").is_checked()
 			stylize = self.app.dlgPreferences.get_widget("chkStylize").is_checked()
 			auto_close = self.app.dlgPreferences.get_widget("chkAutoClose").is_checked()
+			show_scrollbars = self.app.dlgPreferences.get_widget("chkShowScrollbars").is_checked()
 
 			self.app.dlgPreferences.hide()
 
@@ -321,7 +325,7 @@ class DialogHandler:
 				return -1
 
 			aed.buffer.set_encoding(SUPPORTED_ENCODINGS[encoding_index])
-			aed.set_preferences(tab_size, show_line_numbers, word_wrap, hard_wrap, stylize, auto_close)
+			aed.set_preferences(tab_size, show_line_numbers, word_wrap, hard_wrap, stylize, auto_close, show_scrollbars)
 			self.app.main_window.repaint()
 			aed.repaint()
 			return -1

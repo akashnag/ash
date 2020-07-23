@@ -9,10 +9,12 @@ from ash.gui import *
 
 class CheckBox(Widget):
 	def __init__(self, parent, y, x, text):
-		super(CheckBox, self).__init__(WIDGET_TYPE_CHECKBOX)
+		super().__init__(WIDGET_TYPE_CHECKBOX)
 		self.parent = parent
 		self.y = y
 		self.x = x
+		self.height = 1
+		self.width = len(text) + 3
 		self.theme = gc("formfield")
 		self.focus_theme = gc("formfield-focussed")
 		self.text = text
@@ -42,9 +44,9 @@ class CheckBox(Widget):
 		if(self.is_in_focus and self.focus_theme != None): paint_theme = self.focus_theme
 
 		if(self.checked):
-			s = " \u2611  " + self.text + " "
+			s = "\u2611  " + self.text + " "
 		else:
-			s = " \u2610  " + self.text + " "
+			s = "\u2610  " + self.text + " "
 		
 		self.parent.addstr(self.y, self.x, s, paint_theme)
 	
@@ -64,3 +66,7 @@ class CheckBox(Widget):
 	# set the checked-status of the checkbox
 	def set_value(self, checked = True):
 		self.checked = checked
+
+	def on_click(self, y, x):
+		self.checked = not self.checked
+		self.repaint()

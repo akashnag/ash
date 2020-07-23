@@ -46,6 +46,7 @@ class GroupedListBox(Widget):
 		self.y = y
 		self.x = x
 		self.width = width
+		self.height = row_count
 		self.row_count = row_count
 		self.placeholder_text = placeholder_text
 		self.callback = callback
@@ -264,3 +265,8 @@ class GroupedListBox(Widget):
 	# returns the text of the selected item
 	def __str__(self):
 		return self.get_sel_text()
+
+	def on_click(self, y, x):
+		if(len(self.items) > y + self.list_start):
+			self.sel_index = y + self.list_start
+			self.repaint()

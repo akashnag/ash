@@ -10,7 +10,7 @@ from ash.gui.cursorPosition import *
 from ash.utils.utils import *
 
 cdef class Screen:
-	cdef bint show_line_numbers
+	cdef bint show_line_numbers, show_scrollbars
 	cdef int height, width
 	cdef int line_start, line_end
 	cdef int col_start, col_end
@@ -21,13 +21,15 @@ cdef class Screen:
 	cdef int real_line_start_index_visible, real_line_end_index_visible
 
 	# initialize the screen buffer
-	def __init__(self, win, buffer, int height, int width, show_line_numbers):
+	def __init__(self, win, buffer, int height, int width, show_line_numbers, show_scrollbars):
 		self.show_line_numbers = show_line_numbers
+		self.show_scrollbars = show_scrollbars
 		self.update(win, buffer)
 		self.resize(height, width)
 
-	def toggle_line_numbers(self, show):
-		self.show_line_numbers = show
+	def toggle_line_numbers_and_scrollbars(self, show_ln, show_sb):
+		self.show_line_numbers = show_ln
+		self.show_scrollbars = show_sb
 
 	# resize the screen buffer
 	def resize(self, int height, int width):
@@ -90,9 +92,9 @@ cdef class Screen:
 	cdef _get_gutter_width(self, int line_end):
 		if(self.show_line_numbers):
 			x = str(line_end)
-			return (3 if line_end < 10 else 2) + len(x)
+			return (3 if line_end < 10 else 2) + len(x) + (1 if self.show_scrollbars else 0)
 		else:
-			return 1
+			return 1 + (1 if self.show_scrollbars else 0)
 
 	# reflow a line of text (depending on wrap settings and tab-size) and return a list of column-spans (after tab-expansion)
 	cdef reflow(self, int width, line, int tab_size, bint word_wrap, bint hard_wrap):

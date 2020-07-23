@@ -9,9 +9,10 @@ from ash.gui import *
 
 class TextField(Widget):
 	def __init__(self, parent, y, x, width, initial_text = "", numeric = False, maxlen = -1, callback = None):
-		super(TextField, self).__init__(WIDGET_TYPE_TEXTFIELD)
+		super().__init__(WIDGET_TYPE_TEXTFIELD)
 		self.y = y
 		self.x = x
+		self.height = 1
 		self.width = width
 		self.theme = gc("formfield")
 		self.text = initial_text

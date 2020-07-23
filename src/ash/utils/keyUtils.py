@@ -8,6 +8,10 @@
 from ash import *
 from ash.utils import *
 
+MOUSE_CLICK				= 0
+MOUSE_RIGHT_CLICK		= 1
+MOUSE_DOUBLE_CLICK		= 2
+
 # <------------------ arrow symbols ----------------------->
 
 ARROW_LEFT				= "\u2190"
@@ -26,6 +30,13 @@ def fn(n):
 
 def ctrlfn(n):
 	if(n >= 1 and n <= 12): return "KEY_F(" + str(n+24) + ")"
+
+class FakeKey:
+	def __init__(self, keyname):
+		self.keyname = "b'" + keyname + "'"
+
+	def __str__(self):
+		return self.keyname
 
 class KeyBindings:
 	BINDINGS = {
@@ -134,8 +145,34 @@ class KeyBindings:
 		return blist
 
 	@classmethod
+	def is_mouse(cls, ch):
+		return(True if str(curses.keyname(ch))[2:-1] == "KEY_MOUSE" else False)
+
+	@classmethod
+	def get_mouse(cls, ch):
+		_, x, y, _, bstate = curses.getmouse()
+		if(bstate == curses.BUTTON1_CLICKED):
+			btn = MOUSE_CLICK
+		elif(bstate == curses.BUTTON1_DOUBLE_CLICKED):
+			btn = MOUSE_DOUBLE_CLICK
+		elif(bstate == curses.BUTTON3_CLICKED):
+			btn = MOUSE_RIGHT_CLICK
+		else:
+			btn = None
+		return (btn, y, x)
+
+	@classmethod
 	def get_keyname(cls, ch):
 		return str(curses.keyname(ch))[2:-1]
+
+	@classmethod
+	def get_key(cls, command):
+		key = cls.BINDINGS.get(command)[0]
+		if(type(key) == list):
+			keyname = key[0]
+		else:
+			keyname = key
+		return FakeKey(keyname)
 
 	@classmethod
 	def write_key_bindings_to_file(cls):
@@ -195,7 +232,10 @@ class KeyBindings:
 
 	@classmethod
 	def is_key(cls, ch, key):
-		sch = str(curses.keyname(ch))
+		if(type(ch) == FakeKey):
+			sch = str(ch)
+		else:
+			sch = str(curses.keyname(ch))
 		key_info = cls.BINDINGS.get(key)
 		if(key_info == None): return False
 		key_constant = key_info[0]

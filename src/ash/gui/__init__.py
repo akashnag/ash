@@ -63,6 +63,10 @@ class Widget:
 		self.focussable = focussable
 		self.handles_tab = handles_tab
 		self.is_in_focus = False
+		self.x = 0
+		self.y = 0
+		self.height = 0
+		self.width = 0
 
 	def does_handle_tab(self):
 		return self.handles_tab
@@ -86,4 +90,13 @@ class Widget:
 		pass
 
 	def readjust(self):
+		pass
+
+	def get_bounds(self):
+		return (self.y + self.parent.y, self.x + self.parent.x, self.height, self.width)
+
+	def get_relative_coords(self, y, x):
+		return (y - self.y - self.parent.y, x - self.x - self.parent.x)
+
+	def on_click(self, y, x):
 		pass

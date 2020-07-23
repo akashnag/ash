@@ -61,8 +61,22 @@ class ModalDialog(Window):
 					self.parent.repaint()
 					ch = -1
 			
-			if(ch > -1 and self.active_widget_index > -1):
-				self.get_active_widget().perform_action(ch)
+			if(ch > -1):
+				if(KeyBindings.is_mouse(ch)):
+					btn, y, x = KeyBindings.get_mouse(ch)
+					if(btn == MOUSE_CLICK):
+						for i, w in enumerate(self.widgets):
+							if(is_enclosed(y, x, w.get_bounds())):
+								self.get_active_widget().blur()
+								w.focus()
+								self.active_widget_index = i
+								ry, rx = w.get_relative_coords(y,x)
+								w.on_click(ry,rx)
+								break
+					if(self.handler_func != None and is_enclosed(y, x, (self.y + 1, self.x + self.width - 3, 1, 1) )):
+						self.handler_func(KeyBindings.get_key("CLOSE_WINDOW"))
+				elif(self.active_widget_index > -1):
+					self.get_active_widget().perform_action(ch)
 
 			self.repaint()
 		
@@ -80,6 +94,7 @@ class ModalDialog(Window):
 		self.win.addstr(2, 1, BORDER_HORIZONTAL * (self.width-2), self.theme)
 
 		self.win.addstr(1, 2, self.title, curses.A_BOLD | self.theme)
+		self.win.addstr(1, self.width-3, "\u2a2f", curses.A_BOLD | self.theme)
 		
 		# active widget must be repainted last to correctly position cursor
 		aw = self.get_active_widget()

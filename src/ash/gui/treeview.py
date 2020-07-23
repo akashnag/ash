@@ -86,6 +86,7 @@ class TreeView(Widget):
 		self.y = y
 		self.x = x
 		self.width = width
+		self.height = row_count
 		self.row_count = row_count
 		self.buffer_manager = buffer_manager
 		self.project_dir = project_dir
@@ -389,3 +390,8 @@ class TreeView(Widget):
 	# returns the text of the selected item
 	def __str__(self):
 		return self.get_sel_filepath()
+
+	def on_click(self, y, x):
+		if(len(self.items) > y + self.start):
+			self.sel_index = y + self.start
+			self.repaint()

@@ -119,6 +119,7 @@ class AshEditorApp:
 		self.screen_height, self.screen_width = self.stdscr.getmaxyx()				
 		init_colors()
 		curses.raw()
+		curses.mousemask(curses.ALL_MOUSE_EVENTS)
 		
 		# create main window, BufferManager and SessionStorage objects
 		self.buffers = BufferManager(self)

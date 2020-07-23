@@ -89,9 +89,25 @@ class ProjectFindReplaceDialog(Window):
 				return
 			elif(self.replace and KeyBindings.is_key(ch, "REPLACE_ALL")):
 				self.handle_replace_all(search_text, replace_text)
-			elif(self.active_widget_index > -1):
-				aw = self.get_active_widget()
-				aw.perform_action(ch)
+			elif(ch > -1):
+				if(KeyBindings.is_mouse(ch)):
+					btn, y, x = KeyBindings.get_mouse(ch)
+					if(btn == MOUSE_CLICK):
+						for i, w in enumerate(self.widgets):
+							if(is_enclosed(y, x, w.get_bounds())):
+								self.get_active_widget().blur()
+								w.focus()
+								self.active_widget_index = i
+								ry, rx = w.get_relative_coords(y,x)
+								w.on_click(ry,rx)
+								break
+					if(is_enclosed(y, x, (self.y + 1, self.x + self.width - 3, 1, 1) )):
+						self.hide()
+						self.parent.repaint()
+						return
+				elif(self.active_widget_index > -1):
+					self.get_active_widget().perform_action(ch)
+				
 				if(self.replace and aw != self.txtReplace and aw != self.lstResults):
 					self.handle_find_all(str(self.txtFind))
 				elif(aw != self.lstResults):
@@ -139,6 +155,8 @@ class ProjectFindReplaceDialog(Window):
 		self.win.addstr(2, 1, BORDER_HORIZONTAL * (self.width-2), self.theme)
 
 		self.win.addstr(1, 2, self.title, curses.A_BOLD | self.theme)
+		self.win.addstr(1, self.width-3, "\u2a2f", curses.A_BOLD | self.theme)
+
 		self.win.addstr(3, 2, "Find:", self.theme)
 		if(self.replace): self.win.addstr(5, 2, "Replace with:", self.theme)
 		

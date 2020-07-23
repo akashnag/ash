@@ -31,6 +31,7 @@ class Editor(Widget):
 		self.show_line_numbers = True
 		self.should_stylize = True
 		self.word_wrap = False
+		self.show_scrollbars = False
 						
 		# set up the text and cursor data structures
 		self.curpos = CursorPosition(0,0)
@@ -82,13 +83,14 @@ class Editor(Widget):
 	def destroy(self):			# called by TopLevelWindow.close_active_editor()
 		self.buffer.detach_editor(self)
 
-	def set_preferences(self, tab_size, show_line_numbers, word_wrap, hard_wrap, stylize, auto_close):
+	def set_preferences(self, tab_size, show_line_numbers, word_wrap, hard_wrap, stylize, auto_close, show_scrollbars):
 		self.word_wrap = word_wrap
 		self.hard_wrap = hard_wrap
 		self.should_stylize = stylize
 		self.auto_close = auto_close
 		self.show_line_numbers = show_line_numbers
-		if(self.screen != None): self.screen.toggle_line_numbers(self.show_line_numbers)
+		self.show_scrollbars = show_scrollbars
+		if(self.screen != None): self.screen.toggle_line_numbers_and_scrollbars(self.show_line_numbers, self.show_scrollbars)
 		self.reset()
 		self.repaint()
 	
@@ -106,7 +108,7 @@ class Editor(Widget):
 		self.curpos.y = 0
 
 		if(self.screen == None):
-			self.screen = Screen(self.parent, self.buffer, self.height, self.width, self.show_line_numbers)
+			self.screen = Screen(self.parent, self.buffer, self.height, self.width, self.show_line_numbers, self.show_scrollbars)
 		else:
 			self.screen.resize(self.height, self.width)
 

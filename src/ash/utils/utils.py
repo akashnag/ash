@@ -11,6 +11,13 @@ import re
 import select
 import sys
 
+def is_enclosed(y, x, area):
+	area_y, area_x, area_height, area_width = area
+	if(y >= area_y and y < area_y + area_height and x >= area_x and x < area_x + area_width):
+		return True
+	else:
+		return False
+
 # <------------------------- other functions ---------------------->
 
 # check if selection-start is before selection-end or vice-versa

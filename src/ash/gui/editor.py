@@ -9,7 +9,7 @@ from ash.gui import *
 from ash.gui.editorKeyHandler import *
 from ash.gui.editorUtility import *
 from ash.gui.cursorPosition import *
-
+from ash.gui.popupMenu import *
 from ash.core.editHistory import *
 
 import pyximport; pyximport.install(language_level=3)
@@ -27,7 +27,8 @@ class Editor(Widget):
 		# initialize helper classes
 		self.utility = EditorUtility(self)
 		self.keyHandler = EditorKeyHandler(self)
-				
+
+		self.popup_visible = False
 		self.show_line_numbers = True
 		self.should_stylize = True
 		self.word_wrap = False
@@ -70,6 +71,7 @@ class Editor(Widget):
 		
 	def reset(self):
 		self.selection_mode = False
+		self.popup_visible = False
 		self.curpos.x = 0
 		self.curpos.y = 0
 
@@ -104,6 +106,7 @@ class Editor(Widget):
 		self.width = width
 		
 		self.selection_mode = False
+		self.popup_visible = False
 		self.curpos.x = 0
 		self.curpos.y = 0
 
@@ -134,7 +137,9 @@ class Editor(Widget):
 
 		edit_made = False
 
-		if(KeyBindings.is_key(ch, "DELETE_CHARACTER_LEFT")):
+		if(KeyBindings.is_keyboard_right_click(ch)):
+			edit_made = self.on_right_click()
+		elif(KeyBindings.is_key(ch, "DELETE_CHARACTER_LEFT")):
 			edit_made = self.keyHandler.handle_backspace_key(ch)
 		elif(KeyBindings.is_key(ch, "DELETE_CHARACTER_RIGHT")):
 			edit_made = self.keyHandler.handle_delete_key(ch)
@@ -164,6 +169,7 @@ class Editor(Widget):
 			edit_made = self.keyHandler.handle_keys(ch)
 		
 		if(edit_made): self.buffer.update(self.curpos, self)
+		self.popup_visible = False
 
 	# <------------------- Functions called from BufferManager --------------------->
 
@@ -320,3 +326,44 @@ class Editor(Widget):
 	def replace_all(self, search_text, replace_text, match_case, whole_words, regex):
 		self.utility.replace_all(search_text, replace_text, match_case, whole_words, regex)
 		self.repaint()
+
+	# <---------------------------- mouse handling functions ------------------------->
+
+	def get_bounds(self):
+		return (self.y + self.parent.area.y, self.x + self.parent.area.x, self.height, self.width)
+
+	def get_relative_coords(self, y, x):
+		return (y - self.y - self.parent.area.y, x - self.x - self.parent.area.x)
+
+	def on_click(self, y, x):
+		self.popup_visible = False
+		curpos = self.screen.get_curpos_after_click(y, x, self.buffer.lines, self.width, self.tab_size, self.word_wrap, self.hard_wrap)
+		if(curpos != None):
+			self.curpos = copy.copy(curpos)
+			self.repaint()
+
+	def on_right_click(self, y, x):
+		self.on_click(y, x)
+		visual_curpos = self.screen.translate_real_to_visual_curpos(self.curpos, self.buffer.lines, self.width, self.tab_size, self.word_wrap, self.hard_wrap)
+		app_dh = self.parent.tab.manager.app.dialog_handler
+
+		if(visual_curpos == None):
+			y, x = self.y + (self.height // 2), self.x + (self.width // 2)
+		else:
+			y, x = visual_curpos.y + self.y + 1, visual_curpos.x + self.x + 1
+		popup_menu_items = [
+			("Cut", self.selection_mode, self.keyHandler.handle_cut),
+			("Copy", self.selection_mode, self.keyHandler.handle_copy),
+			("Paste", True, self.keyHandler.handle_paste),
+			("---", False, None),
+			("Find...", True, app_dh.invoke_find),
+			("Find & Replace...", True, app_dh.invoke_find_and_replace),
+			("---", False, None),
+			("Preferences...", True, app_dh.invoke_set_preferences)
+		]
+		self.popup_visible = True
+		self.popup_menu = PopupMenu(self, y, x, popup_menu_items)
+		ret_code = self.popup_menu.show()
+		self.repaint()
+		self.popup_visible = False
+		return ret_code

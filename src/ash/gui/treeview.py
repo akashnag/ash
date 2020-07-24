@@ -47,7 +47,7 @@ class TreeNode:
 	def __str__(self):
 		title = get_file_title(self.path)
 		if(self.is_dir()):
-			return "[" + ("-" if self.expanded else "+")  + "] " + title
+			return ("\u229f" if self.expanded else "\u229e")  + "   " + title
 		else:
 			return title
 
@@ -74,7 +74,7 @@ class TreeNode:
 				else:
 					gs = ""
 
-			return ("[" + ("-" if self.expanded else "+")  + "] " + gs + title, gsc, 4)
+			return (("\u229f" if self.expanded else "\u229e")  + "   " + gs + title, gsc, 4)
 		else:
 			return None		# this fn is not for files
 		

@@ -100,13 +100,15 @@ class ProjectFindReplaceDialog(Window):
 								self.active_widget_index = i
 								ry, rx = w.get_relative_coords(y,x)
 								w.on_click(ry,rx)
+								aw = w
 								break
 					if(is_enclosed(y, x, (self.y + 1, self.x + self.width - 3, 1, 1) )):
 						self.hide()
 						self.parent.repaint()
 						return
 				elif(self.active_widget_index > -1):
-					self.get_active_widget().perform_action(ch)
+					aw =self.get_active_widget()
+					aw.perform_action(ch)
 				
 				if(self.replace and aw != self.txtReplace and aw != self.lstResults):
 					self.handle_find_all(str(self.txtFind))

@@ -101,12 +101,26 @@ class TopLevelWindow(Window):
 
 			if(ch == -1): continue
 			
-			aed = self.get_active_editor()
-			if(aed != None): aed.focus()
+			if(KeyBindings.is_mouse(ch)):
+				btn, y, x = KeyBindings.get_mouse(ch)
+				if(btn == MOUSE_CLICK or btn == MOUSE_RIGHT_CLICK):
+					ed_list = self.window_manager.get_editors_in_active_tab()
+					for i, w in enumerate(ed_list):
+						if(is_enclosed(y, x, w.get_bounds())):
+							self.window_manager.set_as_active_editor(w)
+							ry, rx = w.get_relative_coords(y,x)
+							if(btn == MOUSE_CLICK):
+								w.on_click(ry,rx)
+							else:
+								w.on_right_click(ry, rx)
+							break
+			else:
+				aed = self.get_active_editor()
+				if(aed != None):
+					aed.focus()
+					aed.perform_action(ch)
 			
-			if(aed != None):
-				aed.perform_action(ch)
-				self.repaint()
+			self.repaint()
 	
 	# repaint background
 	def repaint_background(self):

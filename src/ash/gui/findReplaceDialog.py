@@ -128,6 +128,7 @@ class FindReplaceDialog(Window):
 			self.repaint()
 			self.parent.win.refresh()
 
+			aw = self.get_active_widget()
 			if(aw != None): aw.repaint()
 	
 	# <----------------------------- driver functions ------------------------------->

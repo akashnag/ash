@@ -263,6 +263,24 @@ class WindowTab:
 		self.active_editor = self.root.editor
 		self.active_editor.focus()
 
+	def get_list_of_editors(self):
+		ed_list = list()
+		stack = list()
+		stack.append(self.root)
+		while(len(stack) > 0):
+			node = stack.pop()
+			if(node.node_type == TabNodeType.EDITOR):
+				ed_list.append(node.editor)
+			else:
+				stack.append(node.children[0])
+				stack.append(node.children[1])
+		return ed_list
+
+	def set_as_active_editor(self, ed):
+		self.active_editor.blur()
+		self.active_editor = ed
+		self.active_editor.focus()
+
 	def bottom_up_readjust(self):			# called from TabNode only
 		self.manager.bottom_up_readjust()
 
@@ -597,3 +615,11 @@ class WindowManager:
 			new_tab = self.add_blank_tab()
 			new_tab.set_persistent_data(tab_data)
 		self.active_tab_index = active_tab_index
+
+	def get_editors_in_active_tab(self):
+		if(self.active_tab_index < 0): return list()
+		return self.tabs[self.active_tab_index].get_list_of_editors()
+
+	def set_as_active_editor(self, ed):
+		if(self.active_tab_index < 0): return
+		self.tabs[self.active_tab_index].set_as_active_editor(ed)

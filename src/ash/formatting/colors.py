@@ -49,6 +49,12 @@ def get_default_colors():
 	element_colors["disabled"] = ("lightgray", "darkgray")
 	element_colors["cursor"] = ("darkgray", "white")
 
+	element_colors["popup"] = ("white", "darkgray")
+	element_colors["popup-border"] = ("white", "darkgray")
+	element_colors["popup-disabled"] = ("lightgray", "darkgray")
+	element_colors["popup-selection"] = ("darkgray", "yellow")
+	element_colors["popup-disabled-selection"] = ("white", "yellow")
+
 	element_colors["status-0"] = ("darkgray", "white")
 	element_colors["status-1"] = ("darkgray", "white")
 	element_colors["status-2"] = ("darkgray", "white")
@@ -109,7 +115,8 @@ def get_element_color_index(element_name):
 						"global-string", "global-error", "global-function", "global-variable",
 						"global-punctuation", "global-integer", "global-float", "global-operator",
 						"global-builtin-function", "global-builtin-constant", "global-namespace",
-						"global-code", "inactive-filename-display",
+						"global-code", "inactive-filename-display", 
+						"popup", "popup-border", "popup-disabled", "popup-selection", "popup-disabled-selection",
 						"gitstatus-A", "gitstatus-D", "gitstatus-R", "gitstatus-M", "gitstatus-T", "gitstatus-U"
 					)
 

@@ -19,6 +19,7 @@ cdef class Screen:
 	cdef list screen_buffer
 	cdef list style_buffer
 	cdef int real_line_start_index_visible, real_line_end_index_visible
+	cdef int last_gutter_width
 
 	# initialize the screen buffer
 	def __init__(self, win, buffer, int height, int width, show_line_numbers, show_scrollbars):
@@ -101,16 +102,28 @@ cdef class Screen:
 		text = line.expandtabs(tab_size)
 		col_spans = list()
 
-		if(len(text) == 0): return col_spans
-		if(not word_wrap or len(text) <= width): return([ (0,len(text)-1) ])
-		
 		cdef int col_start = 0
 		cdef int col_end = 0
 		cdef int col_width
-		cdef int ls
+		cdef int ls, w
 		cdef bint backward
+
+		w = len(text)
+
+		if(w == 0): return col_spans
+		if(not word_wrap or len(text) <= width): return([ (0,len(text)-1) ])
 		
-		while(col_end < len(text)):
+		if(word_wrap and hard_wrap):
+			ls = w // width
+			col_width = w % width
+			while(ls > 0):
+				col_spans.append( (col_start, col_start + width - 1) )
+				col_start += width
+				ls -= 1
+			if(col_width > 0): col_spans.append( (col_start, col_start + col_width - 1) )
+			return col_spans
+	
+		while(col_end < w):
 			col_width = col_end - col_start + 1
 			if(col_width == width):
 				# need to break here: 
@@ -146,8 +159,8 @@ cdef class Screen:
 		n = len(col_spans)
 
 		# check if any trailing text remains
-		if(n == 0 or col_spans[n-1][1] != len(text)-1):
-			col_spans.append( (col_start, len(text)-1) )
+		if(n == 0 or col_spans[n-1][1] != w-1):
+			col_spans.append( (col_start, w-1) )
 
 		# note: both positions [start, end] are INCLUSIVE
 		return col_spans
@@ -254,6 +267,15 @@ cdef class Screen:
 			return None
 		else:
 			return CursorPosition( rendered_pos.y - self.line_start, rendered_pos.x - self.col_start + gutter_width)
+
+	cdef translate_visual_to_rendered_pos(self, visual_pos, int gutter_width):
+		cdef int y, x
+		y = visual_pos.y + self.line_start + 1			# +1: correction: recheck
+		x = visual_pos.x + self.col_start - gutter_width
+		if(x < 0 or y < 0):
+			return None
+		else:
+			return CursorPosition(y, x)
 
 	cdef perform_search_highlighting(self, lines, int text_area_width, real_curpos, int tab_size, bint word_wrap, bint hard_wrap, highlight_info):
 		search_text = highlight_info["text"]
@@ -464,6 +486,7 @@ cdef class Screen:
 		
 		# compute line_end and gutter_width
 		gutter_width = self._get_gutter_width(self.line_end)
+		self.last_gutter_width = gutter_width
 		text_area_width = self.width - gutter_width
 
 		if(self.line_start >= nlines): return(rendered_curpos, text_area_width)
@@ -548,8 +571,13 @@ cdef class Screen:
 			if(self.show_line_numbers): self.highlight_line(current_line_number_y, gutter_width)
 
 		return rendered_curpos, text_area_width
-
 	
+	def translate_real_to_visual_curpos(self, real_curpos, lines, width, tab_size, word_wrap, hard_wrap):
+		text_area_width = width - self.last_gutter_width
+		rendered_curpos, _ = self.translate_real_curpos_to_rendered_curpos(lines, real_curpos, text_area_width, tab_size, word_wrap, hard_wrap)
+		visual_curpos = self.translate_rendered_to_visual_pos(rendered_curpos, self.last_gutter_width)
+		return visual_curpos
+
 	def get_selection_endpoints(self, sel_start, sel_end):
 		if(not self.is_start_before_end(sel_start, sel_end)): 
 			sel_start, sel_end = sel_end, sel_start
@@ -569,6 +597,14 @@ cdef class Screen:
 				last_style_x = x
 			self.win.addstr(offset_y + y, offset_x + last_style_x, self.screen_buffer[y][last_style_x:self.width], last_style)
 
+	# <------------------------------- mouse handling functions ----------------------------------->
+	def get_curpos_after_click(self, y, x, lines, width, tab_size, word_wrap, hard_wrap):
+		visual_curpos = CursorPosition(y, x)
+		rendered_curpos = self.translate_visual_to_rendered_pos(visual_curpos, self.last_gutter_width)
+		if(rendered_curpos == None): return None
+		real_curpos = self.translate_rendered_curpos_to_real_curpos(lines, width, rendered_curpos, tab_size, word_wrap, hard_wrap)
+		return real_curpos
+	
 	# <------------------------------- key handler functions ----------------------------------->
 	def get_curpos_after_move_left(self, real_curpos, tab_size, word_wrap, hard_wrap):
 		lines = self.buffer.lines

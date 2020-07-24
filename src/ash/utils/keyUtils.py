@@ -54,6 +54,7 @@ class KeyBindings:
 		"LIST_MOVE_SELECTION_DOWN"		: ["KEY_DOWN", ARROW_DOWN, "Move selection down in a list"],
 		"LIST_MOVE_TO_PREVIOUS_PAGE"	: ["KEY_PPAGE", "PgUp", "Move selection up one page"],
 		"LIST_MOVE_TO_NEXT_PAGE"		: ["KEY_NPAGE", "PgDown", "Move selection down one page"],
+		"LIST_MAKE_SELECTION"			: [[ "^J", "KEY_ENTER" ], "Ctrl+J/Enter", "Select the currently selected item"],
 		
 		"MOVE_WINDOW_LEFT"				: ["kLFT5", f"Ctrl+{ARROW_LEFT}", "Move the active window left"],
 		"MOVE_WINDOW_RIGHT"				: ["kRIT5", f"Ctrl+{ARROW_RIGHT}", "Move the active window right"],
@@ -147,6 +148,13 @@ class KeyBindings:
 	@classmethod
 	def is_mouse(cls, ch):
 		return(True if str(curses.keyname(ch))[2:-1] == "KEY_MOUSE" else False)
+
+	@classmethod
+	def is_keyboard_right_click(cls, ch):
+		if(str(curses.keyname(ch)) == "b'kRIT3'"):
+			return True
+		else:
+			return False
 
 	@classmethod
 	def get_mouse(cls, ch):

@@ -52,6 +52,7 @@ The following is a list of features available in **ash**:
 - Syntax highlighting (limited)
 - Git integration (shows untracked, modified files, etc.)
 - Command palette
+- Basic mouse support
 
 **Roadmap for the future:**
 
@@ -62,7 +63,6 @@ The following features will be implemented gradually:
 - Autocompletion/Suggestions
 - Macros
 - Integrated terminal
-- Mouse support
 
 ## Installation
 

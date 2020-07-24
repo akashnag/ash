@@ -46,6 +46,7 @@ These key combinations work only if an editor is currently active.
 
 | Key | Action |
 |-----|--------|
+|<kbd>Alt</kbd> + <kbd>&#8594;</kbd> _or_ Right-Click|Open popup menu|
 |<kbd>&#8592;</kbd> <kbd>&#8593;</kbd> <kbd>&#8594;</kbd> <kbd>&#8595;</kbd>|Move the cursor in the document one character/line at a time|
 |<kbd>Ctrl</kbd> + <kbd>&#8592;</kbd> <kbd>&#8594;</kbd>|Move the cursor one word at a time|
 |<kbd>PgUp</kbd> <kbd>PgDown</kbd>|Move the cursor in the document one screenful at a time|

@@ -47,8 +47,8 @@ class TextField(Widget):
 	# when focus received
 	def focus(self):
 		self.is_in_focus = True
-		curses.curs_set(True)
 		self.repaint()
+		curses.curs_set(True)		
 
 	# when focus lost
 	def blur(self):
@@ -280,7 +280,12 @@ class TextField(Widget):
 
 		return(offset, sel_text)
 
-
 	# returns the text of the textfield
 	def __str__(self):
 		return self.text
+
+	def on_click(self, y, x):
+		intended_curpos = x - self.start
+		if(intended_curpos > len(self.text)): intended_curpos = len(self.text)
+		self.curpos = intended_curpos
+		self.repaint()

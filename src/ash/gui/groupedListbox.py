@@ -29,9 +29,9 @@ class GroupedListItem:
 
 	def __str__(self):
 		if(self.collapsed):
-			return "[+] " + self.text
+			return "\u229e " + self.text
 		else:
-			return "[-] " + self.text
+			return "\u229f " + self.text
 
 	def get_sublist(self):
 		if(self.collapsed):
@@ -269,4 +269,9 @@ class GroupedListBox(Widget):
 	def on_click(self, y, x):
 		if(len(self.items) > y + self.list_start):
 			self.sel_index = y + self.list_start
+			tag = self.tags[self.sel_index]
+			if(x == 1 and tag.startswith("p=")):
+				i = int(tag[2:])
+				self.items[i].collapsed = not self.items[i].collapsed
+				self.render()
 			self.repaint()

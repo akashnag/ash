@@ -16,6 +16,7 @@ cdef class Screen:
 	cdef int col_start, col_end
 	cdef buffer
 	cdef win
+	cdef dict all_col_spans
 	cdef list screen_buffer
 	cdef list style_buffer
 	cdef int real_line_start_index_visible, real_line_end_index_visible
@@ -23,6 +24,7 @@ cdef class Screen:
 
 	# initialize the screen buffer
 	def __init__(self, win, buffer, int height, int width, show_line_numbers, show_scrollbars):
+		self.all_col_spans = None
 		self.show_line_numbers = show_line_numbers
 		self.show_scrollbars = show_scrollbars
 		self.update(win, buffer)
@@ -97,23 +99,42 @@ cdef class Screen:
 		else:
 			return 1 + (1 if self.show_scrollbars else 0)
 
+	cdef get_delimiter_positions_list(self, text, delims):
+		cdef int i, n
+		n = len(text)
+		pos = list()
+		for i in range(n):
+			if(text[i] in delims): pos.append(i)
+		pos.append(n)
+		return pos
+
+	cdef reflow_all(self, int width, lines, int tab_size, bint word_wrap, bint hard_wrap):
+		self.all_col_spans = dict()
+		for i, line in enumerate(lines):
+			self.all_col_spans[i] = self.reflow(width, line, tab_size, word_wrap, hard_wrap)
+
 	# reflow a line of text (depending on wrap settings and tab-size) and return a list of column-spans (after tab-expansion)
 	cdef reflow(self, int width, line, int tab_size, bint word_wrap, bint hard_wrap):
 		text = line.expandtabs(tab_size)
 		col_spans = list()
-
+		separators = " ,.()[]{}:;\'\"?"
+		pos = self.get_delimiter_positions_list(text, separators)
+		
+		cdef int pos_start = 0
+		cdef int len_pos = len(pos)
 		cdef int col_start = 0
 		cdef int col_end = 0
 		cdef int col_width
-		cdef int ls, w
+		cdef int ls
+		cdef int w = len(text)
 		cdef bint backward
 
-		w = len(text)
-
+		# text wrap is OFF
 		if(w == 0): return col_spans
-		if(not word_wrap or len(text) <= width): return([ (0,len(text)-1) ])
+		if(not word_wrap or w <= width): return([ (0, w-1) ])
 		
-		if(word_wrap and hard_wrap):
+		# hard wrap is ON
+		if(hard_wrap):
 			ls = w // width
 			col_width = w % width
 			while(ls > 0):
@@ -123,46 +144,18 @@ cdef class Screen:
 			if(col_width > 0): col_spans.append( (col_start, col_start + col_width - 1) )
 			return col_spans
 	
-		while(col_end < w):
-			col_width = col_end - col_start + 1
-			if(col_width == width):
-				# need to break here: 
-				# if space found OR hard-wrap is true: then we're lucky
-				if(text[col_end] == " " or hard_wrap):
-					col_spans.append( (col_start, col_end) )
-					col_start = col_end + 1
-					col_end = col_start
-				else:				
-					# search backwards
-					ls = text[col_start:col_end].rfind(" ")
-					offset = col_start
-					backward = True
-
-					# if not found: search forwards
-					if(ls == -1): 
-						ls = text[col_end+1:].find(" ")
-						offset = col_end+1
-						backward = False
-
-					if(ls == -1):				
-						col_end = len(text)-1				# if still not found, take whole text
-					else:
-						col_end = ls + offset
-						if(not backward): col_end -= 1		# dont include the space: already exceeds width
-
-					col_spans.append( (col_start, col_end) )
-					col_start = col_end + 1
-					col_end = col_start
-			else:
-				col_end += 1
+		# soft wrap is ON
+		while(col_start < w):
+			for i in range(pos_start, len_pos):
+				if(pos[i] > col_start + width): break
+			
+			if(i == pos_start): i+=1
+			
+			col_end = pos[i-1]-1
+			col_spans.append( (col_start, col_end) )
+			col_start = pos[i-1]
+			pos_start = i
 		
-		n = len(col_spans)
-
-		# check if any trailing text remains
-		if(n == 0 or col_spans[n-1][1] != w-1):
-			col_spans.append( (col_start, w-1) )
-
-		# note: both positions [start, end] are INCLUSIVE
 		return col_spans
 
 	cdef _get_line_start(self, int gutter_width, int nlines, lines, int tab_size, bint word_wrap, bint hard_wrap):
@@ -394,7 +387,10 @@ cdef class Screen:
 	cdef get_pre_translation_parameters(self, lines, real_curpos, int text_area_width, int tab_size, bint word_wrap, bint hard_wrap):
 		cdef int visible_line_index = -1, y
 		for y in range(real_curpos.y):
-			col_spans = self.reflow(text_area_width, lines[y], tab_size, word_wrap, hard_wrap)
+			if(self.all_col_spans == None):
+				col_spans = self.reflow(text_area_width, lines[y], tab_size, word_wrap, hard_wrap)
+			else:
+				col_spans = self.all_col_spans[y]
 			visible_line_index += (len(col_spans) if len(col_spans) > 0 else 1)
 		return visible_line_index
 		
@@ -404,10 +400,16 @@ cdef class Screen:
 		if(visible_line_index < 0):
 			visible_line_index = -1
 			for y in range(real_curpos.y):
-				col_spans = self.reflow(text_area_width, lines[y], tab_size, word_wrap, hard_wrap)
+				if(self.all_col_spans == None):
+					col_spans = self.reflow(text_area_width, lines[y], tab_size, word_wrap, hard_wrap)
+				else:
+					col_spans = self.all_col_spans[y]
 				visible_line_index += (len(col_spans) if len(col_spans) > 0 else 1)
 		
-		col_spans = self.reflow(text_area_width, lines[real_curpos.y], tab_size, word_wrap, hard_wrap)
+		if(self.all_col_spans == None):
+			col_spans = self.reflow(text_area_width, lines[real_curpos.y], tab_size, word_wrap, hard_wrap)
+		else:
+			col_spans = self.all_col_spans[real_curpos.y]
 		rendered_x = self.translate_real_curpos_col_to_rendered_curpos_col(lines[real_curpos.y], tab_size, real_curpos.x)
 		
 		n = len(col_spans)
@@ -474,6 +476,7 @@ cdef class Screen:
 		# determine line(start,end) and col(start,end): and return rendered_curpos
 		# Circular dependency: scroll() requires gutter_width, but gutter_width requires line_end which is computed by scroll()
 		# won't be a problem if you allow line numbers to start from screen-edge: that space will be taken up if user scrolls so much that 1/2 digits are added in the next scroll()
+		self.all_col_spans = None
 		rendered_curpos = self.scroll(self.buffer.lines, real_curpos, self.width - self._get_gutter_width(self.line_end), tab_size, word_wrap, hard_wrap)
 
 		# set up lines
@@ -492,6 +495,7 @@ cdef class Screen:
 		if(self.line_start >= nlines): return(rendered_curpos, text_area_width)
 
 		self.set_gutter_style(gutter_width)
+		self.reflow_all(text_area_width, self.buffer.lines, tab_size, word_wrap, hard_wrap)
 
 		# determine the first line to be displayed
 		real_line_start, line_start_col_spans, line_start_offset = self._get_line_start(gutter_width, nlines, lines, tab_size, word_wrap, hard_wrap)
@@ -531,8 +535,11 @@ cdef class Screen:
 				if(line_index == real_curpos.y): current_line_number_y = y
 
 			text = lines[line_index].expandtabs(tab_size)
-			col_spans = self.reflow(self.width - gutter_width, lines[line_index], tab_size, word_wrap, hard_wrap)
-			
+			if(self.all_col_spans == None):
+				col_spans = self.reflow(self.width - gutter_width, lines[line_index], tab_size, word_wrap, hard_wrap)
+			else:
+				col_spans = self.all_col_spans[line_index]
+
 			for i in range( len(col_spans) ):
 				if(y >= self.height): break
 				

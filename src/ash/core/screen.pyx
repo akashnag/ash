@@ -367,7 +367,10 @@ cdef class Screen:
 		return correspondence.get( (sub_line_offset,max_col) )
 
 	cdef get_subline_offset(self, lines, int width, int tab_size, bint word_wrap, bint hard_wrap, real_curpos):
-		col_spans = self.reflow(width, lines[real_curpos.y], tab_size, word_wrap, hard_wrap)
+		if(self.all_col_spans == None):
+			col_spans = self.reflow(width, lines[real_curpos.y], tab_size, word_wrap, hard_wrap)
+		else:
+			col_spans = self.all_col_spans[real_curpos.y]
 		if(len(col_spans)==0): return (0, col_spans)
 		cdef int y
 		for y, cs in enumerate(col_spans):
@@ -492,7 +495,7 @@ cdef class Screen:
 		self.last_gutter_width = gutter_width
 		text_area_width = self.width - gutter_width
 
-		if(self.line_start >= nlines): return(rendered_curpos, text_area_width)
+		#if(self.line_start >= nlines): return(rendered_curpos, text_area_width)
 
 		self.set_gutter_style(gutter_width)
 		self.reflow_all(text_area_width, self.buffer.lines, tab_size, word_wrap, hard_wrap)

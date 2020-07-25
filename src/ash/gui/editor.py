@@ -73,7 +73,7 @@ class Editor(Widget):
 		self.selection_mode = False
 		self.popup_visible = False
 		self.curpos.x = 0
-		self.curpos.y = 0
+		self.curpos.y = 0		
 
 	def set_buffer(self, bid, buffer):
 		self.bid = bid
@@ -103,17 +103,12 @@ class Editor(Widget):
 		self.y = y
 		self.x = x
 		self.height = height
-		self.width = width
-		
-		self.selection_mode = False
-		self.popup_visible = False
-		self.curpos.x = 0
-		self.curpos.y = 0
-
+		self.width = width		
 		if(self.screen == None):
 			self.screen = Screen(self.parent, self.buffer, self.height, self.width, self.show_line_numbers, self.show_scrollbars)
 		else:
 			self.screen.resize(self.height, self.width)
+		self.reset()
 
 	# when focus received
 	def focus(self):
@@ -168,7 +163,9 @@ class Editor(Widget):
 		else:
 			edit_made = self.keyHandler.handle_keys(ch)
 		
-		if(edit_made): self.buffer.update(self.curpos, self)
+		if(edit_made): 
+			self.buffer.update(self.curpos, self)
+			
 		self.popup_visible = False
 
 	# <------------------- Functions called from BufferManager --------------------->

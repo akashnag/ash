@@ -17,6 +17,8 @@ cdef class Screen:
 	cdef buffer
 	cdef win
 	cdef dict all_col_spans
+	cdef dict mapping_real_line_to_rendered_line
+	cdef dict mapping_rendered_line_to_real_line
 	cdef list screen_buffer
 	cdef list style_buffer
 	cdef int real_line_start_index_visible, real_line_end_index_visible
@@ -33,6 +35,7 @@ cdef class Screen:
 	def toggle_line_numbers_and_scrollbars(self, show_ln, show_sb):
 		self.show_line_numbers = show_ln
 		self.show_scrollbars = show_sb
+		self.last_gutter_width = self._get_gutter_width(self.line_end)
 
 	# resize the screen buffer
 	def resize(self, int height, int width):
@@ -42,6 +45,7 @@ cdef class Screen:
 		self.line_end = self.height
 		self.col_start = 0
 		self.col_end = self.width - self._get_gutter_width(self.line_end)
+		self.last_gutter_width = self._get_gutter_width(self.line_end)
 		self.clear()
 
 	# update the window and buffer
@@ -108,10 +112,25 @@ cdef class Screen:
 		pos.append(n)
 		return pos
 
-	cdef reflow_all(self, int width, lines, int tab_size, bint word_wrap, bint hard_wrap):
+	def reflow_all(self, width, lines, tab_size, word_wrap, hard_wrap):
 		self.all_col_spans = dict()
+		self.mapping_real_line_to_rendered_line = dict()		# only the 1st rendered line
+		self.mapping_rendered_line_to_real_line = dict()		# contains tuple(real_line_index, subline_offset)
+		
+		rendered_counter = 0
 		for i, line in enumerate(lines):
 			self.all_col_spans[i] = self.reflow(width, line, tab_size, word_wrap, hard_wrap)
+			self.mapping_real_line_to_rendered_line[i] = rendered_counter
+			
+			k = len(self.all_col_spans[i])
+			for j in range(k):
+				self.mapping_rendered_line_to_real_line[rendered_counter+j] = (i,j)
+
+			if(k == 0):
+				self.mapping_rendered_line_to_real_line[rendered_counter] = (i,0)
+				rendered_counter += 1
+			else:
+				rendered_counter += k
 
 	# reflow a line of text (depending on wrap settings and tab-size) and return a list of column-spans (after tab-expansion)
 	cdef reflow(self, int width, line, int tab_size, bint word_wrap, bint hard_wrap):
@@ -127,7 +146,7 @@ cdef class Screen:
 		cdef int col_width
 		cdef int ls
 		cdef int w = len(text)
-		cdef bint backward
+		cdef bint flag
 
 		# text wrap is OFF
 		if(w == 0): return col_spans
@@ -146,14 +165,23 @@ cdef class Screen:
 	
 		# soft wrap is ON
 		while(col_start < w):
+			flag = False
 			for i in range(pos_start, len_pos):
-				if(pos[i] > col_start + width): break
+				if(pos[i] > col_start + width): 
+					flag = True
+					break
 			
-			if(i == pos_start): i+=1
+			if(i == pos_start or not flag): i+=1
 			
-			col_end = pos[i-1]-1
-			col_spans.append( (col_start, col_end) )
-			col_start = pos[i-1]
+			if(pos[i-1] - col_start < width):
+				col_end = pos[i-1]
+				col_spans.append( (col_start, col_end) )
+				col_start = pos[i-1]+1
+			else:
+				col_end = pos[i-1]-1
+				col_spans.append( (col_start, col_end) )
+				col_start = pos[i-1]
+
 			pos_start = i
 		
 		return col_spans
@@ -322,9 +350,10 @@ cdef class Screen:
 		cdef int x, i, rendered_line_col, sub_line_offset
 
 		correspondence = dict()
-		if(len(col_spans) == 0): 
+		if(n == 0): 
 			correspondence[(0,0)] = 0
 			return correspondence
+
 		for x in range(len(line)+1):
 			rendered_x = self.translate_real_curpos_col_to_rendered_curpos_col(line, tab_size, x)
 			rendered_line_col = rendered_x - col_spans[n-1][0] + 1
@@ -341,22 +370,15 @@ cdef class Screen:
 		cdef int nlines = len(lines)
 		cdef int visible_line_counter = -1
 		cdef int i, j, sub_line_offset, real_line_index
+		cdef int max_col
 
-		for i in range(nlines):
-			col_spans = self.reflow(width, lines[i], tab_size, word_wrap, hard_wrap)
-			if(len(col_spans) == 0): visible_line_counter += 1
-			sub_line_offset = 0
-			for j, cs in enumerate(col_spans):
-				visible_line_counter += 1
-				if(visible_line_counter == rendered_curpos.y): 
-					sub_line_offset = j
-					break
-			if(visible_line_counter == rendered_curpos.y): break
-		
-		real_line_index = i
+		real_line_index, sub_line_offset = self.mapping_rendered_line_to_real_line[rendered_curpos.y]
 		correspondence = self.get_correspondence(lines[real_line_index], width, tab_size, word_wrap, hard_wrap)
+
 		real_col = correspondence.get((sub_line_offset, rendered_curpos.x))
-		if(real_col == None): real_col = self.get_max_col_in_correspondence(correspondence, sub_line_offset)
+		max_col = self.get_max_col_in_correspondence(correspondence, sub_line_offset)
+
+		if(real_col == None): real_col = max_col
 		return CursorPosition(real_line_index, real_col)
 
 	# returns the maximum real column position possible in the given sub-line as mapped by correspondence
@@ -498,7 +520,8 @@ cdef class Screen:
 		#if(self.line_start >= nlines): return(rendered_curpos, text_area_width)
 
 		self.set_gutter_style(gutter_width)
-		self.reflow_all(text_area_width, self.buffer.lines, tab_size, word_wrap, hard_wrap)
+		if(self.all_col_spans == None):
+			self.reflow_all(text_area_width, self.buffer.lines, tab_size, word_wrap, hard_wrap)
 
 		# determine the first line to be displayed
 		real_line_start, line_start_col_spans, line_start_offset = self._get_line_start(gutter_width, nlines, lines, tab_size, word_wrap, hard_wrap)
@@ -516,16 +539,13 @@ cdef class Screen:
 				cs_start = cs[0]							# inclusive
 				cs_end = cs[1] + 1							# exclusive
 				vtext = text[cs_start : cs_end]
-				if(self.col_start >= cs_end - cs_start):
-					# no printing necessary (invisible) because user has scrolled past it
-					pass
-				else:
-					# trim the text
+				if(self.col_start < cs_end - cs_start):
 					vtext = vtext[self.col_start:]
 					self.putstr(y, gutter_width, vtext)
 			
 			# increment line-start so that it starts on a fresh real-line
 			real_line_start += 1			
+			y += 1
 
 		# print lines:
 		# y holds the screenbuffer offset: 0 = 1st visible line (line portion in case of wrapping)
@@ -538,27 +558,17 @@ cdef class Screen:
 				if(line_index == real_curpos.y): current_line_number_y = y
 
 			text = lines[line_index].expandtabs(tab_size)
-			if(self.all_col_spans == None):
-				col_spans = self.reflow(self.width - gutter_width, lines[line_index], tab_size, word_wrap, hard_wrap)
-			else:
-				col_spans = self.all_col_spans[line_index]
-
+			col_spans = self.all_col_spans[line_index]
+			
 			for i in range( len(col_spans) ):
-				if(y >= self.height): break
-				
+				if(y >= self.height): break				
 				cs = col_spans[i]							# get the colspan
 				cs_start = cs[0]							# inclusive
 				cs_end = cs[1] + 1							# exclusive
-				vtext = text[cs_start : cs_end]
-				
-				if(self.col_start >= cs_end - cs_start):
-					# no printing necessary (invisible) because user has scrolled past it
-					pass
-				else:
-					# trim the text
+				vtext = text[cs_start : cs_end]				
+				if(self.col_start < cs_end - cs_start):
 					vtext = vtext[self.col_start:]
 					self.putstr(y, gutter_width, vtext)
-
 				y+=1
 				
 			# increment line-start so that it starts on a fresh real-line
@@ -649,16 +659,16 @@ cdef class Screen:
 			return self.translate_rendered_curpos_to_real_curpos(lines, width, rendered_curpos, tab_size, word_wrap, hard_wrap)
 		
 	def get_curpos_after_move_down(self, real_curpos, tab_size, word_wrap, hard_wrap):
-		_, width = self.render(real_curpos, tab_size, word_wrap, hard_wrap, None, None, True, False)
+		rendered_curpos, width = self.render(real_curpos, tab_size, word_wrap, hard_wrap, None, None, True, False)
 		lines = self.buffer.lines
 		y, col_spans = self.get_subline_offset(lines, width, tab_size, word_wrap, hard_wrap, real_curpos)
 		
-		if(y == len(col_spans)-1 and real_curpos.y == len(lines)-1):
+		if((y == len(col_spans)-1 or (y==0 and len(col_spans)==0)) and real_curpos.y == len(lines)-1):
 			return copy.copy(real_curpos)
 		else:
-			rendered_curpos, _ = self.translate_real_curpos_to_rendered_curpos(lines, real_curpos, width, tab_size, word_wrap, hard_wrap)
 			rendered_curpos.y += 1
-			return self.translate_rendered_curpos_to_real_curpos(lines, width, rendered_curpos, tab_size, word_wrap, hard_wrap)		
+			new_real_curpos = self.translate_rendered_curpos_to_real_curpos(lines, width, rendered_curpos, tab_size, word_wrap, hard_wrap)
+			return new_real_curpos
 
 	def get_curpos_after_move_home(self, real_curpos, tab_size, word_wrap, hard_wrap):
 		lines = self.buffer.lines

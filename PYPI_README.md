@@ -11,6 +11,7 @@
 ## Table of Contents
 
 - [Features](#features)
+- [Requirements](#requirements)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Installing **ash**](#installing-ash)
@@ -62,6 +63,14 @@ The following features will be implemented gradually:
 - Autocompletion/Suggestions
 - Macros
 - Integrated terminal
+
+## Requirements
+
+1. You need a resolution of at least 102 x 22 in your terminal emulator
+1. Your terminal must support Unicode and be able to display at least 256 colors with the capability of remapping color palettes (Works best on: `xterm-256`)
+1. If you are running the source distribution, you need the GNU C compiler collection besides Python 3.8, as some parts of the application are written in Cython. The first time you run the application, Cython will compile and build the `*.pyx` files, which may increase load time (Ignore the warnings during compilation)
+
+**This version of ash has been tested on Ubuntu 20.04 with Python 3.8.2 (64-bit)**
 
 ## Installation
 

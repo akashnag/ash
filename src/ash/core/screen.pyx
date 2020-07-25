@@ -683,9 +683,10 @@ cdef class Screen:
 		w = len(lines[real_curpos.y])
 		return CursorPosition(real_curpos.y, w)
 
-	def get_first_nonwhitespace_position(self, lines, y):
+	cdef get_first_nonwhitespace_position(self, lines, int y):
 		line = lines[y]
-		w = len(line)
+		cdef int w = len(line)
+		cdef int i = 0
 		for i in range(w):
 			if(line[i] != '\t' and line[i] != ' '): break
 		return i

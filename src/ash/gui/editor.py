@@ -28,7 +28,6 @@ class Editor(Widget):
 		self.utility = EditorUtility(self)
 		self.keyHandler = EditorKeyHandler(self)
 
-		self.popup_visible = False
 		self.show_line_numbers = True
 		self.should_stylize = True
 		self.word_wrap = False
@@ -71,7 +70,6 @@ class Editor(Widget):
 		
 	def reset(self):
 		self.selection_mode = False
-		self.popup_visible = False
 		self.curpos.x = 0
 		self.curpos.y = 0		
 
@@ -132,7 +130,7 @@ class Editor(Widget):
 
 		edit_made = False
 
-		if(KeyBindings.is_keyboard_right_click(ch)):
+		if(KeyBindings.is_key(ch, "RIGHT_CLICK")):
 			edit_made = self.on_right_click()
 		elif(KeyBindings.is_key(ch, "DELETE_CHARACTER_LEFT")):
 			edit_made = self.keyHandler.handle_backspace_key(ch)
@@ -163,10 +161,8 @@ class Editor(Widget):
 		else:
 			edit_made = self.keyHandler.handle_keys(ch)
 		
-		if(edit_made): 
-			self.buffer.update(self.curpos, self)
+		if(edit_made): self.buffer.update(self.curpos, self)
 			
-		self.popup_visible = False
 
 	# <------------------- Functions called from BufferManager --------------------->
 
@@ -333,14 +329,13 @@ class Editor(Widget):
 		return (y - self.y - self.parent.area.y, x - self.x - self.parent.area.x)
 
 	def on_click(self, y, x):
-		self.popup_visible = False
 		curpos = self.screen.get_curpos_after_click(y, x, self.buffer.lines, self.width, self.tab_size, self.word_wrap, self.hard_wrap)
 		if(curpos != None):
 			self.curpos = copy.copy(curpos)
 			self.repaint()
 
-	def on_right_click(self, y, x):
-		self.on_click(y, x)
+	def on_right_click(self, y = -1, x = -1):
+		if(y >= 0 and x >= 0): self.on_click(y, x)
 		visual_curpos = self.screen.translate_real_to_visual_curpos(self.curpos, self.buffer.lines, self.width, self.tab_size, self.word_wrap, self.hard_wrap)
 		app_dh = self.parent.tab.manager.app.dialog_handler
 
@@ -348,7 +343,11 @@ class Editor(Widget):
 			y, x = self.y + (self.height // 2), self.x + (self.width // 2)
 		else:
 			y, x = visual_curpos.y + self.y + 1, visual_curpos.x + self.x + 1
+		
 		popup_menu_items = [
+			("Undo", True, self.keyHandler.handle_undo),
+			("Redo", True, self.keyHandler.handle_redo),
+			("---", False, None),
 			("Cut", self.selection_mode, self.keyHandler.handle_cut),
 			("Copy", self.selection_mode, self.keyHandler.handle_copy),
 			("Paste", True, self.keyHandler.handle_paste),
@@ -358,9 +357,12 @@ class Editor(Widget):
 			("---", False, None),
 			("Preferences...", True, app_dh.invoke_set_preferences)
 		]
-		self.popup_visible = True
+		
 		self.popup_menu = PopupMenu(self, y, x, popup_menu_items)
 		ret_code = self.popup_menu.show()
 		self.repaint()
-		self.popup_visible = False
+
+		# return code is True means edit was made
+		if(ret_code): self.buffer.update(self.curpos, self)
+
 		return ret_code

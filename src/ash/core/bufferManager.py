@@ -466,16 +466,20 @@ class BufferManager:
 
 	# writes all buffers to disk if they have an associated file
 	def write_all_wherever_possible(self):
-		self.write_all(True)
+		return self.write_all(True)
 						
 	# writes all buffers to disk
 	def write_all(self, ignore_errors=False):
+		counter=0
 		for bid, buffer in self.buffers.items():
 			if(not buffer.save_status):
 				if(buffer.filename == None):
-					if(not ignore_errors): raise(AshException("Error 4: buffermanager.write_all()"))
+					counter += 1
+					if(not ignore_errors): 
+						raise(AshException("Error 4: buffermanager.write_all()"))
 				else:
 					buffer.write_to_disk()
+		return counter
 
 	# destroy all buffers, reset counter
 	def destroy(self):

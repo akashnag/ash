@@ -12,6 +12,8 @@ from ash.gui import *
 from ash.gui.windowManager import *
 from ash.gui.statusbar import *
 from ash.gui.window import *
+from ash.gui.menuBar import *
+from ash.gui.popupMenu import *
 from ash.core.bufferManager import *
 from ash.core.gitRepo import *
 
@@ -29,6 +31,7 @@ class TopLevelWindow(Window):
 		# *unsaved-file-count (4), *tab-size (1), cursor-position (6+1+6+3+8=24)
 		self.status = StatusBar(self, [ 10, 13, 9, 22, 12, 6, 3, -1 ])
 		self.window_manager = WindowManager(self.app, self)
+		self.init_menu_bar()
 
 	def update_status(self):
 		aed = self.window_manager.get_active_editor()
@@ -65,7 +68,7 @@ class TopLevelWindow(Window):
 		
 		unsaved_file_count = str(self.app.buffers.get_unsaved_count()) + "*"
 		
-		if(self.app.app_mode == APP_MODE_PROJECT):			
+		if(self.app.app_mode == APP_MODE_PROJECT):
 			if(GitRepo.has_repo_in_dir(self.app.project_dir)):
 				editor_state = GitRepo.get_active_branch_name(self.app.project_dir)
 
@@ -101,7 +104,13 @@ class TopLevelWindow(Window):
 
 			if(ch == -1): continue
 			
-			if(KeyBindings.is_mouse(ch)):
+			if(KeyBindings.is_key(ch, "SHOW_MENU_BAR")):
+				self.show_menu_bar()
+			elif(KeyBindings.is_key(ch, "HIDE_MENU_BAR")):
+				self.hide_menu_bar()
+			elif(self.menu_bar_visible and (KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_UP") or KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_DOWN") or KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_NEXT") or KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_PREVIOUS") or KeyBindings.is_key(ch, "LIST_MAKE_SELECTION"))):
+				self.menu_bar.perform_action(ch)
+			elif(KeyBindings.is_mouse(ch)):
 				btn, y, x = KeyBindings.get_mouse(ch)
 				if(btn == MOUSE_CLICK or btn == MOUSE_RIGHT_CLICK):
 					ed_list = self.window_manager.get_editors_in_active_tab()
@@ -146,13 +155,21 @@ class TopLevelWindow(Window):
 			self.win.addstr(self.height-1, 0, (" " + error_msg).ljust(self.width-1), gc("messagebox-background"))
 		
 		try:
-			if(len(self.title) == 0):
-				self.win.addstr(0, 0, self.app_name.center(self.width), curses.A_BOLD | gc("titlebar"))
+			title_text = self.title + " - " + self.app_name
+			if(self.menu_bar_visible):
+				self.menu_bar.repaint(self.width)
+				if(len(self.title) == 0):
+					self.win.addstr(0, self.width - 1 - len(self.app_name), self.app_name, curses.A_BOLD | gc("menu-bar"))
+				else:
+					self.win.addstr(0, self.width - 1 - len(title_text), self.title + " - ", gc("menu-bar"))
+					self.win.addstr(0, self.width - 1 - len(self.app_name), self.app_name, curses.A_BOLD | gc("menu-bar"))
 			else:
-				title_text = self.title + " - " + self.app_name		
-				ts = (self.width - len(title_text)) // 2
-				self.win.addstr(0, ts, self.title + " - ", gc("titlebar"))
-				self.win.addstr(0, ts + len(self.title + " - "), self.app_name, curses.A_BOLD | gc("titlebar"))
+				if(len(self.title) == 0):
+					self.win.addstr(0, 0, self.app_name.center(self.width), curses.A_BOLD | gc("titlebar"))
+				else:
+					ts = (self.width - len(title_text)) // 2
+					self.win.addstr(0, ts, self.title + " - ", gc("titlebar"))
+					self.win.addstr(0, ts + len(self.title + " - "), self.app_name, curses.A_BOLD | gc("titlebar"))
 
 			self.window_manager.repaint()
 		except:
@@ -182,6 +199,108 @@ class TopLevelWindow(Window):
 
 	def toggle_filename_visibility(self):
 		self.window_manager.toggle_filename_visibility()
+		self.repaint()
+
+	# <------------------------------------- menu bar related functions ----------------------->
+
+	def init_menu_bar(self):
+		self.menu_bar_visible = False
+		pass
+
+	def show_menu_bar(self):
+		aed = self.get_active_editor()
+		aedkh = None
+		aed_buffer = None
+		if(aed != None): 
+			aedkh = aed.keyHandler
+			aed_buffer = aed.buffer
+		adh = self.app.dialog_handler
+		self.menu_bar = MenuBar(self, self.win, 0, 0)
+		has_editor = (True if aed != None else False)
+
+		file_menu_items = [
+			("New File...", True, adh.invoke_file_new),
+			("Open File/Project...", True, adh.invoke_file_open),
+			("---", True, None),
+			("Save", has_editor, self.save_active_editor),
+			("Save As...", has_editor, (adh.invoke_file_save_as, aed_buffer)),
+			("Save & Close", has_editor, self.save_and_close_active_editor),
+			("Save All", True, adh.handle_save_all),			
+			("---", True, None),
+			("Close All", True, self.close_all_tabs),
+			("Exit", True, adh.handle_exit)
+		]
+
+		edit_menu_items = [
+			("Undo", has_editor, (aedkh.handle_undo if has_editor else None)),
+			("Redo", has_editor, (aedkh.handle_redo if has_editor else None)),
+			("---", True, None),
+			("Cut", has_editor and aed.selection_mode, (aedkh.handle_cut if has_editor else None)),
+			("Copy", has_editor and aed.selection_mode, (aedkh.handle_copy if has_editor else None)),
+			("Paste", has_editor, (aedkh.handle_paste if has_editor else None)),
+			("---", True, None),
+			("Select All", has_editor, (aedkh.handle_select_all if has_editor else None)),
+			("Select Line", has_editor, (aedkh.handle_select_line if has_editor else None)),
+			("---", True, None),
+			("Find", has_editor, adh.invoke_find),
+			("Find & Replace", has_editor, adh.invoke_find_and_replace),
+			("Find in all files", True, adh.invoke_project_find),
+			("Find & Replace in all files", True, adh.invoke_project_find_and_replace)
+		]
+
+		view_menu_items = [
+			("Go to line...", has_editor, adh.invoke_go_to_line),
+			("Command Palette...", True, adh.invoke_command_palette),
+			("Preferences...", has_editor, adh.invoke_set_preferences),
+			("Open tabs...", True, adh.invoke_show_active_tabs),
+			("---", True, None),
+			("Recent Files...", True, adh.invoke_recent_files),
+			("Project Explorer...", True, adh.invoke_project_explorer)
+		]
+
+		window_menu_items = [
+			("New Tab", True, self.add_blank_tab),
+			("---", True, None),
+			("Close active tab", True, self.close_active_tab),
+			("Close active editor", True, self.close_active_editor),
+			("Close all but active editor", True, self.close_all_except_active_editor),
+			("---", True, None),
+			("Split Horizontally", True, self.split_horizontally),
+			("Split Vertically", True, self.split_vertically),
+			("Merge Horizontally", True, self.merge_horizontally),
+			("Merge Vertically", True, self.merge_vertically),
+			("---", True, None),
+			("Switch to next editor", True, self.switch_to_next_editor),
+			("Switch to previous editor", True, self.switch_to_previous_editor),
+			("Switch to next tab", True, self.switch_to_next_tab),
+			("Switch to previous tab", True, self.switch_to_previous_tab)
+		]
+
+		help_menu_items = [
+			("Key Bindings", True, adh.invoke_help_key_bindings),
+			("About...", True, adh.invoke_help_about)
+		]
+
+		mnuFile = PopupMenu(self, 1, 0, file_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar)
+		mnuEdit = PopupMenu(self, 1, 6, edit_menu_items, width = 35, is_dropdown=True, parent_menu=self.menu_bar)
+		mnuView = PopupMenu(self, 1, 12, view_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar)
+		mnuWindow = PopupMenu(self, 1, 18, window_menu_items, width = 35, is_dropdown=True, parent_menu=self.menu_bar)
+		mnuHelp = PopupMenu(self, 1, 26, help_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar)
+
+		# |FILE||EDIT||VIEW||WINDOW||HELP|
+		# 01234567890123456789012345678901
+
+		self.menu_bar.add_menu("File", mnuFile)
+		self.menu_bar.add_menu("Edit", mnuEdit)
+		self.menu_bar.add_menu("View", mnuView)
+		self.menu_bar.add_menu("Window", mnuWindow)
+		self.menu_bar.add_menu("Help", mnuHelp)
+
+		self.menu_bar_visible = True
+		self.repaint()
+
+	def hide_menu_bar(self):
+		self.menu_bar_visible = False
 		self.repaint()
 
 	# <------------------------------------ stub functions ------------------------------->
@@ -218,6 +337,12 @@ class TopLevelWindow(Window):
 
 	def get_tab_count(self):
 		return self.window_manager.get_tab_count()
+
+	def close_all_tabs(self):
+		n = self.get_tab_count()
+		while(n > 0):
+			self.close_active_tab()
+			n -= 1
 
 	def switch_to_tab(self, tab_index):
 		self.window_manager.switch_to_tab(tab_index)

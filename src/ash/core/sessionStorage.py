@@ -79,6 +79,9 @@ class SessionStorage:
 		else:
 			self.session_data = SessionData(sd.recent_files_list, sd.projects_list, sd.project_data_map)
 
+	def get_recent_files_list(self):
+		return self.session_data.recent_files_list
+	
 	def does_project_have_saved_session(self, project_dir):
 		project_data = self.session_data.project_data_map.get(project_dir)
 		return(False if project_data == None else True)

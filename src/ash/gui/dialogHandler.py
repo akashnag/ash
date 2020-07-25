@@ -16,6 +16,7 @@ from ash.gui.checkbox import *
 from ash.gui.listbox import *
 from ash.gui.textfield import *
 from ash.gui.treeview import TreeView
+from ash.gui.label import *
 
 class DialogHandler:
 	def __init__(self, app):
@@ -89,14 +90,14 @@ class DialogHandler:
 		self.app.readjust()
 		
 		try:
-			y, x = get_center_coords(self.app, 5, 14)
+			y, x = get_center_coords(self.app, 5, 25)
 		except:
 			self.app.warn_insufficient_screen_space()
 			return
 
-		self.app.dlgGoTo = ModalDialog(self.app.main_window, y, x, 5, 14, "GO TO LINE", self.go_to_key_handler)
+		self.app.dlgGoTo = ModalDialog(self.app.main_window, y, x, 5, 25, "GO TO LINE", self.go_to_key_handler)
 		currentLine = str(self.app.main_window.get_active_editor().curpos.y + 1)
-		txtLineNumber = TextField(self.app.dlgGoTo, 3, 2, 10, currentLine, True, callback = self.go_to_live_preview_key_handler)
+		txtLineNumber = TextField(self.app.dlgGoTo, 3, 2, 21, currentLine, True, callback = self.go_to_live_preview_key_handler)
 		self.app.dlgGoTo.add_widget("txtLineNumber", txtLineNumber)
 		self.app.old_goto_curpos = copy.copy(self.app.main_window.get_active_editor().curpos)
 		self.app.dlgGoTo.show()
@@ -183,6 +184,8 @@ class DialogHandler:
 	def invoke_recent_files(self):
 		self.app.readjust()
 
+		recent_files_list = self.app.session_storage.get_recent_files_list()
+		
 		if(len(recent_files_list) == 0):
 			self.app.show_error("No recent files on record")
 			return
@@ -209,6 +212,8 @@ class DialogHandler:
 		self.app.dlgRecentFiles.show()
 
 	def recent_files_key_handler(self, ch):
+		recent_files_list = self.app.session_storage.get_recent_files_list()
+
 		if(KeyBindings.is_key(ch, "CLOSE_WINDOW") or KeyBindings.is_key(ch, "SHOW_RECENT_FILES")):
 			self.app.dlgRecentFiles.hide()
 			self.app.main_window.repaint()
@@ -343,6 +348,27 @@ class DialogHandler:
 
 	# <------------------------------------ Help --------------------------------------------->
 
+	def invoke_help_about(self):
+		self.app.readjust()
+		try:
+			y, x = get_center_coords(self.app, 13, 60)
+		except:
+			self.app.warn_insufficient_screen_space()
+			return
+		
+		self.app.dlgHelp = ModalDialog(self.app.main_window, y, x, 13, 60, "ABOUT", self.help_key_handler)
+		self.app.dlgHelp.add_widget("label1", Label(self.app.dlgHelp, 3, 2, "Ash text-editor", gc("form-label") | curses.A_BOLD))
+		self.app.dlgHelp.add_widget("label1", Label(self.app.dlgHelp, 4, 2, "Version: " + ash.__version__, gc("form-label")))
+		
+		self.app.dlgHelp.add_widget("label2", Label(self.app.dlgHelp, 6, 2, "Copyright 2020, Akash Nag. All rights reserved.", gc("form-label")))
+		self.app.dlgHelp.add_widget("label2", Label(self.app.dlgHelp, 7, 2, "Licensed under the MIT License", gc("form-label")))
+
+		self.app.dlgHelp.add_widget("label2", Label(self.app.dlgHelp, 9, 2, "For more information, visit:", gc("form-label")))
+		self.app.dlgHelp.add_widget("label2", Label(self.app.dlgHelp, 10, 2, "Website: https://akashnag.github.io", gc("form-label")))
+		self.app.dlgHelp.add_widget("label2", Label(self.app.dlgHelp, 11, 2, "GitHub: https://github.com/akashnag/ash", gc("form-label")))
+		
+		self.app.dlgHelp.show()
+
 	def invoke_help_key_bindings(self):
 		self.app.readjust()
 
@@ -352,8 +378,8 @@ class DialogHandler:
 			self.app.warn_insufficient_screen_space()
 			return
 
-		self.app.dlgHelpKeyBindings = ModalDialog(self.app.main_window, y, x, 20, 80, "HELP", self.help_key_bindings_key_handler)
-		lstKeys = ListBox(self.app.dlgHelpKeyBindings, 3, 2, 76, 16)
+		self.app.dlgHelp = ModalDialog(self.app.main_window, y, x, 20, 80, "HELP", self.help_key_handler)
+		lstKeys = ListBox(self.app.dlgHelp, 3, 2, 76, 16)
 
 		kbs = KeyBindings.get_list_of_bindings()
 		coms = self.app.command_interpreter.get_command_list()
@@ -369,22 +395,15 @@ class DialogHandler:
 			lstKeys.add_item(info[1])
 			lstKeys.add_item(" ")
 		
-		lstKeys.add_item("Custom colors can be set in $HOME/.ashedrc")
-		lstKeys.add_item("Custom key mappings can be set in $HOME/.ashedkeys")
-		lstKeys.add_item(" ")
-		lstKeys.add_item("Website:".ljust(16) + "https://akashnag.github.io/ash" )
-		lstKeys.add_item(" ")
-		lstKeys.add_item(APP_COPYRIGHT_TEXT)
-		lstKeys.add_item(APP_LICENSE_TEXT)
-		lstKeys.add_item(" ")
-		lstKeys.add_item(self.app.get_app_name())
+		lstKeys.add_item("Custom colors can be set in $HOME/.ash-editor/theme.txt")
+		lstKeys.add_item("Custom key mappings can be set in $HOME/.ash-editor/keymappings.txt")
+		
+		self.app.dlgHelp.add_widget("lstKeys", lstKeys)
+		self.app.dlgHelp.show()
 
-		self.app.dlgHelpKeyBindings.add_widget("lstKeys", lstKeys)
-		self.app.dlgHelpKeyBindings.show()
-
-	def help_key_bindings_key_handler(self, ch):
+	def help_key_handler(self, ch):
 		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
-			self.app.dlgHelpKeyBindings.hide()
+			self.app.dlgHelp.hide()
 			self.app.main_window.repaint()
 			return -1
 		return ch
@@ -592,7 +611,14 @@ class DialogHandler:
 		self.app.main_window.repaint()
 
 	# -------------------------------------------------------------------------------------
+	
+	def handle_save_all(self):
+		unsaved_counter = self.app.buffers.write_all_wherever_possible()
+		if(unsaved_counter > 0): self.app.show_error(f"{unsaved_counter} buffer(s) were not saved as\nthey have not been allotted files;\nyou must save them individually.", False)
 
+	def handle_exit(self):
+		self.app.main_window.close_all_tabs()
+		self.invoke_quit()
 
 	# <----------------------------------- File Save As ---------------------------------->
 
@@ -633,3 +659,8 @@ class DialogHandler:
 			return -1
 					
 		return ch
+
+	# <-------------------------------- Command Palette -------------------------->
+
+	def invoke_command_palette(self):
+		self.app.command_interpreter.interpret_command(self.app.prompt("COMMAND", "Enter command:", width=50))

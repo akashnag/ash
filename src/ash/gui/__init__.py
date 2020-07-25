@@ -45,6 +45,11 @@ BORDER_SPLIT_LEFT		= "\u2524"
 BORDER_SPLIT_TOP		= "\u2534"
 BORDER_SPLIT_BOTTOM		= "\u252C"
 
+BORDER_TOP_LEFT			= "\u250c"
+BORDER_TOP_RIGHT		= "\u2510"
+BORDER_BOTTOM_LEFT		= "\u2514"
+BORDER_BOTTOM_RIGHT		= "\u2518"
+
 # <------------------- widget types ------------------------->
 WIDGET_TYPE_LABEL			= 1
 WIDGET_TYPE_MULTILINE_LABEL	= 2

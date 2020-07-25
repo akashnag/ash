@@ -250,7 +250,8 @@ class AshEditorApp:
 			self.dialog_handler.invoke_project_find_and_replace()
 			return -1
 		elif(KeyBindings.is_key(ch, "SHOW_COMMAND_WINDOW")):
-			self.command_interpreter.interpret_command(self.prompt("COMMAND", "Enter command:", width=50))
+			self.dialog_handler.invoke_command_palette()
+			return -1
 			
 		return ch
 

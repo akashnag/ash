@@ -380,6 +380,14 @@ class EditorKeyHandler:
 		self.ed.sel_end.y = nlen-1
 		self.ed.sel_end.x = len(self.ed.buffer.lines[nlen-1])
 
+	def handle_select_line(self):
+		self.ed.selection_mode = True
+		self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y-1])
+		self.ed.sel_start.y = self.ed.curpos.y
+		self.ed.sel_start.x = 0
+		self.ed.sel_end.y = self.ed.curpos.y
+		self.ed.sel_end.x = self.ed.curpos.x
+
 	def handle_copy(self):
 		if(not self.ed.selection_mode): return
 		sel_text = self.ed.get_selected_text()

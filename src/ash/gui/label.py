@@ -6,6 +6,7 @@
 # This module implements the Label widget
 
 from ash.gui import *
+from ash.formatting.colors import *
 
 class Label(Widget):
 	def __init__(self, parent, y, x, text, theme):

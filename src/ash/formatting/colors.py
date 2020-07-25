@@ -40,6 +40,7 @@ def get_default_colors():
 	element_colors["highlighted-line-number"] = ("white", "darkgray")
 	element_colors["selection"] = ("darkgray", "yellow")
 	element_colors["highlight"] = ("darkgray", "magenta")
+	element_colors["form-label"] = ("white", "darkgray")
 	element_colors["formfield"] = ("cyan", "darkgray")
 	element_colors["formfield-focussed"] = ("darkgray", "cyan")
 	element_colors["formfield-selection-blurred"] = ("darkgray", "dimwhite")
@@ -48,6 +49,14 @@ def get_default_colors():
 	element_colors["messagebox-background"] = ("white", "red")
 	element_colors["disabled"] = ("lightgray", "darkgray")
 	element_colors["cursor"] = ("darkgray", "white")
+
+	element_colors["menu-bar"] = ("darkgray", "white")
+	
+	element_colors["dropdown"] = ("darkgray", "white")
+	element_colors["dropdown-border"] = ("darkgray", "white")
+	element_colors["dropdown-disabled"] = ("lightgray", "white")
+	element_colors["dropdown-selection"] = ("white", "darkgray")
+	element_colors["dropdown-disabled-selection"] = ("lightgray", "darkgray")
 
 	element_colors["popup"] = ("white", "darkgray")
 	element_colors["popup-border"] = ("white", "darkgray")
@@ -108,7 +117,7 @@ def get_element_color_index(element_name):
 	element_names = ( 	"null", "background", "editor-background",
 						"titlebar", "outer-border", "line-number", "highlighted-line-number",
 						"selection", "highlight", "cursor",
-						"formfield", "formfield-focussed", "formfield-selection-blurred",
+						"form-label", "formfield", "formfield-focussed", "formfield-selection-blurred",
 						"inner-border", "messagebox-border", "messagebox-background", "disabled",
 						"status-0", "status-1",	"status-2", "status-3",	"status-4", "status-5",
 						"status-6", "status-7", "global-default", "global-highlighted",  "global-keyword", "global-comment",
@@ -116,7 +125,9 @@ def get_element_color_index(element_name):
 						"global-punctuation", "global-integer", "global-float", "global-operator",
 						"global-builtin-function", "global-builtin-constant", "global-namespace",
 						"global-code", "inactive-filename-display", 
+						"menu-bar", 
 						"popup", "popup-border", "popup-disabled", "popup-selection", "popup-disabled-selection",
+						"dropdown", "dropdown-border", "dropdown-disabled", "dropdown-selection", "dropdown-disabled-selection",
 						"gitstatus-A", "gitstatus-D", "gitstatus-R", "gitstatus-M", "gitstatus-T", "gitstatus-U"
 					)
 

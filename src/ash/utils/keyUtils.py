@@ -52,6 +52,8 @@ class KeyBindings:
 		
 		"LIST_MOVE_SELECTION_UP"		: ["KEY_UP", ARROW_UP, "Move selection up in a list"],
 		"LIST_MOVE_SELECTION_DOWN"		: ["KEY_DOWN", ARROW_DOWN, "Move selection down in a list"],
+		"LIST_MOVE_SELECTION_NEXT"		: ["KEY_RIGHT", ARROW_RIGHT, "Open the next menu"],
+		"LIST_MOVE_SELECTION_PREVIOUS"	: ["KEY_LEFT", ARROW_LEFT, "Open the previous menu"],
 		"LIST_MOVE_TO_PREVIOUS_PAGE"	: ["KEY_PPAGE", "PgUp", "Move selection up one page"],
 		"LIST_MOVE_TO_NEXT_PAGE"		: ["KEY_NPAGE", "PgDown", "Move selection down one page"],
 		"LIST_MAKE_SELECTION"			: [[ "^J", "KEY_ENTER" ], "Ctrl+J/Enter", "Select the currently selected item"],
@@ -135,7 +137,11 @@ class KeyBindings:
 		"SELECT_PAGE_BELOW"				: ["KEY_SNEXT", "Shift+PgDown", "Select the page below"],
 
 		"SHOW_PROJECT_FIND"				: [fn(12), "F12", "Shows the find window for searching in all active buffers"],
-		"SHOW_PROJECT_FIND_AND_REPLACE" : [ctrlfn(12), "Ctrl+F12", "Shows the find & replace window for all active buffers"]
+		"SHOW_PROJECT_FIND_AND_REPLACE" : [ctrlfn(12), "Ctrl+F12", "Shows the find & replace window for all active buffers"],
+
+		"RIGHT_CLICK"					: ["kRIT3", f"Alt+{ARROW_RIGHT}", "Right-click"],
+		"HIDE_MENU_BAR"					: ["kUP3", f"Alt+{ARROW_UP}", "Hide menu bar"],
+		"SHOW_MENU_BAR"					: ["kDN3", f"Alt+{ARROW_DOWN}", "Show menu bar"]
 	}
 
 	@classmethod
@@ -148,13 +154,6 @@ class KeyBindings:
 	@classmethod
 	def is_mouse(cls, ch):
 		return(True if str(curses.keyname(ch))[2:-1] == "KEY_MOUSE" else False)
-
-	@classmethod
-	def is_keyboard_right_click(cls, ch):
-		if(str(curses.keyname(ch)) == "b'kRIT3'"):
-			return True
-		else:
-			return False
 
 	@classmethod
 	def get_mouse(cls, ch):

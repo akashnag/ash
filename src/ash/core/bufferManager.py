@@ -284,7 +284,7 @@ class Buffer:
 		try:
 			if(int(os.stat(filename).st_size) > LARGE_FILE_THRESHOLD):
 				self.lines = self.manager.app.load_file(filename, self.encoding)
-				if(text == None): raise(AshFileReadAbortedException(filename))
+				if(self.lines == None): raise(AshFileReadAbortedException(filename))
 			else:
 				self.lines = list()
 				textFile = codecs.open(filename, "r", self.encoding)
@@ -298,9 +298,8 @@ class Buffer:
 			if(self.last_write_time == None): self.last_write_time = self.last_read_time
 		except AshFileReadAbortedException as e:
 			raise
-		except:
+		except:			
 			raise(AshException("error reading file: " + filename))
-			raise
 
 		if(not read_from_backup): 
 			self.backup_file = os.path.dirname(self.filename) + "/.ash.b-" + get_file_title(self.filename)

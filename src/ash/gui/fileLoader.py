@@ -48,33 +48,35 @@ class FileLoader(Window):
 				if(len(read_data) == 0): break
 				self.bytes_read += len(read_data)
 				lines.append(read_data[:-1])
-				self.repaint()
+				self.repaint(True)
 		
 		activeFile.close()
 		self.win.clear()
 		return lines
 		
 	# draw the window
-	def repaint(self):
+	def repaint(self, partial=False):
 		if(self.win == None): return
 
-		self.win.clear()
-		self.win.attron(self.border_theme)
-		self.win.border()
-		self.win.addstr(2, 0, BORDER_SPLIT_RIGHT, self.theme)
-		self.win.addstr(2, self.width-1, BORDER_SPLIT_LEFT, self.theme)
-		
-		for h in range(1, self.height-1):
-			self.win.addstr(h, 1, " " * (self.width-2), self.theme)
+		if(not partial):
+			self.win.clear()
+			self.win.attron(self.border_theme)
+			self.win.border()
+			self.win.addstr(2, 0, BORDER_SPLIT_RIGHT, self.theme)
+			self.win.addstr(2, self.width-1, BORDER_SPLIT_LEFT, self.theme)
+			
+			for h in range(1, self.height-1):
+				self.win.addstr(h, 1, " " * (self.width-2), self.theme)
 
-		self.win.addstr(2, 1, BORDER_HORIZONTAL * (self.width-2), self.theme)
-		self.win.addstr(1, 2, self.title, curses.A_BOLD | self.theme)
+			self.win.addstr(2, 1, BORDER_HORIZONTAL * (self.width-2), self.theme)
+			self.win.addstr(1, 2, self.title, curses.A_BOLD | self.theme)
 
-		if(self.total_size > 0):
 			fn = get_file_title(self.filename)
 			self.win.addstr(3, 2, (fn if len(fn) <= 46 else fn[0:46]), self.theme)
+
+		if(self.total_size > 0):
 			w = int((self.bytes_read / self.total_size) * (self.width - 4))
-			self.win.addstr(4, 2, "\u2588" * w, self.theme)		
+			self.win.addstr(4, 2, ("\u2588" * w).ljust(self.width-4), self.theme)
 			self.win.refresh()
 
 	# check the response

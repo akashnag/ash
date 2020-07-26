@@ -7,6 +7,7 @@ src/ash/core/__pycache__
 src/ash/formatting/__pycache__
 src/ash/gui/__pycache__
 src/ash/utils/__pycache__
+build
 dist/*
 ash_editor.egg-info
 *.pyc

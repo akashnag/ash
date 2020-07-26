@@ -358,7 +358,7 @@ class DialogHandler:
 		
 		self.app.dlgHelp = ModalDialog(self.app.main_window, y, x, 13, 60, "ABOUT", self.help_key_handler)
 		self.app.dlgHelp.add_widget("label1", Label(self.app.dlgHelp, 3, 2, "Ash text-editor", gc("form-label") | curses.A_BOLD))
-		self.app.dlgHelp.add_widget("label1", Label(self.app.dlgHelp, 4, 2, "Version: " + ash.__version__ + " (Build: 5)", gc("form-label")))
+		self.app.dlgHelp.add_widget("label1", Label(self.app.dlgHelp, 4, 2, "Version: " + ash.__version__ + " (Build: 6)", gc("form-label")))
 		
 		self.app.dlgHelp.add_widget("label2", Label(self.app.dlgHelp, 6, 2, "Copyright 2020, Akash Nag. All rights reserved.", gc("form-label")))
 		self.app.dlgHelp.add_widget("label2", Label(self.app.dlgHelp, 7, 2, "Licensed under the MIT License", gc("form-label")))

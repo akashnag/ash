@@ -223,7 +223,7 @@ class TopLevelWindow(Window):
 			("Open File/Project...", True, adh.invoke_file_open),
 			("---", True, None),
 			("Save", has_editor, self.save_active_editor),
-			("Save As...", has_editor, (adh.invoke_file_save_as, aed_buffer)),
+			("Save As...", has_editor, (adh.invoke_file_save_as, aed_buffer) if has_editor else None),
 			("Save & Close", has_editor, self.save_and_close_active_editor),
 			("Save All", True, adh.handle_save_all),			
 			("---", True, None),

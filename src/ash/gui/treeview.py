@@ -77,8 +77,7 @@ class TreeNode:
 			return (("\u229f" if self.expanded else "\u229e")  + "   " + gs + title, gsc, 4)
 		else:
 			return None		# this fn is not for files
-		
-
+	
 class TreeView(Widget):
 	def __init__(self, parent, y, x, width, row_count, buffer_manager, project_dir):
 		super().__init__(WIDGET_TYPE_LISTBOX)
@@ -150,8 +149,8 @@ class TreeView(Widget):
 
 	# form the root display-node and add its children recursively
 	def form_list_items(self):
-		self.items = list()
-		self.tags = list()		
+		self.items = list()		# contains tuple(text, node_obj, style, offset(int) )
+		self.tags = list()
 
 		disp_text, disp_style, offset = self.tree_root.get_dirname_with_gitstatus(self.git_repo)
 		self.items.append( (disp_text, self.tree_root, disp_style, offset) )
@@ -229,6 +228,7 @@ class TreeView(Widget):
 				self.start = max([self.end - self.row_count, 0])
 			
 		for i in range(self.start, self.end):
+			if(i < 0 or i >= len(self.items)): break
 			disp_text, node_obj, style, text_offset = self.items[i]
 			if(style == None): style = self.theme
 

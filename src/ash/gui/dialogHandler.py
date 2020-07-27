@@ -197,7 +197,8 @@ class DialogHandler:
 			return
 
 		self.app.dlgRecentFiles = ModalDialog(self.app.main_window, y, x, 20, 80, "RECENT FILES", self.recent_files_key_handler)
-		lstRecentFiles = ListBox(self.app.dlgRecentFiles, 3, 2, 76, 16)
+		lstRecentFiles = ListBox(self.app.dlgRecentFiles, 4, 2, 76, 15)
+		txtSearchFile = TextField(self.app.dlgRecentFiles, 3, 2, 76, callback=self.recent_files_search_text_changed)
 		
 		for i in range(len(recent_files_list)-1, -1, -1):
 			if(os.path.isfile(recent_files_list[i])):
@@ -208,8 +209,23 @@ class DialogHandler:
 				continue
 			lstRecentFiles.add_item(disp, tag=recent_files_list[i])
 
+		self.app.dlgRecentFiles.add_widget("txtSearchFile", txtSearchFile)
 		self.app.dlgRecentFiles.add_widget("lstRecentFiles", lstRecentFiles)
 		self.app.dlgRecentFiles.show()
+
+	def recent_files_search_text_changed(self, ch):
+		lstRecentFiles = self.app.dlgRecentFiles.get_widget("lstRecentFiles")
+		search_text = str(self.app.dlgRecentFiles.get_widget("txtSearchFile")).lower()
+		recent_files_list = self.app.session_storage.get_recent_files_list()
+		lstRecentFiles.clear()
+		for i in range(len(recent_files_list)-1, -1, -1):
+			if(os.path.isfile(recent_files_list[i])):
+				disp = get_file_title(recent_files_list[i]) + " [" + os.path.dirname(recent_files_list[i]) + "/]"
+			elif(os.path.isdir(recent_files_list[i])):
+				disp = "PROJECT: [" + recent_files_list[i] + "]"
+			else:
+				continue
+			if(len(search_text) == 0 or disp.lower().find(search_text) >= 0): lstRecentFiles.add_item(disp, tag=recent_files_list[i])
 
 	def recent_files_key_handler(self, ch):
 		recent_files_list = self.app.session_storage.get_recent_files_list()
@@ -221,8 +237,7 @@ class DialogHandler:
 		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
 			mw = self.app.main_window
 
-			index = self.app.dlgRecentFiles.get_widget("lstRecentFiles").get_sel_index()
-			filename = recent_files_list[len(recent_files_list) - 1 - index]
+			filename = self.app.dlgRecentFiles.get_widget("lstRecentFiles").get_sel_tag()
 			self.app.dlgRecentFiles.hide()
 			mw.repaint()
 			

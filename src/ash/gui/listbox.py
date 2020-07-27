@@ -164,6 +164,13 @@ class ListBox(Widget):
 	def __str__(self):
 		return self.get_sel_text()
 
+	def clear(self):
+		self.tags = list()
+		self.items = list()
+		self.sel_index = -1
+		self.list_start = 0
+		self.list_end = 0
+
 	def on_click(self, y, x):
 		if(len(self.items) > y + self.list_start):
 			self.sel_index = y + self.list_start

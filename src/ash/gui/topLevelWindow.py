@@ -189,9 +189,9 @@ class TopLevelWindow(Window):
 		self.height, self.width = self.app.screen_height, self.app.screen_width
 		self.window_manager.readjust()
 
-	def invoke_activate_editor(self, buffer_id, buffer):
+	def invoke_activate_editor(self, buffer_id, buffer, new_tab=False):
 		aed = self.get_active_editor()
-		if(aed == None):
+		if(new_tab or aed == None):
 			self.add_tab_with_buffer(buffer_id, buffer)
 		else:
 			aed.set_buffer(buffer_id, buffer)

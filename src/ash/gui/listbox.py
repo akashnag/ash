@@ -167,6 +167,7 @@ class ListBox(Widget):
 	def clear(self):
 		self.tags = list()
 		self.items = list()
+		self.should_highlight = list()
 		self.sel_index = -1
 		self.list_start = 0
 		self.list_end = 0

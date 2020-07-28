@@ -192,6 +192,9 @@ class AshEditorApp:
 		elif(KeyBindings.is_key(ch, "SHOW_ACTIVE_TABS")):
 			self.dialog_handler.invoke_show_active_tabs()
 			return -1
+		elif(KeyBindings.is_key(ch, "LIST_ACTIVE_BUFFERS")):
+			self.dialog_handler.invoke_list_active_files()
+			return -1
 		elif(self.app_mode == APP_MODE_PROJECT and KeyBindings.is_key(ch, "SHOW_PROJECT_EXPLORER")):
 			# project explorer
 			self.dialog_handler.invoke_project_explorer()

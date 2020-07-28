@@ -15,6 +15,7 @@ These key combinations can be used even if no editor is currently active.
 |<kbd>Ctrl</kbd> + <kbd>&#8592;</kbd> <kbd>&#8593;</kbd> <kbd>&#8594;</kbd> <kbd>&#8595;</kbd>|Move the active dialog-box around the screen|
 |<kbd>Space</kbd>|Check/Uncheck a checkbox in focus|
 |<kbd>Enter</kbd> _or_ <kbd>Ctrl</kbd> + <kbd>W</kbd> _or_ <kbd>Ctrl</kbd> + <kbd>J</kbd>|Save changes and close the current dialog box|
+|<kbd>Ctrl</kbd> + <kbd>L</kbd>|Show the list of active buffers/files|
 |<kbd>Ctrl</kbd> + <kbd>T</kbd>|Show the list of active tabs|
 |<kbd>Ctrl</kbd> + <kbd>N</kbd>|Open a new buffer for editing|
 |<kbd>Ctrl</kbd> + <kbd>O</kbd>|Open a file|

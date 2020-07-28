@@ -49,6 +49,8 @@ class KeyBindings:
 		"SAVE_AND_CLOSE_WINDOW"			: [[ "^W", "^J", "KEY_ENTER" ], "Ctrl+W", "Save changes and close the active window"],
 		"NEW_BUFFER"					: ["^N", "Ctrl+N", "Open a new buffer for editing"],
 		"OPEN_FILE"						: ["^O", "Ctrl+O", "Open a file/directory"],
+		"LIST_ACTIVE_BUFFERS"			: ["^L", "Ctrl+L", "List active files/buffers"],
+		"FINALIZE_CHOICE"				: [[ "^J", "KEY_ENTER" ], "Ctrl+J/Enter", "Finalize the present choice/value"],
 		
 		"LIST_MOVE_SELECTION_UP"		: ["KEY_UP", ARROW_UP, "Move selection up in a list"],
 		"LIST_MOVE_SELECTION_DOWN"		: ["KEY_DOWN", ARROW_DOWN, "Move selection down in a list"],
@@ -68,7 +70,7 @@ class KeyBindings:
 		"MOVE_CURSOR_DOWN"				: ["KEY_DOWN", ARROW_DOWN, "Move cursor down one line"],
 		"DELETE_CHARACTER_RIGHT"		: ["KEY_DC", "Del", "Delete the character to the right of the cursor"],
 		"DELETE_CHARACTER_LEFT"			: ["KEY_BACKSPACE", "Backspace", "Delete the character to the left of the cursor"],
-		"SHOW_ACTIVE_TABS"				: ["^T", "Ctrl+T", "Showt the list of active tabs"],
+		"SHOW_ACTIVE_TABS"				: ["^T", "Ctrl+T", "Show the list of active tabs"],
 		"SHOW_PROJECT_EXPLORER"			: ["^E", "Ctrl+E", "Open Project Explorer"],
 		"SHOW_PREFERENCES"				: ["^P", "Ctrl+P", "Open the Preferences window"],
 		"SHOW_HELP"						: [fn(1), "F1", "Show help"],

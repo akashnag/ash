@@ -110,8 +110,8 @@ class DialogHandler:
 		return ch
 
 	def go_to_live_preview_key_handler(self, ch):
-		if(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW") or str(chr(ch)) in ".0123456789"):
-			isn = KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")
+		if(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW") or KeyBindings.is_key(ch, "FINALIZE_CHOICE") or str(chr(ch)) in ".0123456789"):
+			isn = KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW") or KeyBindings.is_key(ch, "FINALIZE_CHOICE")
 			line = str(self.app.dlgGoTo.get_widget("txtLineNumber"))
 			
 			if(len(line) == 0):
@@ -234,7 +234,7 @@ class DialogHandler:
 			self.app.dlgRecentFiles.hide()
 			self.app.main_window.repaint()
 			return -1
-		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW") or KeyBindings.is_key(ch, "FINALIZE_CHOICE") or KeyBindings.is_key(ch, "LIST_MAKE_SELECTION")):
 			mw = self.app.main_window
 
 			filename = self.app.dlgRecentFiles.get_widget("lstRecentFiles").get_sel_tag()
@@ -323,7 +323,7 @@ class DialogHandler:
 
 		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
 			self.app.dlgPreferences.hide()
-		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW") or KeyBindings.is_key(ch, "FINALIZE_CHOICE")):
 			try:
 				tab_size = int(str(self.app.dlgPreferences.get_widget("txtTabSize")))
 			except:
@@ -356,10 +356,14 @@ class DialogHandler:
 
 	def invoke_file_new(self):
 		mw = self.app.main_window
-		
+		aed = mw.get_active_editor()
+
 		# create blank buffer
 		new_bid, new_buffer = self.app.buffers.create_new_buffer()
-		mw.invoke_activate_editor(new_bid, new_buffer)
+		open_in_new_tab = False
+		if(aed != None and self.app.ask_question("CREATE IN NEW TAB", "Create buffer in new tab?")):
+			open_in_new_tab = True
+		mw.invoke_activate_editor(new_bid, new_buffer, open_in_new_tab)
 
 	# <------------------------------------ Help --------------------------------------------->
 
@@ -417,13 +421,13 @@ class DialogHandler:
 		self.app.dlgHelp.show()
 
 	def help_key_handler(self, ch):
-		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW") or KeyBindings.is_key(ch, "SHOW_HELP")):
 			self.app.dlgHelp.hide()
 			self.app.main_window.repaint()
 			return -1
 		return ch
 
-	# <------------------------ File Open / Project Explorer --------------------------------->
+	# <----------------------------------- Project Explorer --------------------------------->
 
 	def invoke_project_explorer(self):
 		self.app.readjust()
@@ -434,8 +438,8 @@ class DialogHandler:
 			return
 		self.app.dlgProjectExplorer = ModalDialog(self.app.main_window, y, x, 20, 80, "PROJECT EXPLORER", self.project_explorer_key_handler)
 		
-		lstFiles = TreeView(self.app.dlgProjectExplorer, 4, 2, 76, 15, self.app.buffers, self.app.project_dir)
 		txtSearchFile = TextField(self.app.dlgProjectExplorer, 3, 2, 76, callback=self.project_explorer_search_text_changed)
+		lstFiles = TreeView(self.app.dlgProjectExplorer, 5, 2, 76, 14, self.app.buffers, self.app.project_dir)
 		
 		self.app.dlgProjectExplorer.add_widget("txtSearchFile", txtSearchFile)
 		self.app.dlgProjectExplorer.add_widget("lstFiles", lstFiles)		
@@ -451,11 +455,11 @@ class DialogHandler:
 		
 		mw = self.app.main_window
 				
-		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW") or KeyBindings.is_key(ch, "SHOW_PROJECT_EXPLORER")):
 			self.app.dlgProjectExplorer.hide()
 			mw.repaint()
 			return -1
-		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW") or KeyBindings.is_key(ch, "LIST_MAKE_SELECTION") or KeyBindings.is_key(ch, "FINALIZE_CHOICE")):
 			tag = lstFiles.get_sel_tag()		# format: {d/f}:path
 			if(tag == None): return -1
 			file_type = tag[0].lower()
@@ -479,25 +483,23 @@ class DialogHandler:
 		
 		return ch
 
+
+	# <----------------------------------- File Open --------------------------------->
+
 	def invoke_file_open(self, target_ed_index = -1):
 		self.app.readjust()
 
 		try:
-			y, x = get_center_coords(self.app, 14, 60)
+			y, x = get_center_coords(self.app, 20, 80)
 		except:
 			self.app.warn_insufficient_screen_space()
 			return
+		
+		self.app.dlgFileOpen = ModalDialog(self.app.main_window, y, x, 20, 80, "OPEN FILE", self.file_open_key_handler)
+		txtFileName = TextField(self.app.dlgFileOpen, 3, 2, 76, str(os.getcwd()) + "/", callback=self.file_open_filename_changed)
+		lstFiles = ListBox(self.app.dlgFileOpen, 5, 2, 76, 12, "(Empty directory)")
+		lstEncodings = ListBox(self.app.dlgFileOpen, 18, 2, 76, 1)
 
-		self.app.dlgFileOpen = ModalDialog(self.app.main_window, y, x, 14, 60, "OPEN FILE", self.file_open_key_handler)
-		txtFileName = TextField(self.app.dlgFileOpen, 3, 2, 56, str(os.getcwd()) + "/")
-		lstActiveFiles = ListBox(self.app.dlgFileOpen, 5, 2, 56, 6, "(No active files)")
-		lstEncodings = ListBox(self.app.dlgFileOpen, 12, 2, 56, 1)
-
-		# add the list of active files
-		blist = self.app.buffers.get_list()
-		for (bid, save_status, bname) in blist:
-			lstActiveFiles.add_item((" " if save_status else UNSAVED_BULLET) + " " + get_file_title(bname), tag=bid)
-			
 		# add the encodings
 		for enc in SUPPORTED_ENCODINGS:
 			lstEncodings.add_item(enc)
@@ -506,33 +508,52 @@ class DialogHandler:
 		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index("utf-8")
 
 		self.app.dlgFileOpen.add_widget("txtFileName", txtFileName)
-		self.app.dlgFileOpen.add_widget("lstActiveFiles", lstActiveFiles)
+		self.app.dlgFileOpen.add_widget("lstFiles", lstFiles)
 		self.app.dlgFileOpen.add_widget("lstEncodings", lstEncodings)
 		
+		self.file_open_filename_changed()
+
 		self.app.target_open_ed_index = target_ed_index
 		self.app.dlgFileOpen.show()
 
+	def file_open_filename_changed(self, ch=None):
+		filename = str(self.app.dlgFileOpen.get_widget("txtFileName"))
+		lstFiles = self.app.dlgFileOpen.get_widget("lstFiles")
+
+		filename = os.path.dirname(filename)
+		if(os.path.isdir(filename)):
+			lstFiles.clear()
+			all_files = sorted(glob.glob(filename + "/*", recursive=False))
+			for f in all_files:
+				if(os.path.isfile(f)):
+					lstFiles.add_item(get_file_title(f), tag=str(f))
+				else:
+					lstFiles.add_item(f"[{get_file_title(f)}]", tag=str(f), highlight=True)
+			lstFiles.repaint()
+
 	def file_open_key_handler(self, ch):
 		txtFileName = self.app.dlgFileOpen.get_widget("txtFileName")
-		lstActiveFiles = self.app.dlgFileOpen.get_widget("lstActiveFiles")
+		lstFiles = self.app.dlgFileOpen.get_widget("lstFiles")
 		lstEncodings = self.app.dlgFileOpen.get_widget("lstEncodings")
 
-		sel_bid = lstActiveFiles.get_sel_tag()
-		sel_index = lstActiveFiles.get_sel_index()
+		sel_index = lstFiles.get_sel_index()
+		sel_tag = lstFiles.get_sel_tag()
 		mw = self.app.main_window
+		aed = mw.get_active_editor()
 
 		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
 			self.app.dlgFileOpen.hide()
 			mw.repaint()
 			return -1
-		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW") or KeyBindings.is_key(ch, "LIST_MAKE_SELECTION") or KeyBindings.is_key(ch, "FINALIZE_CHOICE")):
 			is_buffer = False
 			sel_buffer = None
 
-			if(lstActiveFiles.is_in_focus and sel_index > -1):
-				sel_buffer = self.app.buffers.get_buffer_by_id(sel_bid)
-				is_buffer = True
-				filename = sel_buffer.filename
+			if(lstFiles.is_in_focus and sel_index > -1):
+				filename = sel_tag
+				if(os.path.isfile(filename)):
+					sel_buffer = self.app.buffers.get_buffer_by_filename(filename)
+					if(sel_buffer != None): is_buffer = True
 			else:							
 				filename = str(txtFileName)
 
@@ -570,10 +591,56 @@ class DialogHandler:
 					if(sel_bid == None or sel_buffer == None): return -1		# cancelled by user
 				
 			# at this point, buffer exists in sel_buffer
-			mw.invoke_activate_editor(sel_buffer.id, sel_buffer)
+			open_in_new_tab = False
+			if(aed != None and self.app.ask_question("OPEN IN NEW TAB", "Open file/buffer in new tab?")):
+				open_in_new_tab = True
+			mw.invoke_activate_editor(sel_buffer.id, sel_buffer, open_in_new_tab)
 			return -1
 		
 		return ch
+
+	# <-------------------------------- List active files ------------------------------->
+
+	def invoke_list_active_files(self):
+		self.app.readjust()
+		try:
+			y, x = get_center_coords(self.app, 14, 60)
+		except:
+			self.app.warn_insufficient_screen_space()
+			return
+		self.app.dlgActiveFiles = ModalDialog(self.app.main_window, y, x, 14, 60, "ACTIVE FILES/BUFFERS", self.active_files_key_handler)
+		lstActiveFiles = ListBox(self.app.dlgActiveFiles, 3, 2, 56, 10, "(No active files)")
+		
+		# add the list of active files
+		blist = self.app.buffers.get_list()
+		for (bid, save_status, bname) in blist:
+			lstActiveFiles.add_item((" " if save_status else UNSAVED_BULLET) + " " + get_file_title(bname), tag=bid)
+			
+		self.app.dlgActiveFiles.add_widget("lstActiveFiles", lstActiveFiles)
+		self.app.dlgActiveFiles.show()
+
+	def active_files_key_handler(self, ch):
+		lstActiveFiles = self.app.dlgActiveFiles.get_widget("lstActiveFiles")
+		
+		sel_bid = lstActiveFiles.get_sel_tag()
+		mw = self.app.main_window
+		aed = mw.get_active_editor()
+
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
+			self.app.dlgActiveFiles.hide()
+			mw.repaint()
+			return -1
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW") or KeyBindings.is_key(ch, "LIST_MAKE_SELECTION")):
+			sel_buffer = self.app.buffers.get_buffer_by_id(sel_bid)			
+			self.app.dlgActiveFiles.hide()
+			open_in_new_tab = False
+			if(aed != None and self.app.ask_question("OPEN IN NEW TAB", "Open file/buffer in new tab?")):
+				open_in_new_tab = True
+			mw.invoke_activate_editor(sel_buffer.id, sel_buffer, open_in_new_tab)
+			return -1
+		
+		return ch
+
 
 	# <----------------------------------------------------------------------------------->
 
@@ -607,12 +674,12 @@ class DialogHandler:
 		self.app.dlgActiveTabs.show()
 
 	def show_active_tabs_key_handler(self, ch):
-		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW") or KeyBindings.is_key(ch, "SHOW_ACTIVE_TABS")):
 			self.app.dlgActiveTabs.hide()
 			self.app.main_window.switch_to_tab(self.app.old_active_tab_index)
 			self.app.main_window.repaint()
 			return -1
-		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW") or KeyBindings.is_key(ch, "LIST_MAKE_SELECTION")):
 			new_tab_index = self.app.dlgActiveTabs.get_widget("lstActiveTabs").get_sel_index()
 			self.app.dlgActiveTabs.hide()
 			self.app.main_window.switch_to_tab(new_tab_index)
@@ -641,36 +708,62 @@ class DialogHandler:
 		self.app.readjust()
 
 		try:
-			y, x = get_center_coords(self.app, 5, 60)
+			y, x = get_center_coords(self.app, 20, 80)
 		except:
 			self.app.warn_insufficient_screen_space()
 			return
 			
-		self.app.dlgSaveAs = ModalDialog(self.app.main_window, y, x, 5, 60, "SAVE AS", self.file_save_as_key_handler)
+		self.app.dlgSaveAs = ModalDialog(self.app.main_window, y, x, 20, 80, "SAVE AS", self.file_save_as_key_handler)
 		if(buffer.filename == None): 
 			filename = str( self.app.project_dir if self.app.app_mode == APP_MODE_PROJECT else os.getcwd() ) + "/" + buffer.get_name()
 		else:
 			filename = get_copy_filename(buffer.filename)
-		txtFileName = TextField(self.app.dlgSaveAs, 3, 2, 56, filename)
+		
+		txtFileName = TextField(self.app.dlgSaveAs, 3, 2, 76, filename, callback=self.file_save_as_filename_changed)
+		lstFiles = ListBox(self.app.dlgSaveAs, 5, 2, 76, 12, "(Empty directory)")
+
 		self.app.dlgSaveAs_Buffer = buffer
 		self.app.dlgSaveAs.add_widget("txtFileName", txtFileName)
+		self.app.dlgSaveAs.add_widget("lstFiles", lstFiles)
+		self.file_save_as_filename_changed()
 		self.app.dlgSaveAs.show()
+
+	def file_save_as_filename_changed(self, ch=None):
+		filename = str(self.app.dlgSaveAs.get_widget("txtFileName"))
+		lstFiles = self.app.dlgSaveAs.get_widget("lstFiles")
+
+		filename = os.path.dirname(filename)
+		if(os.path.isdir(filename)):
+			lstFiles.clear()
+			all_files = sorted(glob.glob(filename + "/*", recursive=False))
+			for f in all_files:
+				if(os.path.isfile(f)):
+					lstFiles.add_item(get_file_title(f), tag=str(f))
+				else:
+					lstFiles.add_item(f"[{get_file_title(f)}]", tag=str(f), highlight=True)
+			lstFiles.repaint()
 
 	def file_save_as_key_handler(self, ch):
 		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
 			self.app.dlgSaveAs.hide()
 			return -1
-		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW") or KeyBindings.is_key(ch, "FINALIZE_CHOICE") or KeyBindings.is_key(ch, "LIST_MAKE_SELECTION")):
 			buffer = self.app.dlgSaveAs_Buffer
 			self.app.dlgSaveAs.hide()
+			
 			txtFileName = self.app.dlgSaveAs.get_widget("txtFileName")
-			filename = str(txtFileName)
+			if(txtFileName.is_in_focus):
+				filename = str(txtFileName)
+			else:
+				filename = self.app.dlgSaveAs.get_widget("lstFiles").get_sel_tag()
 
 			if(not os.path.isfile(filename)):
 				buffer.write_to_disk(filename)
-			else:
+			elif(not os.path.isdir(filename) and os.path.isfile(filename)):
 				if(self.app.ask_question("REPLACE FILE", "File already exists, replace?")):
 					buffer.write_to_disk(filename)
+			else:
+				self.app.show_error("Invalid filename!")
 			return -1
 					
 		return ch

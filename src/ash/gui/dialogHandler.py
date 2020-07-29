@@ -196,36 +196,49 @@ class DialogHandler:
 			self.app.warn_insufficient_screen_space()
 			return
 
-		self.app.dlgRecentFiles = ModalDialog(self.app.main_window, y, x, 20, 80, "RECENT FILES", self.recent_files_key_handler)
-		lstRecentFiles = ListBox(self.app.dlgRecentFiles, 4, 2, 76, 15)
-		txtSearchFile = TextField(self.app.dlgRecentFiles, 3, 2, 76, callback=self.recent_files_search_text_changed)
+		self.app.dlgRecentFiles = ModalDialog(self.app.main_window, y, x, 20, 80, "RECENT FILES/PROJECTS", self.recent_files_key_handler)
+		
+		lblSearch = Label(self.app.dlgRecentFiles, 3, 2, "Search:")
+		txtSearchFile = TextField(self.app.dlgRecentFiles, 3, 10, 68, callback=self.recent_files_search_text_changed)
+		
+		lblFiles = Label(self.app.dlgRecentFiles, 5, 2, "Recent Files:", gc("form-label") | curses.A_BOLD)		
+		lstRecentFiles = ListBox(self.app.dlgRecentFiles, 6, 2, 38, 13, placeholder_text="(No recent files)")
+		lblProjects = Label(self.app.dlgRecentFiles, 5, 41, "Recent Projects:", gc("form-label") | curses.A_BOLD)		
+		lstRecentProjects = ListBox(self.app.dlgRecentFiles, 6, 41, 37, 13, placeholder_text="(No recent projects)")
 		
 		for i in range(len(recent_files_list)-1, -1, -1):
+			disp = get_file_title(recent_files_list[i])
 			if(os.path.isfile(recent_files_list[i])):
-				disp = get_file_title(recent_files_list[i]) + " [" + os.path.dirname(recent_files_list[i]) + "/]"
+				lstRecentFiles.add_item(disp, tag=recent_files_list[i])
 			elif(os.path.isdir(recent_files_list[i])):
-				disp = "PROJECT: [" + recent_files_list[i] + "]"
+				lstRecentProjects.add_item(disp, tag=recent_files_list[i])
 			else:
 				continue
-			lstRecentFiles.add_item(disp, tag=recent_files_list[i])
+			
 
+		self.app.dlgRecentFiles.add_widget("lblSearch", lblSearch)
 		self.app.dlgRecentFiles.add_widget("txtSearchFile", txtSearchFile)
+		self.app.dlgRecentFiles.add_widget("lblFiles", lblFiles)
 		self.app.dlgRecentFiles.add_widget("lstRecentFiles", lstRecentFiles)
+		self.app.dlgRecentFiles.add_widget("lblProjects", lblProjects)
+		self.app.dlgRecentFiles.add_widget("lstRecentProjects", lstRecentProjects)
 		self.app.dlgRecentFiles.show()
 
 	def recent_files_search_text_changed(self, ch):
 		lstRecentFiles = self.app.dlgRecentFiles.get_widget("lstRecentFiles")
+		lstRecentProjects = self.app.dlgRecentFiles.get_widget("lstRecentProjects")
 		search_text = str(self.app.dlgRecentFiles.get_widget("txtSearchFile")).lower()
 		recent_files_list = self.app.session_storage.get_recent_files_list()
 		lstRecentFiles.clear()
+		lstRecentProjects.clear()
 		for i in range(len(recent_files_list)-1, -1, -1):
+			disp = get_file_title(recent_files_list[i])
 			if(os.path.isfile(recent_files_list[i])):
-				disp = get_file_title(recent_files_list[i]) + " [" + os.path.dirname(recent_files_list[i]) + "/]"
+				if(len(search_text) == 0 or disp.lower().find(search_text) >= 0): lstRecentFiles.add_item(disp, tag=recent_files_list[i])
 			elif(os.path.isdir(recent_files_list[i])):
-				disp = "PROJECT: [" + recent_files_list[i] + "]"
+				if(len(search_text) == 0 or disp.lower().find(search_text) >= 0): lstRecentProjects.add_item(disp, tag=recent_files_list[i])
 			else:
 				continue
-			if(len(search_text) == 0 or disp.lower().find(search_text) >= 0): lstRecentFiles.add_item(disp, tag=recent_files_list[i])
 
 	def recent_files_key_handler(self, ch):
 		recent_files_list = self.app.session_storage.get_recent_files_list()
@@ -294,7 +307,7 @@ class DialogHandler:
 		chkHardWrap = CheckBox(self.app.dlgPreferences, 12, 18, "Hard wrap")
 		chkStylize = CheckBox(self.app.dlgPreferences, 13, 2, "Syntax highlighting")
 		chkAutoClose = CheckBox(self.app.dlgPreferences, 14, 2, "Complete matching pairs")
-		chkShowScrollbars = CheckBox(self.app.dlgPreferences, 15, 2, "Show scrollbars")
+		chkShowScrollbars = CheckBox(self.app.dlgPreferences, 15, 2, "Show scrollbar")
 		
 		for enc in SUPPORTED_ENCODINGS:
 			lstEncodings.add_item(("  " if aed.buffer.encoding != enc else TICK_MARK + " ") +  enc)
@@ -438,9 +451,11 @@ class DialogHandler:
 			return
 		self.app.dlgProjectExplorer = ModalDialog(self.app.main_window, y, x, 20, 80, "PROJECT EXPLORER", self.project_explorer_key_handler)
 		
-		txtSearchFile = TextField(self.app.dlgProjectExplorer, 3, 2, 76, callback=self.project_explorer_search_text_changed)
+		lblSearch = Label(self.app.dlgProjectExplorer, 3, 2, "Search:")
+		txtSearchFile = TextField(self.app.dlgProjectExplorer, 3, 10, 68, callback=self.project_explorer_search_text_changed)
 		lstFiles = TreeView(self.app.dlgProjectExplorer, 5, 2, 76, 14, self.app.buffers, self.app.project_dir)
 		
+		self.app.dlgProjectExplorer.add_widget("lblSearch", lblSearch)
 		self.app.dlgProjectExplorer.add_widget("txtSearchFile", txtSearchFile)
 		self.app.dlgProjectExplorer.add_widget("lstFiles", lstFiles)		
 		self.app.dlgProjectExplorer.show()
@@ -496,7 +511,9 @@ class DialogHandler:
 			return
 		
 		self.app.dlgFileOpen = ModalDialog(self.app.main_window, y, x, 20, 80, "OPEN FILE", self.file_open_key_handler)
-		txtFileName = TextField(self.app.dlgFileOpen, 3, 2, 76, str(os.getcwd()) + "/", callback=self.file_open_filename_changed)
+		
+		lblFileName = Label(self.app.dlgFileOpen, 3, 2, "File/Folder:")
+		txtFileName = TextField(self.app.dlgFileOpen, 3, 15, 63, str(os.getcwd()) + "/", callback=self.file_open_filename_changed)
 		lstFiles = ListBox(self.app.dlgFileOpen, 5, 2, 76, 12, "(Empty directory)")
 		lstEncodings = ListBox(self.app.dlgFileOpen, 18, 2, 76, 1)
 
@@ -507,6 +524,7 @@ class DialogHandler:
 		# set default encoding to UTF-8
 		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index("utf-8")
 
+		self.app.dlgFileOpen.add_widget("lblFileName", lblFileName)
 		self.app.dlgFileOpen.add_widget("txtFileName", txtFileName)
 		self.app.dlgFileOpen.add_widget("lstFiles", lstFiles)
 		self.app.dlgFileOpen.add_widget("lstEncodings", lstEncodings)
@@ -719,10 +737,12 @@ class DialogHandler:
 		else:
 			filename = get_copy_filename(buffer.filename)
 		
-		txtFileName = TextField(self.app.dlgSaveAs, 3, 2, 76, filename, callback=self.file_save_as_filename_changed)
+		lblFileName = Label(self.app.dlgSaveAs, 3, 2, "Filename:")
+		txtFileName = TextField(self.app.dlgSaveAs, 3, 12, 66, filename, callback=self.file_save_as_filename_changed)
 		lstFiles = ListBox(self.app.dlgSaveAs, 5, 2, 76, 12, "(Empty directory)")
 
 		self.app.dlgSaveAs_Buffer = buffer
+		self.app.dlgSaveAs.add_widget("lblFileName", lblFileName)
 		self.app.dlgSaveAs.add_widget("txtFileName", txtFileName)
 		self.app.dlgSaveAs.add_widget("lstFiles", lstFiles)
 		self.file_save_as_filename_changed()

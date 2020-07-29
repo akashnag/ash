@@ -67,9 +67,9 @@ class Stack:
 	# removes the oldest 'count' items from the stack
 	def drop(self, count = 1):
 		if(count < 1): return
-		count = min([count, self.size])
+		count = min([count, self.__size])
 		temp = self.top
-		for i in range(self.size - count - 1):
+		for i in range(self.__size - count - 1):
 			temp = temp.link
 		temp.link = None
 		self.__size -= count

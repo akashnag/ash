@@ -11,6 +11,7 @@ from ash.utils.utils import *
 
 cdef class Screen:
 	cdef bint show_line_numbers, show_scrollbars
+	cdef int total_rendered_lines
 	cdef int height, width
 	cdef int line_start, line_end
 	cdef int col_start, col_end
@@ -117,6 +118,7 @@ cdef class Screen:
 		self.mapping_real_line_to_rendered_line = dict()		# only the 1st rendered line
 		self.mapping_rendered_line_to_real_line = dict()		# contains tuple(real_line_index, subline_offset)
 		
+		self.total_rendered_lines = 0
 		rendered_counter = 0
 		for i, line in enumerate(lines):
 			self.all_col_spans[i] = self.reflow(width, line, tab_size, word_wrap, hard_wrap)
@@ -127,9 +129,11 @@ cdef class Screen:
 				self.mapping_rendered_line_to_real_line[rendered_counter+j] = (i,j)
 
 			if(k == 0):
+				self.total_rendered_lines += 1
 				self.mapping_rendered_line_to_real_line[rendered_counter] = (i,0)
 				rendered_counter += 1
 			else:
+				self.total_rendered_lines += k
 				rendered_counter += k
 
 	# reflow a line of text (depending on wrap settings and tab-size) and return a list of column-spans (after tab-expansion)
@@ -577,6 +581,31 @@ cdef class Screen:
 
 		self.real_line_end_index_visible = line_index			# store for use in highlighting
 		
+		# show scrollbars
+		if(self.show_scrollbars):
+			self.putstr(0, 0, "\u25b4")
+			self.putstr(self.height-1, 0, "\u25be")
+			self.set_style(0, 0, 1, gc("scrollbar-buttons"))
+			self.set_style(self.height-1, 0, 1, gc("scrollbar-buttons"))
+
+			if(self.height >= self.total_rendered_lines):
+				bar_height = self.height - 2
+				bar_offset = 0
+			else:
+				bar_height = round((self.height / self.total_rendered_lines) * (self.height-2))
+				bar_offset = round(( self.line_start / self.total_rendered_lines) * (self.height-2))
+
+			bar_height = max([min([bar_height, self.height-2]), 1])
+			bar_offset = max([min([bar_offset, self.height-1]), 0])
+
+			for i in range(1, self.height-1):
+				if(i-1 >= bar_offset and i-1 < bar_offset+bar_height):
+					self.putstr(i,0,"\u2588")
+					self.set_style(i, 0, 1, gc("scrollbar-bar"))
+				else:
+					self.putstr(i,0,"\u2503")
+					self.set_style(i, 0, 1, gc("scrollbar-empty"))
+
 		# stylize text
 		if(stylize): self.perform_syntax_highlighting(lines, text_area_width, real_curpos, tab_size, word_wrap, hard_wrap)
 		

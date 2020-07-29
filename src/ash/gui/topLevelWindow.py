@@ -254,6 +254,7 @@ class TopLevelWindow(Window):
 			("Preferences...", has_editor, adh.invoke_set_preferences),
 			("Open tabs...", True, adh.invoke_show_active_tabs),
 			("---", True, None),
+			("Active Buffers/Files...", True, adh.invoke_list_active_files),
 			("Recent Files...", True, adh.invoke_recent_files),
 			("Project Explorer...", True, adh.invoke_project_explorer)
 		]

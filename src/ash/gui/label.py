@@ -9,12 +9,12 @@ from ash.gui import *
 from ash.formatting.colors import *
 
 class Label(Widget):
-	def __init__(self, parent, y, x, text, theme):
+	def __init__(self, parent, y, x, text, theme = None):
 		super().__init__(WIDGET_TYPE_LABEL, False)
 		self.parent = parent
 		self.y = y
 		self.x = x
-		self.theme = theme
+		self.theme = theme if theme != None else gc("form-label")
 		self.text = text
 	
 	# draw the label

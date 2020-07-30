@@ -53,6 +53,7 @@ class PopupMenu:
 						params = None
 
 					self.win = None
+					self.parent.repaint()
 					if(params == None):
 						ret_code = func_name()
 					else:

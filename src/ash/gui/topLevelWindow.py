@@ -225,7 +225,9 @@ class TopLevelWindow(Window):
 			("Save", has_editor, self.save_active_editor),
 			("Save As...", has_editor, (adh.invoke_file_save_as, aed_buffer) if has_editor else None),
 			("Save & Close", has_editor, self.save_and_close_active_editor),
-			("Save All", True, adh.handle_save_all),			
+			("Save All", True, adh.handle_save_all),
+			("---", True, None),
+			("Theme Manager...", True, adh.invoke_theme_manager),
 			("---", True, None),
 			("Close All", True, self.close_all_tabs),
 			("Exit", True, adh.handle_exit)

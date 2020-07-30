@@ -20,6 +20,7 @@ from ash.utils.commandUtils import *
 
 from ash.formatting.colors import *
 from ash.formatting.formatting import *
+from ash.formatting.themeManager import *
 
 from ash.gui.topLevelWindow import *
 from ash.gui.msgBox import *
@@ -117,12 +118,12 @@ class AshEditorApp:
 		# initialize screen
 		self.stdscr = stdscr
 		self.screen_height, self.screen_width = self.stdscr.getmaxyx()				
-		init_colors()
 		curses.raw()
 		curses.mousemask(curses.ALL_MOUSE_EVENTS)
 		
 		# create main window, BufferManager and SessionStorage objects
 		self.buffers = BufferManager(self)
+		self.theme_manager = ThemeManager(self)
 		self.main_window = TopLevelWindow(self, self.stdscr, "ash " + self.get_app_version(), self.main_key_handler)
 		self.session_storage = SessionStorage(self, self.main_window.window_manager, self.buffers)
 		
@@ -254,6 +255,9 @@ class AshEditorApp:
 			return -1
 		elif(KeyBindings.is_key(ch, "SHOW_COMMAND_WINDOW")):
 			self.dialog_handler.invoke_command_palette()
+			return -1
+		elif(KeyBindings.is_key(ch, "SHOW_THEME_MANAGER")):
+			self.dialog_handler.invoke_theme_manager()
 			return -1
 			
 		return ch

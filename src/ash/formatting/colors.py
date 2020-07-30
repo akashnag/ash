@@ -140,50 +140,6 @@ def get_element_color_index(element_name):
 	except:
 		return -1
 
-# writes the current color scheme to the configuration file
-def write_to_config(colors, element_colors):
-	configFile = open(ash.THEME_FILE, "wt")
-	for name, rgb in colors.items():
-		configFile.write("color-" + name + " = rgb(" + str(int(rgb[0] // MULTIPLIER)) + ", " + str(int(rgb[1] // MULTIPLIER)) + ", " + str(int(rgb[2] // MULTIPLIER)) + ")\n")
-	for name, pair in element_colors.items():
-		configFile.write("color-" + name + " = (" + pair[0] + ", " + pair[1] + ")\n")
-	configFile.close()
-
-# loads color scheme from the configuration file
-def load_config(colors = None, element_colors = None):
-	if(not os.path.isfile(ash.THEME_FILE)):
-		return (colors, element_colors)
-	
-	if(colors == None): colors = dict()
-	if(element_colors == None): element_colors = dict()
-
-	configFile = open(ash.THEME_FILE, "rt")
-	config = configFile.read().splitlines()
-	configFile.close()
-
-	for line in config:
-		# syntax: 'magenta=rgb(113,154,132)'
-		line = line.strip().lower().replace(" ", "")
-		pos1 = line.find("=rgb(")
-		pos2 = line.find("=(")
-
-		if(not line.endswith(")") or not line.startswith("color-")): continue
-		if(pos1 == -1 and pos2 == -1): continue
-
-		if(pos1 > -1):
-			triplet = line[pos1+5:-1].split(",")
-			if(len(triplet) != 3): continue
-			rgb = ( round(int(triplet[0]) * MULTIPLIER), round(int(triplet[1]) * MULTIPLIER), round(int(triplet[2]) * MULTIPLIER) )
-			colname = line[6:pos1]
-			colors[colname] = rgb
-		elif(pos2 > -1):
-			colname = line[6:pos2]
-			pair = line[pos2+2:-1].split(",")
-			if(len(pair) != 2): continue
-			element_colors[colname] = (pair[0], pair[1])
-
-	return (colors, element_colors)
-
 # records color pairs into curses color-pair palette
 def set_colors(colors, element_colors):
 	for colname, rgb in colors.items():
@@ -204,14 +160,3 @@ def set_colors(colors, element_colors):
 # retrieve a curses.color_pair() object for a given color combination
 def gc(cp = "global-default"):
 	return curses.color_pair(get_element_color_index(cp))
-
-# initializes color scheme: called on startup
-def init_colors():
-	colors, element_colors = get_default_colors()
-
-	if(not os.path.isfile(ash.THEME_FILE)):
-		write_to_config(colors, element_colors)
-		set_colors(colors, element_colors)
-	else:
-		colors, element_colors = load_config(colors, element_colors)
-		set_colors(colors, element_colors)

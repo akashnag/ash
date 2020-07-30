@@ -792,3 +792,41 @@ class DialogHandler:
 
 	def invoke_command_palette(self):
 		self.app.command_interpreter.interpret_command(self.app.prompt("COMMAND", "Enter command:", width=50))
+
+	# <-------------------------------- Theme Manager ---------------------------->
+
+	def invoke_theme_manager(self):
+		self.app.readjust()
+		try:
+			y, x = get_center_coords(self.app, 16, 60)
+		except:
+			self.app.warn_insufficient_screen_space()
+			return
+			
+		self.app.dlgThemeManager = ModalDialog(self.app.main_window, y, x, 16, 60, "THEME MANAGER", self.theme_manager_key_handler)
+		
+		lblFileName = Label(self.app.dlgThemeManager, 3, 2, "Install theme from URL:")
+		txtFileName = TextField(self.app.dlgThemeManager, 4, 2, 56, "http://")
+		
+		lblChangeTheme = Label(self.app.dlgThemeManager, 6, 2, "Change theme:")
+		lstThemes = ListBox(self.app.dlgThemeManager, 7, 2, 56, 8, "(No themes installed)")
+
+		installed_themes = self.app.theme_manager.get_installed_themes()
+		for t in installed_themes:
+			current = t[1]
+			theme_name = t[0]
+			lstThemes.add_item("  " if not current else TICK_MARK + " " + theme_name, tag=theme_name)
+		
+		self.app.dlgThemeManager.add_widget("lblFileName", lblFileName)
+		self.app.dlgThemeManager.add_widget("txtFileName", txtFileName)
+		self.app.dlgThemeManager.add_widget("lblChangeTheme", lblChangeTheme)
+		self.app.dlgThemeManager.add_widget("lstThemes", lstThemes)
+		
+		self.app.dlgThemeManager.show()
+
+	def theme_manager_key_handler(self, ch):
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
+			self.app.dlgThemeManager.hide()
+			return -1
+
+		return ch

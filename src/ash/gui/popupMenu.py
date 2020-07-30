@@ -58,6 +58,7 @@ class PopupMenu:
 						ret_code = func_name()
 					else:
 						ret_code = func_name(params)
+					self.parent.show_menu_bar()
 					if(type(ret_code) != bool):
 						return False
 					else:

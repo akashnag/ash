@@ -12,7 +12,7 @@ import copy
 import glob
 
 __version__			= "0.1.0-dev"
-__revision__		= "6"
+__revision__		= "6.1"
 __release_date__	= "July 30, 2020"
 
 APP_COPYRIGHT_TEXT	= "© Copyright 2020, Akash Nag. All rights reserved."

@@ -37,9 +37,13 @@ class StatusBar(Widget):
 				remw = w - cumw
 				if(self.section_widths[i] == 0):		# 0 = align left
 					str += (" " + self.sections[i] + " ").ljust(remw)
-				else:									# negative = align right
+				elif(self.section_widths[i] == -1):		# negative = align right
 					str += (" " + self.sections[i] + " ").rjust(remw)
-			else:
+			elif(self.section_widths[i] > 0 and self.section_widths[i] < 1):
+				secw = round(self.section_widths[i] * w)
+				str += (" " + self.sections[i] + " ").ljust(secw)
+				cumw += secw
+			elif(self.section_widths[i] >= 1):
 				str += (" " + self.sections[i] + " ").ljust(self.section_widths[i])
 				cumw += self.section_widths[i]
 
@@ -54,7 +58,11 @@ class StatusBar(Widget):
 		cumw = 0
 		for i in range(n):
 			w = self.section_widths[i]
-			if(w < 0): w = width - cumw
+			if(w == -1): 
+				w = width - cumw
+			elif(w > 0 and w < 1):
+				w = round(width * w)
+
 			s = " " + ("" if self.sections[i] == None else str(self.sections[i])) + " "
 
 			if(self.alignments[i] == "left"):

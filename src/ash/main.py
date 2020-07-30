@@ -108,11 +108,12 @@ class AshEditorApp:
 		return ret_code
 
 	def print_help(self):
-		print("Usage:\tash --help\n      \t\t(to print this help)")
-		print(" or   \tash --version\n      \t\t(to print the current version)")
-		print(" or   \tash <filepath>...\n      \t\t(to open one or more specified files for editing)")
-		print(" or   \tash <path-to-directory>\n      \t\t(to open the specified directory)")
-
+		print("Usage:\tash\n      \t\t(opens a blank buffer for editing)")
+		print(" or   \tash <filepath>...\n      \t\t(opens one or more specified files for editing)")
+		print(" or   \tash <path-to-directory>\n      \t\t(opens the specified directory)")
+		print(" or   \tash --help\n      \t\t(prints this help)")
+		print(" or   \tash --version\n      \t\t(prints the current version)")
+		
 	def print_version(self):
 		print("Ash: a modern terminal text-editor")
 		print("Version: " + ash.__version__ + " (revision: " + ash.__revision__ + ")")

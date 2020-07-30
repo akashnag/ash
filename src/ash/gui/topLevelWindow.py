@@ -26,14 +26,23 @@ class TopLevelWindow(Window):
 		self.handler_func = handler_func
 		self.app_name = self.app.get_app_name()		
 
-		# status-bar sections: total=101+1 (min)
-		# *status (8), *file-type (11), encoding(7), sloc (20), file-size (10), 
-		# *unsaved-file-count (4), *tab-size (1), cursor-position (6+1+6+3+8=24)
-		self.status = StatusBar(self, [ 10, 13, 9, 22, 12, 6, 3, -1 ])
 		self.window_manager = WindowManager(self.app, self)
 		self.init_menu_bar()
 
+		self.status = None
+		self.show_statusbar = False
+		self.toggle_statusbar_visibility()
+
+	def toggle_statusbar_visibility(self):
+		self.show_statusbar = not self.show_statusbar
+		if(not self.show_statusbar):
+			self.status = None
+			self.repaint()
+		else:
+			self.readjust()
+
 	def update_status(self):
+		if(self.status == None): return
 		aed = self.window_manager.get_active_editor()
 
 		tab_size = ""
@@ -185,8 +194,14 @@ class TopLevelWindow(Window):
 		self.app.readjust()
 
 	def readjust(self):							# called from AshEditorApp
-		if(self.height == self.app.screen_height and self.width == self.app.screen_width): return
+		if( (not self.show_statusbar or self.status != None) and self.height == self.app.screen_height and self.width == self.app.screen_width): return
 		self.height, self.width = self.app.screen_height, self.app.screen_width
+		
+		# status-bar sections: total=101+1 (min) = 102
+		# *status (8), *file-type (11), encoding(7), sloc (20), file-size (10), 
+		# *unsaved-file-count (4), *tab-size (1), cursor-position (6+1+6+3+8=24)
+		#self.status = StatusBar(self, [ 10, 13, 9, 22, 12, 6, 3, -1 ])
+		if(self.show_statusbar): self.status = StatusBar(self, [ 0.099, 0.1287, 0.0891, 0.2178, 0.1188, 0.0594, 0.0297, -1 ])
 		self.window_manager.readjust()
 
 	def invoke_activate_editor(self, buffer_id, buffer, new_tab=False):
@@ -258,7 +273,9 @@ class TopLevelWindow(Window):
 			("---", True, None),
 			("Active Buffers/Files...", True, adh.invoke_list_active_files),
 			("Recent Files...", True, adh.invoke_recent_files),
-			("Project Explorer...", True, adh.invoke_project_explorer)
+			("Project Explorer...", True, adh.invoke_project_explorer),
+			("---", True, None),
+			((TICK_MARK + " Status bar" if self.show_statusbar else "Status bar"), True, self.toggle_statusbar_visibility)
 		]
 
 		window_menu_items = [

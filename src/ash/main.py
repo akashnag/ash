@@ -96,8 +96,29 @@ class AshEditorApp:
 			self.open_files_from_commandline_args(progress_handler)
 		
 	def run(self):
+		if(self.argc >= 2):
+			if(self.args[1] == "--help"):
+				self.print_help()
+				return 0
+			elif(self.args[1] == "--version"):
+				self.print_version()
+				return 0
+		
 		ret_code = curses.wrapper(self.app_main)
 		return ret_code
+
+	def print_help(self):
+		print("Usage:\tash --help\n      \t\t(to print this help)")
+		print(" or   \tash --version\n      \t\t(to print the current version)")
+		print(" or   \tash <filepath>...\n      \t\t(to open one or more specified files for editing)")
+		print(" or   \tash <path-to-directory>\n      \t\t(to open the specified directory)")
+
+	def print_version(self):
+		print("Ash: a modern terminal text-editor")
+		print("Version: " + ash.__version__ + " (revision: " + ash.__revision__ + ")")
+		print("Released: " + ash.__release_date__)
+		print(ash.APP_COPYRIGHT_TEXT)
+		print(ash.APP_LICENSE_TEXT)
 
 	# recalculates screen dimensions
 	def readjust(self):
@@ -258,6 +279,9 @@ class AshEditorApp:
 			return -1
 		elif(KeyBindings.is_key(ch, "SHOW_THEME_MANAGER")):
 			self.dialog_handler.invoke_theme_manager()
+			return -1
+		elif(KeyBindings.is_key(ch, "SHOW_ABOUT")):
+			self.dialog_handler.invoke_help_about()
 			return -1
 			
 		return ch

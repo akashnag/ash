@@ -144,7 +144,8 @@ class KeyBindings:
 		"RIGHT_CLICK"					: ["kRIT3", f"Alt+{ARROW_RIGHT}", "Right-click"],
 		"HIDE_MENU_BAR"					: ["kUP3", f"Alt+{ARROW_UP}", "Hide menu bar"],
 		"SHOW_MENU_BAR"					: ["kDN3", f"Alt+{ARROW_DOWN}", "Show menu bar"],
-		"SHOW_THEME_MANAGER"			: ["", f"<Unassigned>", "Show the theme manager window"]
+		"SHOW_THEME_MANAGER"			: ["", f"<Unassigned>", "Show the theme manager window"],
+		"SHOW_ABOUT"					: ["", f"<Unassigned>", "Show the About... window"]
 	}
 
 	@classmethod

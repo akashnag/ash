@@ -25,6 +25,8 @@
 
 - - -
 
+**Note: The latest version is always the nightly build that can be downloaded from the ash [website](https://akashnag.github.io/ash), and the information presented here always refers to that build only. Unless you have any specific reason not to, you should always download the nightly build to get the latest features/updates/bug-fixes.**
+
 ## Features
 
 The following is a list of features available in **ash**:

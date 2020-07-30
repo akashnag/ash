@@ -3,6 +3,8 @@
 #  Licensed under the MIT License. See LICENSE.md in the project root for license information.
 # ---------------------------------------------------------------------------------------------
 
+# This is imported by all modules, sets global parameters
+
 import curses
 import os
 import sys
@@ -10,6 +12,9 @@ import copy
 import glob
 
 __version__			= "0.1.0-dev"
+__revision__		= "6"
+__release_date__	= "July 30, 2020"
+
 APP_COPYRIGHT_TEXT	= "© Copyright 2020, Akash Nag. All rights reserved."
 APP_LICENSE_TEXT	= "Licensed under the MIT License."
 

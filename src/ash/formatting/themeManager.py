@@ -131,11 +131,11 @@ class ThemeManager:
 		self.write_out_installed_themes(installed_themes)
 
 	def set_theme(self, theme_name):
-		sel_theme_file = os.path.join(ash.APP_DATA_DIR, sel_theme + ".theme")
+		sel_theme_file = os.path.join(ash.APP_DATA_DIR, theme_name + ".theme")
 		if(not os.path.isfile( sel_theme_file )):
 			self.app.show_error(f"Cannot find file: '{theme_name}.theme'")
 			return
-		colors, element_colors = load_theme_from_file(sel_theme_file)
+		colors, element_colors = self.load_theme_from_file(sel_theme_file)
 		set_colors(colors, element_colors)
 
 	def write_out_installed_themes(self, installed_themes):

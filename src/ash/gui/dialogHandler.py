@@ -426,7 +426,6 @@ class DialogHandler:
 			lstKeys.add_item(info[1])
 			lstKeys.add_item(" ")
 		
-		lstKeys.add_item("Custom colors can be set in $HOME/.ash-editor/theme.txt")
 		lstKeys.add_item("Custom key mappings can be set in $HOME/.ash-editor/keymappings.txt")
 		
 		self.app.dlgHelp.add_widget("lstKeys", lstKeys)
@@ -808,7 +807,7 @@ class DialogHandler:
 		txtFileName = TextField(self.app.dlgThemeManager, 4, 2, 56, "http://")
 		
 		lblChangeTheme = Label(self.app.dlgThemeManager, 6, 2, "Change theme:")
-		lstThemes = ListBox(self.app.dlgThemeManager, 7, 2, 56, 8, "(No themes installed)")
+		lstThemes = ListBox(self.app.dlgThemeManager, 7, 2, 56, 8, "(No themes installed)", callback=self.theme_selection_changed)
 
 		installed_themes = self.app.theme_manager.get_installed_themes()
 		for t in installed_themes:
@@ -824,8 +823,24 @@ class DialogHandler:
 		self.app.dlgThemeManager.show()
 
 	def theme_manager_key_handler(self, ch):
-		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
+		txtFileName = self.app.dlgThemeManager.get_widget("txtFileName")
+		lstThemes = self.app.dlgThemeManager.get_widget("lstThemes")
+
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW") or KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
 			self.app.dlgThemeManager.hide()
 			return -1
-
+		elif(txtFileName.is_in_focus and KeyBindings.is_key(ch, "FINALIZE_CHOICE")):
+			if(self.app.ask_question("INSTALL THEME", "Are you sure you want to fetch and install the specified theme?")):
+				self.app.dlgThemeManager.hide()
+				self.app.theme_manager.install_theme(str(txtFileName))
+				return -1
+		elif(lstThemes.is_in_focus and KeyBindings.is_key(ch, "LIST_MAKE_SELECTION")):
+			self.app.dlgThemeManager.hide()
+			return -1
+		
 		return ch
+
+	def theme_selection_changed(self, sel_index):
+		lstThemes = self.app.dlgThemeManager.get_widget("lstThemes")
+		theme_name = lstThemes.get_sel_tag()
+		self.app.theme_manager.set_theme(theme_name)

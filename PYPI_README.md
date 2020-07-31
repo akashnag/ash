@@ -151,6 +151,22 @@ For discussions related to the development roadmap and the **ash** editor in gen
 ![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss3.png)
 ![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss4.png)
 ![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss5.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss6.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss7.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss8.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss9.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss10.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss11.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss12.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss13.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss14.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss15.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss16.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss17.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss18.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss19.png)
+![Screenshot](https://github.com/akashnag/ash/raw/master/assets/ss20.png)
+
 
 ## License
 

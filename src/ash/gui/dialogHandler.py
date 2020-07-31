@@ -97,7 +97,11 @@ class DialogHandler:
 
 		self.app.dlgGoTo = ModalDialog(self.app.main_window, y, x, 5, 25, "GO TO LINE", self.go_to_key_handler)
 		currentLine = str(self.app.main_window.get_active_editor().curpos.y + 1)
-		txtLineNumber = TextField(self.app.dlgGoTo, 3, 2, 21, currentLine, True, callback = self.go_to_live_preview_key_handler)
+		
+		lblLineNumber = Label(self.app.dlgGoTo, 3, 2, "Line.Col: ")
+		txtLineNumber = TextField(self.app.dlgGoTo, 3, 12, 11, currentLine, True, callback = self.go_to_live_preview_key_handler)
+		
+		self.app.dlgGoTo.add_widget("lblLineNumber", lblLineNumber)
 		self.app.dlgGoTo.add_widget("txtLineNumber", txtLineNumber)
 		self.app.old_goto_curpos = copy.copy(self.app.main_window.get_active_editor().curpos)
 		self.app.dlgGoTo.show()
@@ -293,21 +297,27 @@ class DialogHandler:
 		self.app.readjust()
 		
 		try:
-			y, x = get_center_coords(self.app, 17, 35)
+			y, x = get_center_coords(self.app, 11, 61)
 		except:
 			self.app.warn_insufficient_screen_space()
 			return
 
-		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 17, 35, "PREFERENCES", self.preferences_key_handler)
+		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 11, 61, "PREFERENCES", self.preferences_key_handler)
 		current_tab_size = str(aed.tab_size)
-		txtTabSize = TextField(self.app.dlgPreferences, 3, 2, 31, current_tab_size, True)
-		lstEncodings = ListBox(self.app.dlgPreferences, 5, 2, 31, 5)
-		chkShowLineNumbers = CheckBox(self.app.dlgPreferences, 11, 2, "Show line numbers")
-		chkWordWrap = CheckBox(self.app.dlgPreferences, 12, 2, "Word wrap")
-		chkHardWrap = CheckBox(self.app.dlgPreferences, 12, 18, "Hard wrap")
-		chkStylize = CheckBox(self.app.dlgPreferences, 13, 2, "Syntax highlighting")
-		chkAutoClose = CheckBox(self.app.dlgPreferences, 14, 2, "Complete matching pairs")
-		chkShowScrollbars = CheckBox(self.app.dlgPreferences, 15, 2, "Show scrollbar")
+
+		lblTabSize = Label(self.app.dlgPreferences, 3, 2, "Tab Width:")
+		txtTabSize = TextField(self.app.dlgPreferences, 3, 13, 17, current_tab_size, True)
+		
+		lblEncodings = Label(self.app.dlgPreferences, 5, 2, "Encoding:")
+		lstEncodings = ListBox(self.app.dlgPreferences, 6, 2, 28, 4)
+
+		chkShowLineNumbers = CheckBox(self.app.dlgPreferences, 3, 32, "Show line numbers")
+		chkWordWrap = CheckBox(self.app.dlgPreferences, 4, 32, "Word wrap")
+		chkHardWrap = CheckBox(self.app.dlgPreferences, 5, 32, "Hard wrap")
+		chkStylize = CheckBox(self.app.dlgPreferences, 6, 32, "Syntax highlighting")
+		chkAutoClose = CheckBox(self.app.dlgPreferences, 7, 32, "Complete matching pairs")
+		chkShowScrollbars = CheckBox(self.app.dlgPreferences, 8, 32, "Show scrollbar")
+		chkShowSuggestions = CheckBox(self.app.dlgPreferences, 9, 32, "Show suggestions")
 		
 		for enc in SUPPORTED_ENCODINGS:
 			lstEncodings.add_item(("  " if aed.buffer.encoding != enc else TICK_MARK + " ") +  enc)
@@ -320,6 +330,9 @@ class DialogHandler:
 		chkShowScrollbars.set_value(aed.show_scrollbars)
 		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index(aed.buffer.encoding)
 		
+		self.app.dlgPreferences.add_widget("lblTabSize", lblTabSize)
+		self.app.dlgPreferences.add_widget("lblEncodings", lblEncodings)
+
 		self.app.dlgPreferences.add_widget("txtTabSize", txtTabSize)
 		self.app.dlgPreferences.add_widget("lstEncodings", lstEncodings)
 		self.app.dlgPreferences.add_widget("chkShowLineNumbers", chkShowLineNumbers)
@@ -328,6 +341,7 @@ class DialogHandler:
 		self.app.dlgPreferences.add_widget("chkStylize", chkStylize)
 		self.app.dlgPreferences.add_widget("chkAutoClose", chkAutoClose)
 		self.app.dlgPreferences.add_widget("chkShowScrollbars", chkShowScrollbars)
+		self.app.dlgPreferences.add_widget("chkShowSuggestions", chkShowSuggestions)
 		
 		self.app.dlgPreferences.show()
 
@@ -410,26 +424,45 @@ class DialogHandler:
 			return
 
 		self.app.dlgHelp = ModalDialog(self.app.main_window, y, x, 20, 80, "HELP", self.help_key_handler)
-		lstKeys = ListBox(self.app.dlgHelp, 3, 2, 76, 16)
+		
+		lblSearch = Label(self.app.dlgHelp, 3, 2, "Search: ")
+		txtSearch = TextField(self.app.dlgHelp, 3, 10, 68, callback=self.help_search_text_changed)
+		lstKeys = ListBox(self.app.dlgHelp, 5, 2, 76, 14)
 
+		self.app.dlgHelp.add_widget("lblSearch", lblSearch)
+		self.app.dlgHelp.add_widget("txtSearch", txtSearch)
+		self.app.dlgHelp.add_widget("lstKeys", lstKeys)
+
+		self.help_search_text_changed()
+
+		self.app.dlgHelp.show()
+
+	def help_search_text_changed(self, ch = None):
+		txtSearch = self.app.dlgHelp.get_widget("txtSearch")
+		lstKeys = self.app.dlgHelp.get_widget("lstKeys")
+
+		search = str(txtSearch).strip().lower()
+		has_search = (False if len(search)==0 else True)
+		
+		lstKeys.clear()
 		kbs = KeyBindings.get_list_of_bindings()
 		coms = self.app.command_interpreter.get_command_list()
 		for kb in kbs:
 			key = kb[0].ljust(16)
 			desc = kb[1]
-			lstKeys.add_item(key + desc)
+			if(not has_search or desc.lower().find(search) > -1 or key.lower().find(search) > -1):
+				lstKeys.add_item(key + desc)
+
 		lstKeys.add_item(" ")
-		lstKeys.add_item("Commands to be entered in command-window:", None, True)
-		lstKeys.add_item(" ")
+		
 		for command, info in coms.items():
-			lstKeys.add_item(command, None, True)
-			lstKeys.add_item(info[1])
-			lstKeys.add_item(" ")
+			if(not has_search or command.lower().find(search) > -1 or info[1].lower().find(search) > -1):
+				lstKeys.add_item(command, None, True)
+				lstKeys.add_item(info[1])
+				lstKeys.add_item(" ")
 		
 		lstKeys.add_item("Custom key mappings can be set in $HOME/.ash-editor/keymappings.txt")
-		
-		self.app.dlgHelp.add_widget("lstKeys", lstKeys)
-		self.app.dlgHelp.show()
+		lstKeys.repaint()
 
 	def help_key_handler(self, ch):
 		if(KeyBindings.is_key(ch, "CLOSE_WINDOW") or KeyBindings.is_key(ch, "SHOW_HELP")):
@@ -441,6 +474,8 @@ class DialogHandler:
 	# <----------------------------------- Project Explorer --------------------------------->
 
 	def invoke_project_explorer(self):
+		if(self.app.app_mode != APP_MODE_PROJECT): return
+
 		self.app.readjust()
 		try:
 			y, x = get_center_coords(self.app, 20, 80)
@@ -513,7 +548,8 @@ class DialogHandler:
 		lblFileName = Label(self.app.dlgFileOpen, 3, 2, "File/Folder:")
 		txtFileName = TextField(self.app.dlgFileOpen, 3, 15, 63, str(os.getcwd()) + "/", callback=self.file_open_filename_changed)
 		lstFiles = ListBox(self.app.dlgFileOpen, 5, 2, 76, 12, "(Empty directory)")
-		lstEncodings = ListBox(self.app.dlgFileOpen, 18, 2, 76, 1)
+		lblEncodings = Label(self.app.dlgFileOpen, 18, 2, "Encoding: ")
+		lstEncodings = ListBox(self.app.dlgFileOpen, 18, 12, 66, 1)
 
 		# add the encodings
 		for enc in SUPPORTED_ENCODINGS:
@@ -525,6 +561,7 @@ class DialogHandler:
 		self.app.dlgFileOpen.add_widget("lblFileName", lblFileName)
 		self.app.dlgFileOpen.add_widget("txtFileName", txtFileName)
 		self.app.dlgFileOpen.add_widget("lstFiles", lstFiles)
+		self.app.dlgFileOpen.add_widget("lblEncodings", lblEncodings)
 		self.app.dlgFileOpen.add_widget("lstEncodings", lstEncodings)
 		
 		self.file_open_filename_changed()

@@ -7,6 +7,7 @@
 
 from ash.gui import *
 from ash.gui.window import *
+from ash.gui.label import *
 from ash.gui.textfield import *
 from ash.gui.checkbox import *
 
@@ -22,16 +23,25 @@ class FindReplaceDialog(Window):
 		
 		init_text = ""
 		if(ed.selection_mode): init_text = ed.get_selected_text().replace("\n", "")
-				
-		self.txtFind = TextField(self, 4, 2, 46, init_text)
-		if(self.replace): self.txtReplace = TextField(self, 6, 2, 46)
+
+		self.lblFind = Label(self, 3, 2, "Find: ")		
+		self.txtFind = TextField(self, 3, 8, 40, init_text)
+
+		if(self.replace): 
+			self.lblReplace = Label(self, 5, 2, "Replace with: ")
+			self.txtReplace = TextField(self, 5, 16, 32)
 		
 		self.chkMatchCase = CheckBox(self, (7 if self.replace else 5), 2, "Match case")
 		self.chkWholeWords = CheckBox(self, (7 if self.replace else 5), 18, "Whole words")
 		self.chkRegex = CheckBox(self, (7 if self.replace else 5), 35, "Regex")
 		
+		self.add_widget("lblFind", self.lblFind)
 		self.add_widget("txtFind", self.txtFind)
-		if(self.replace): self.add_widget("txtReplace", self.txtReplace)
+
+		if(self.replace): 
+			self.add_widget("lblReplace", self.lblReplace)
+			self.add_widget("txtReplace", self.txtReplace)
+
 		self.add_widget("chkMatchCase", self.chkMatchCase)
 		self.add_widget("chkWholeWords", self.chkWholeWords)
 		self.add_widget("chkRegex", self.chkRegex)
@@ -161,9 +171,6 @@ class FindReplaceDialog(Window):
 		self.win.addstr(1, 2, self.title, curses.A_BOLD | self.theme)
 		self.win.addstr(1, self.width-3, "\u2a2f", curses.A_BOLD | self.theme)
 
-		self.win.addstr(3, 2, "Find:", self.theme)
-		if(self.replace): self.win.addstr(5, 2, "Replace with:", self.theme)
-		
 		# active widget must be repainted last, to correctly position cursor
 		aw = self.get_active_widget()
 		for w in self.widgets: 

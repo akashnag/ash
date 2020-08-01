@@ -17,7 +17,7 @@ class ThemeManager:
 	def init_colors(self):
 		# write out the default theme file (will reset any changes made to it)
 		colors, element_colors = get_default_colors()
-		self.write_out_theme_file( os.path.join(ash.APP_DATA_DIR, "default.theme"), colors, element_colors )
+		self.write_out_theme_file( os.path.join(ash.APP_THEMES_DIR, "default.theme"), colors, element_colors )
 
 		# load the current theme from installed_themes
 		installed_themes = self.get_installed_themes()
@@ -32,7 +32,7 @@ class ThemeManager:
 		# if not default theme, load theme from file
 		if(sel_index > 0):
 			if(sel_theme == None): sel_theme = "default"
-			sel_theme_file = os.path.join(ash.APP_DATA_DIR, sel_theme + ".theme")
+			sel_theme_file = os.path.join(ash.APP_THEMES_DIR, sel_theme + ".theme")
 			if(not os.path.isfile(sel_theme_file)):
 				installed_themes.pop(sel_index)
 				installed_themes.pop(0)
@@ -117,7 +117,7 @@ class ThemeManager:
 			self.app.show_error("Cannot have theme named 'default.theme'")
 			return
 
-		local_theme_file = os.path.join(ash.APP_DATA_DIR, get_file_title(theme_file))
+		local_theme_file = os.path.join(ash.APP_THEMES_DIR, get_file_title(theme_file))
 		if(os.path.isfile(local_theme_file)):
 			if(not self.app.ask_question("REPLACE THEME", f"The theme {get_file_title(theme_file)} already exists, replace it?")): return
 
@@ -126,12 +126,12 @@ class ThemeManager:
 		fp.close()
 
 		theme_name = theme_file[:-6]
-		installed_themes = get_installed_themes()
+		installed_themes = self.get_installed_themes()
 		installed_themes.append( (theme_name, False) )
 		self.write_out_installed_themes(installed_themes)
 
 	def set_theme(self, theme_name):
-		sel_theme_file = os.path.join(ash.APP_DATA_DIR, theme_name + ".theme")
+		sel_theme_file = os.path.join(ash.APP_THEMES_DIR, theme_name + ".theme")
 		if(not os.path.isfile( sel_theme_file )):
 			self.app.show_error(f"Cannot find file: '{theme_name}.theme'")
 			return

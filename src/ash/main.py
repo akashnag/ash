@@ -17,6 +17,8 @@ from ash.utils.utils import *
 from ash.utils.keyUtils import *
 from ash.utils.fileUtils import *
 from ash.utils.commandUtils import *
+from ash.utils.keyMappingsManager import *
+from ash.utils.settingsManager import *
 
 from ash.formatting.colors import *
 from ash.formatting.formatting import *
@@ -37,9 +39,12 @@ class AshEditorApp:
 
 		# create the application data directory
 		if(not os.path.exists(APP_DATA_DIR)): os.mkdir(APP_DATA_DIR)
+		if(not os.path.exists(APP_PLUGINS_DIR)): os.mkdir(APP_PLUGINS_DIR)
+		if(not os.path.exists(APP_KEYMAPS_DIR)): os.mkdir(APP_KEYMAPS_DIR)
+		if(not os.path.exists(APP_THEMES_DIR)): os.mkdir(APP_THEMES_DIR)
 
 		log_init()
-		KeyBindings.load_key_bindings_from_file()
+		
 	
 	def open_project(self, progress_handler = None, ask_to_restore_session = True):
 		# add project path to recent record
@@ -143,9 +148,13 @@ class AshEditorApp:
 		curses.raw()
 		curses.mousemask(curses.ALL_MOUSE_EVENTS)
 		
-		# create main window, BufferManager and SessionStorage objects
+		# create manager objects
 		self.buffers = BufferManager(self)
 		self.theme_manager = ThemeManager(self)
+		self.key_mappings_manager = KeyMappingsManager(self)
+		self.settings_manager = SettingsManager(self)
+
+		# create the Main Window and session storage objects
 		self.main_window = TopLevelWindow(self, self.stdscr, "ash " + self.get_app_version(), self.main_key_handler)
 		self.session_storage = SessionStorage(self, self.main_window.window_manager, self.buffers)
 		
@@ -185,8 +194,7 @@ class AshEditorApp:
 
 	# called on app_exit
 	def __destroy(self):
-		self.buffers.destroy()
-		KeyBindings.write_key_bindings_to_file()
+		self.buffers.destroy()		
 
 	# primary key handler to receive all key combinations from TopLevelWindow
 	def main_key_handler(self, ch):

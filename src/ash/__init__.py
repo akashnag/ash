@@ -12,7 +12,7 @@ import copy
 import glob
 
 __version__			= "0.1.0-dev"
-__revision__		= "6.4"
+__revision__		= "6.5"
 __release_date__	= "August 01, 2020"
 
 APP_COPYRIGHT_TEXT	= "© Copyright 2020, Akash Nag. All rights reserved."
@@ -27,8 +27,8 @@ SUPPORTED_ENCODINGS = [ "utf-8", "ascii", "utf-7", "utf-16", "utf-32", "latin-1"
 APP_MODE_FILE		= 1		# if ash is invoked with zero or more file names
 APP_MODE_PROJECT	= 2		# if ash is invoked with a single directory name
 
-# list of directories which are ignored by ash when listing files/opening files
-IGNORED_DIRECTORIES = [ ".git", "__pycache__" ]
+# dictionary of settings for global access
+SETTINGS			= None
 
 # minimum resolution required for ash
 MIN_WIDTH			= 102
@@ -40,8 +40,12 @@ MIN_EDITOR_HEIGHT	= 5
 
 # path to the application data directory and configuration files
 APP_DATA_DIR			= os.path.join(os.getenv("HOME"), ".ash-editor")
+APP_PLUGINS_DIR			= os.path.join(APP_DATA_DIR, "plugins")
+APP_KEYMAPS_DIR			= os.path.join(APP_DATA_DIR, "keymaps")
+APP_THEMES_DIR			= os.path.join(APP_DATA_DIR, "themes")
+
 LOG_FILE 				= os.path.join(APP_DATA_DIR, "log.txt")
-KEY_BINDINGS_FILE		= os.path.join(APP_DATA_DIR, "keymappings.txt")
-THEME_FILE				= os.path.join(APP_DATA_DIR, "theme.txt")
 SESSION_FILE			= os.path.join(APP_DATA_DIR, "session.dat")
+SETTINGS_FILE			= os.path.join(APP_DATA_DIR, "settings.dat")
 INSTALLED_THEMES_FILE 	= os.path.join(APP_DATA_DIR, "installed_themes.txt")
+INSTALLED_KEYMAPS_FILE 	= os.path.join(APP_DATA_DIR, "installed_keymaps.txt")

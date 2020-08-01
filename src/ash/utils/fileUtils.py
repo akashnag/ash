@@ -5,6 +5,7 @@
 
 # This module handles all file related functions
 
+import ash
 from ash.utils import *
 from ash.utils.utils import *
 
@@ -116,19 +117,27 @@ def get_textfile_mimetype(filename):
 	else:
 		return mt[pos+1:]
 
-# checks if a file rests in any of the IGNORED DIRECTORIES
+# checks if a file rests in any of the IGNORED DIRECTORIES or has an extension in IGNORED_FILE_EXTENSIONS
 def should_ignore_file(filename):
+	IGNORED_FILE_EXTENSIONS = ash.SETTINGS.get("IGNORED_FILE_EXTENSIONS")
+	IGNORED_DIRECTORIES = ash.SETTINGS.get("IGNORED_DIRECTORIES")
+
+	pos = filename.rfind(".")
+	if(os.path.isfile(filename) and pos > -1):		
+		ext = filename[pos:]
+		if(ext in IGNORED_FILE_EXTENSIONS): return True
+
 	positions = get_delim_positions(filename[1:], "/")
 	last_pos = -1
 	for pos in positions:
-		dir = filename[last_pos+1:pos].lower()
+		dir = filename[last_pos+1:pos]
 		last_pos = pos
 		if(dir in IGNORED_DIRECTORIES): return True
 	return False
 
 # check if a directory is in any of the IGNORED DIRECTORIES
 def should_ignore_directory(dirname):
-	if(get_file_title(dirname).lower() not in IGNORED_DIRECTORIES):
+	if(get_file_title(dirname) not in ash.SETTINGS.get("IGNORED_DIRECTORIES")):
 		return False
 	else:
 		return True

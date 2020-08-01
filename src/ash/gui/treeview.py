@@ -116,7 +116,7 @@ class TreeView(Widget):
 		
 		for f in all_files:
 			if(not os.path.isfile(f)): continue
-			self.files.append(f)
+			if(not should_ignore_file(f)): self.files.append(f)
 			dir_list = get_relative_subdirectories(self.project_dir, f)
 
 			for d in dir_list:

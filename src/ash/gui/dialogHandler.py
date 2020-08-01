@@ -302,7 +302,7 @@ class DialogHandler:
 			self.app.warn_insufficient_screen_space()
 			return
 
-		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 11, 61, "PREFERENCES", self.preferences_key_handler)
+		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 11, 61, "EDITOR PREFERENCES", self.preferences_key_handler)
 		current_tab_size = str(aed.tab_size)
 
 		lblTabSize = Label(self.app.dlgPreferences, 3, 2, "Tab Width:")
@@ -578,9 +578,9 @@ class DialogHandler:
 			lstFiles.clear()
 			all_files = sorted(glob.glob(filename + "/*", recursive=False))
 			for f in all_files:
-				if(os.path.isfile(f)):
+				if(os.path.isfile(f) and not should_ignore_file(f)):
 					lstFiles.add_item(get_file_title(f), tag=str(f))
-				else:
+				elif(not should_ignore_directory(f)):
 					lstFiles.add_item(f"[{get_file_title(f)}]", tag=str(f), highlight=True)
 			lstFiles.repaint()
 
@@ -792,9 +792,9 @@ class DialogHandler:
 			lstFiles.clear()
 			all_files = sorted(glob.glob(filename + "/*", recursive=False))
 			for f in all_files:
-				if(os.path.isfile(f)):
+				if(os.path.isfile(f) and not should_ignore_file(f)):
 					lstFiles.add_item(get_file_title(f), tag=str(f))
-				else:
+				elif(not should_ignore_directory(f)):
 					lstFiles.add_item(f"[{get_file_title(f)}]", tag=str(f), highlight=True)
 			lstFiles.repaint()
 
@@ -804,19 +804,25 @@ class DialogHandler:
 			return -1
 		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW") or KeyBindings.is_key(ch, "FINALIZE_CHOICE") or KeyBindings.is_key(ch, "LIST_MAKE_SELECTION")):
 			buffer = self.app.dlgSaveAs_Buffer
-			self.app.dlgSaveAs.hide()
 			
 			txtFileName = self.app.dlgSaveAs.get_widget("txtFileName")
+			lstFiles = self.app.dlgSaveAs.get_widget("lstFiles")
+
 			if(txtFileName.is_in_focus):
 				filename = str(txtFileName)
 			else:
-				filename = self.app.dlgSaveAs.get_widget("lstFiles").get_sel_tag()
+				filename = lstFiles.get_sel_tag()
 
-			if(not os.path.isfile(filename)):
+			if(os.path.isdir(filename)):
+				txtFileName.set_text(filename + "/")
+				self.file_save_as_filename_changed()
+			elif(not os.path.isfile(filename)):
+				self.app.dlgSaveAs.hide()
 				buffer.write_to_disk(filename)
 			elif(not os.path.isdir(filename) and os.path.isfile(filename)):
 				if(self.app.ask_question("REPLACE FILE", "File already exists, replace?")):
 					buffer.write_to_disk(filename)
+					self.app.dlgSaveAs.hide()
 			else:
 				self.app.show_error("Invalid filename!")
 			return -1
@@ -881,3 +887,128 @@ class DialogHandler:
 		lstThemes = self.app.dlgThemeManager.get_widget("lstThemes")
 		theme_name = lstThemes.get_sel_tag()
 		self.app.theme_manager.set_theme(theme_name)
+
+	# <---------------------- Key Mappings Manager ------------------------------------>
+
+	def invoke_key_mappings_manager(self):
+		self.app.readjust()
+		try:
+			y, x = get_center_coords(self.app, 16, 60)
+		except:
+			self.app.warn_insufficient_screen_space()
+			return
+			
+		self.app.dlgKeyMappingsManager = ModalDialog(self.app.main_window, y, x, 16, 60, "KEY MAPPINGS", self.key_mappings_manager_key_handler)
+		
+		lblFileName = Label(self.app.dlgKeyMappingsManager, 3, 2, "Install keymap from URL:")
+		txtFileName = TextField(self.app.dlgKeyMappingsManager, 4, 2, 56, "http://")
+		
+		lblChangeKeyMap = Label(self.app.dlgKeyMappingsManager, 6, 2, "Change keymap:")
+		lstKeyMaps = ListBox(self.app.dlgKeyMappingsManager, 7, 2, 56, 8, "(No keymaps installed)")
+
+		installed_keymaps = self.app.key_mappings_manager.get_installed_keymaps()
+		for t in installed_keymaps:
+			current = t[1]
+			keymap_name = t[0]
+			lstKeyMaps.add_item("  " if not current else TICK_MARK + " " + keymap_name, tag=keymap_name)
+		
+		self.app.dlgKeyMappingsManager.add_widget("lblFileName", lblFileName)
+		self.app.dlgKeyMappingsManager.add_widget("txtFileName", txtFileName)
+		self.app.dlgKeyMappingsManager.add_widget("lblChangeKeyMap", lblChangeKeyMap)
+		self.app.dlgKeyMappingsManager.add_widget("lstKeyMaps", lstKeyMaps)
+		
+		self.app.dlgKeyMappingsManager.show()
+
+	def key_mappings_manager_key_handler(self, ch):
+		txtFileName = self.app.dlgKeyMappingsManager.get_widget("txtFileName")
+		lstKeyMaps = self.app.dlgKeyMappingsManager.get_widget("lstKeyMaps")
+
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
+			self.app.dlgKeyMappingsManager.hide()
+			return -1
+		elif(txtFileName.is_in_focus and KeyBindings.is_key(ch, "FINALIZE_CHOICE")):
+			if(self.app.ask_question("INSTALL KEYMAP", "Are you sure you want to fetch and install the specified keymap?")):
+				self.app.dlgKeyMappingsManager.hide()
+				self.app.key_mappings_manager.install_keymap(str(txtFileName))
+				return -1
+		elif(lstKeyMaps.is_in_focus and KeyBindings.is_key(ch, "LIST_MAKE_SELECTION")):
+			if(self.app.ask_question("CHANGE KEYMAP", "Are you sure you want to change the current keymap?")):
+				self.app.dlgKeyMappingsManager.hide()
+				keymap_name = lstKeyMaps.get_sel_tag()
+				self.app.key_mappings_manager.set_keymap(keymap_name)
+				return -1
+		
+		return ch
+
+	# <---------------------- Settings ------------------------------------------------>
+
+	def invoke_settings(self):
+		self.app.readjust()
+		try:
+			y, x = get_center_coords(self.app, 13, 60)
+		except:
+			self.app.warn_insufficient_screen_space()
+			return
+			
+		self.app.dlgSettings = ModalDialog(self.app.main_window, y, x, 13, 60, "SETTINGS", self.settings_key_handler)
+		
+		lblIgnore1 = Label(self.app.dlgSettings, 3, 2, "Ignored directories:")
+		lstIgnoredDirs = ListBox(self.app.dlgSettings, 4, 2, 27, 8, "(No directories specified)")
+
+		lblIgnore2 = Label(self.app.dlgSettings, 3, 30, "Ignored file extensions:")
+		lstIgnoredFiles = ListBox(self.app.dlgSettings, 4, 30, 28, 8, "(No extensions specified)")
+		
+		self.app.dlgSettings.add_widget("lblIgnore1", lblIgnore1)
+		self.app.dlgSettings.add_widget("lblIgnore2", lblIgnore2)
+		self.app.dlgSettings.add_widget("lstIgnoredDirs", lstIgnoredDirs)
+		self.app.dlgSettings.add_widget("lstIgnoredFiles", lstIgnoredFiles)
+		
+		self.refresh_settings()
+		self.app.dlgSettings.show()
+
+	def refresh_settings(self):
+		lstIgnoredDirs = self.app.dlgSettings.get_widget("lstIgnoredDirs")
+		lstIgnoredFiles = self.app.dlgSettings.get_widget("lstIgnoredFiles")
+
+		IGNORED_FILE_EXTENSIONS = ash.SETTINGS.get("IGNORED_FILE_EXTENSIONS")
+		IGNORED_DIRECTORIES = ash.SETTINGS.get("IGNORED_DIRECTORIES")
+
+		lstIgnoredDirs.clear()
+		for dir in IGNORED_DIRECTORIES:
+			lstIgnoredDirs.add_item(dir, tag=dir)
+
+		lstIgnoredFiles.clear()
+		for ext in IGNORED_FILE_EXTENSIONS:
+			lstIgnoredFiles.add_item("*" + ext, tag=ext)
+		
+		
+	def settings_key_handler(self, ch):
+		lstIgnoredDirs = self.app.dlgSettings.get_widget("lstIgnoredDirs")
+		lstIgnoredFiles = self.app.dlgSettings.get_widget("lstIgnoredFiles")
+
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
+			self.app.dlgSettings.hide()
+			return -1
+		elif(KeyBindings.is_key(ch, "LIST_ADD_NEW")):
+			if(lstIgnoredDirs.is_in_focus):
+				dirname = self.app.prompt("New Exception", "Enter a directory name to ignore:")
+				if(dirname != None): self.app.settings_manager.add_to_setting("IGNORED_DIRECTORIES", dirname)
+			elif(lstIgnoredFiles.is_in_focus):
+				ext = self.app.prompt("New Exception", "Enter a file extension (without leading dot) to ignore:")
+				if(ext != None): self.app.settings_manager.add_to_setting("IGNORED_FILE_EXTENSIONS", "." + ext)
+			
+			self.refresh_settings()
+			self.app.dlgSettings.repaint()
+			return -1
+		elif(KeyBindings.is_key(ch, "LIST_DELETE_SELECTION")):
+			if(self.app.ask_question("CONFIRM DELETE", "Are you sure you want to remove this item?")):
+				if(lstIgnoredDirs.is_in_focus):
+					self.app.settings_manager.remove_from_setting("IGNORED_DIRECTORIES", lstIgnoredDirs.get_sel_tag())
+				elif(lstIgnoredFiles.is_in_focus):
+					self.app.settings_manager.remove_from_setting("IGNORED_FILE_EXTENSIONS", lstIgnoredFiles.get_sel_tag())
+				
+				self.refresh_settings()
+				self.app.dlgSettings.repaint()
+				return -1
+		
+		return ch

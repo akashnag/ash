@@ -242,8 +242,6 @@ class TopLevelWindow(Window):
 			("Save & Close", has_editor, self.save_and_close_active_editor),
 			("Save All", True, adh.handle_save_all),
 			("---", True, None),
-			("Theme Manager...", True, adh.invoke_theme_manager),
-			("---", True, None),
 			("Close All", True, self.close_all_tabs),
 			("Exit", True, adh.handle_exit)
 		]
@@ -278,6 +276,13 @@ class TopLevelWindow(Window):
 			((TICK_MARK + " Status bar" if self.show_statusbar else "Status bar"), True, self.toggle_statusbar_visibility)
 		]
 
+		tools_menu_items = [
+			("Theme Manager...", True, adh.invoke_theme_manager),
+			("Key Mappings...", True, adh.invoke_key_mappings_manager),
+			("---", True, None),
+			("Settings...", True, adh.invoke_settings)
+		]
+
 		window_menu_items = [
 			("New Tab", True, self.add_blank_tab),
 			("---", True, None),
@@ -304,15 +309,17 @@ class TopLevelWindow(Window):
 		mnuFile = PopupMenu(self, 1, 0, file_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar)
 		mnuEdit = PopupMenu(self, 1, 6, edit_menu_items, width = 35, is_dropdown=True, parent_menu=self.menu_bar)
 		mnuView = PopupMenu(self, 1, 12, view_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar)
-		mnuWindow = PopupMenu(self, 1, 18, window_menu_items, width = 35, is_dropdown=True, parent_menu=self.menu_bar)
-		mnuHelp = PopupMenu(self, 1, 26, help_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar)
+		mnuTools = PopupMenu(self, 1, 18, tools_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar)
+		mnuWindow = PopupMenu(self, 1, 25, window_menu_items, width = 35, is_dropdown=True, parent_menu=self.menu_bar)
+		mnuHelp = PopupMenu(self, 1, 33, help_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar)
 
-		# |FILE||EDIT||VIEW||WINDOW||HELP|
-		# 01234567890123456789012345678901
+		# |FILE||EDIT||VIEW||TOOLS||WINDOW||HELP|
+		# 012345678901234567890123456789012345678
 
 		self.menu_bar.add_menu("File", mnuFile)
 		self.menu_bar.add_menu("Edit", mnuEdit)
 		self.menu_bar.add_menu("View", mnuView)
+		self.menu_bar.add_menu("Tools", mnuTools)
 		self.menu_bar.add_menu("Window", mnuWindow)
 		self.menu_bar.add_menu("Help", mnuHelp)
 

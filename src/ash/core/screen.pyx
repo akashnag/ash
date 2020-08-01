@@ -8,6 +8,7 @@
 from ash.formatting.colors import *
 from ash.gui.cursorPosition import *
 from ash.utils.utils import *
+import datetime
 
 cdef class Screen:
 	cdef bint show_line_numbers, show_scrollbars
@@ -24,6 +25,8 @@ cdef class Screen:
 	cdef list style_buffer
 	cdef int real_line_start_index_visible, real_line_end_index_visible
 	cdef int last_gutter_width
+	cdef int last_tab_size, last_text_area_width
+	cdef bint last_word_wrap, last_hard_wrap
 
 	# initialize the screen buffer
 	def __init__(self, win, buffer, int height, int width, show_line_numbers, show_scrollbars):
@@ -108,10 +111,12 @@ cdef class Screen:
 		cdef int i, n
 		n = len(text)
 		pos = list()
+		
 		for i in range(n):
 			if(text[i] in delims): pos.append(i)
+		
 		pos.append(n)
-		return pos
+		return sorted(pos)
 
 	def reflow_all(self, width, lines, tab_size, word_wrap, hard_wrap):
 		self.all_col_spans = dict()
@@ -148,7 +153,7 @@ cdef class Screen:
 		cdef int col_start = 0
 		cdef int col_end = 0
 		cdef int col_width
-		cdef int ls
+		cdef int ls, i = 0
 		cdef int w = len(text)
 		cdef bint flag
 
@@ -195,7 +200,7 @@ cdef class Screen:
 		cdef int i, real_line_start, line_start_offset, j
 
 		for i in range(nlines):
-			col_spans = self.reflow(self.width - gutter_width, lines[i], tab_size, word_wrap, hard_wrap)
+			col_spans = self.all_col_spans[i]
 			if(len(col_spans) == 0): 
 				rendered_line_index += 1
 				if(rendered_line_index == self.line_start):
@@ -218,10 +223,13 @@ cdef class Screen:
 		cdef int gutter_width = self.width - text_area_width
 		cdef int line_index, visible_line_index
 
+		if(self.buffer.formatter.lexer == None): return
+
 		# cannot use join as it will mess up the lexer indices with the insertion of newline characters
 		for line_index in range(start_line_index, end_line_index):
 			temp = CursorPosition(line_index, 0)
-			visible_line_index = self.get_pre_translation_parameters(lines, temp, text_area_width, tab_size, word_wrap, hard_wrap)
+			visible_line_index = self.mapping_real_line_to_rendered_line[line_index] - 1
+
 			data = lines[line_index]
 			# lex-data contains a list of tuples(index, style, text)
 			lex_data = self.buffer.format_code(data)
@@ -427,14 +435,8 @@ cdef class Screen:
 		cdef int y, i, n, rendered_x, rendered_line_col, current_line_length
 
 		if(visible_line_index < 0):
-			visible_line_index = -1
-			for y in range(real_curpos.y):
-				if(self.all_col_spans == None):
-					col_spans = self.reflow(text_area_width, lines[y], tab_size, word_wrap, hard_wrap)
-				else:
-					col_spans = self.all_col_spans[y]
-				visible_line_index += (len(col_spans) if len(col_spans) > 0 else 1)
-		
+			visible_line_index = self.mapping_real_line_to_rendered_line[real_curpos.y] - 1
+			
 		if(self.all_col_spans == None):
 			col_spans = self.reflow(text_area_width, lines[real_curpos.y], tab_size, word_wrap, hard_wrap)
 		else:
@@ -491,6 +493,20 @@ cdef class Screen:
 
 	# <--------- called externally: do not Cythonize() ---------------------->
 
+	def recompute(self, real_curpos, tab_size, word_wrap, hard_wrap, forced=True):
+		if(self.buffer == None): return
+
+		gutter_width = self._get_gutter_width(self.line_end)
+		self.last_gutter_width = gutter_width
+		text_area_width = self.width - gutter_width
+
+		if(forced or self.last_text_area_width != text_area_width or self.last_tab_size != tab_size or self.last_word_wrap != word_wrap or self.last_hard_wrap != hard_wrap):
+			self.reflow_all(text_area_width, self.buffer.lines, tab_size, word_wrap, hard_wrap)
+			self.last_text_area_width = text_area_width
+			self.last_tab_size = tab_size
+			self.last_word_wrap = word_wrap
+			self.last_hard_wrap = hard_wrap
+
 	# render text data to screen buffer
 	def render(self, real_curpos, tab_size, word_wrap, hard_wrap, selection_info, highlight_info, is_in_focus, stylize = True):
 		# There are 3 types of cursor positions:
@@ -505,7 +521,8 @@ cdef class Screen:
 		# determine line(start,end) and col(start,end): and return rendered_curpos
 		# Circular dependency: scroll() requires gutter_width, but gutter_width requires line_end which is computed by scroll()
 		# won't be a problem if you allow line numbers to start from screen-edge: that space will be taken up if user scrolls so much that 1/2 digits are added in the next scroll()
-		self.all_col_spans = None
+		
+		#t1 = datetime.datetime.now()
 		rendered_curpos = self.scroll(self.buffer.lines, real_curpos, self.width - self._get_gutter_width(self.line_end), tab_size, word_wrap, hard_wrap)
 
 		# set up lines
@@ -521,16 +538,26 @@ cdef class Screen:
 		self.last_gutter_width = gutter_width
 		text_area_width = self.width - gutter_width
 
-		#if(self.line_start >= nlines): return(rendered_curpos, text_area_width)
-
+		#t2 = datetime.datetime.now()
+		
+		if(self.last_text_area_width != text_area_width or self.last_tab_size != tab_size or self.last_word_wrap != word_wrap or self.last_hard_wrap != hard_wrap):
+			self.all_col_spans = None
+			self.last_text_area_width = text_area_width
+			self.last_tab_size = tab_size
+			self.last_word_wrap = word_wrap
+			self.last_hard_wrap = hard_wrap
+		
 		self.set_gutter_style(gutter_width)
 		if(self.all_col_spans == None):
 			self.reflow_all(text_area_width, self.buffer.lines, tab_size, word_wrap, hard_wrap)
+
+		#t3 = datetime.datetime.now()
 
 		# determine the first line to be displayed
 		real_line_start, line_start_col_spans, line_start_offset = self._get_line_start(gutter_width, nlines, lines, tab_size, word_wrap, hard_wrap)
 		self.real_line_start_index_visible = real_line_start		# store for use in highlighting
 
+		
 		# show (if any) remaining wrapped text from previous line
 		if(line_start_offset > 0):
 			# expand the tabs to get the whole line
@@ -581,6 +608,8 @@ cdef class Screen:
 
 		self.real_line_end_index_visible = line_index			# store for use in highlighting
 		
+		#t4 = datetime.datetime.now()
+
 		# show scrollbars
 		if(self.show_scrollbars):
 			self.putstr(0, 0, "\u25b4")
@@ -618,6 +647,15 @@ cdef class Screen:
 			visual_curpos = self.translate_rendered_to_visual_pos(rendered_curpos, gutter_width)
 			self.put_cursor(visual_curpos.y, visual_curpos.x)
 			if(self.show_line_numbers): self.highlight_line(current_line_number_y, gutter_width)
+
+		#t5 = datetime.datetime.now()
+
+		#time_scroll = t2 - t1
+		#time_reflow = t3 - t2
+		#time_lines = t4 - t3
+		#time_formatting = t5 - t4
+
+		#log(f"{time_scroll} | {time_reflow} | {time_lines} | {time_formatting}")
 
 		return rendered_curpos, text_area_width
 	

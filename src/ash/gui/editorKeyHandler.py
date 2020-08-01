@@ -359,10 +359,12 @@ class EditorKeyHandler:
 		
 	def handle_undo(self):
 		self.ed.buffer.do_undo()
+		self.ed.recompute()
 		self.ed.parent.bottom_up_repaint()
 
 	def handle_redo(self):
 		self.ed.buffer.do_redo()
+		self.ed.recompute()
 		self.ed.parent.bottom_up_repaint()
 
 	def handle_save(self):
@@ -397,6 +399,7 @@ class EditorKeyHandler:
 		if(not self.ed.selection_mode): return False
 		del_text = self.ed.utility.delete_selected_text()
 		clipboard.copy(del_text)
+		self.ed.recompute()
 		return True
 			
 	def handle_paste(self):
@@ -427,4 +430,5 @@ class EditorKeyHandler:
 			for i in range(n-2, 0, -1):
 				self.ed.buffer.lines.insert(row+1, data[i])
 
+		self.ed.recompute()
 		return True

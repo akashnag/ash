@@ -71,14 +71,15 @@ class Editor(Widget):
 	def reset(self):
 		self.selection_mode = False
 		self.curpos.x = 0
-		self.curpos.y = 0		
+		self.curpos.y = 0
+		self.recompute()
 
 	def set_buffer(self, bid, buffer):
 		self.bid = bid
 		self.buffer = buffer
 		self.buffer.attach_editor(self)
-		self.reset()
 		if(self.screen != None): self.screen.update(self.parent, self.buffer)
+		self.reset()
 
 	def destroy(self):			# called by TopLevelWindow.close_active_editor()
 		self.buffer.detach_editor(self)
@@ -162,7 +163,12 @@ class Editor(Widget):
 			edit_made = self.keyHandler.handle_keys(ch)
 		
 		if(edit_made): self.buffer.update(self.curpos, self)
+		self.recompute(edit_made)
 			
+	# <---------------------------- Calls Screen.recompute ---------------------
+
+	def recompute(self, forced=True):
+		if(self.screen != None): self.screen.recompute(self.curpos, self.tab_size, self.word_wrap, self.hard_wrap, forced)
 
 	# <------------------- Functions called from BufferManager --------------------->
 

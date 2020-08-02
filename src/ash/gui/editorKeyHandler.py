@@ -7,12 +7,15 @@
 
 from ash.gui import *
 from ash.utils.keyUtils import *
+from ash.gui.cursorPosition import *
 
 class EditorKeyHandler:
 	def __init__(self, ed):
 		self.ed = ed
 	
 	def handle_keys(self, ch):
+		if(not KeyBindings.is_key(ch, "ADD_SLAVE_CURSOR")): self.cancel_multiple_cursors()
+
 		if(KeyBindings.is_key(ch, "SELECT_ALL")):
 			self.handle_select_all()
 		elif(KeyBindings.is_key(ch, "COPY")):
@@ -49,6 +52,10 @@ class EditorKeyHandler:
 		elif(KeyBindings.is_key(ch, "DECODE_UNICODE")):
 			self.ed.buffer.decode_unicode()
 			return True
+		elif(KeyBindings.is_key(ch, "CANCEL_MULTICURSOR_MODE")):
+			self.cancel_multiple_cursors()
+		elif(KeyBindings.is_key(ch, "ADD_SLAVE_CURSOR")):
+			self.add_slave_cursor()
 
 		return False
 
@@ -58,6 +65,8 @@ class EditorKeyHandler:
 
 	# handle the 4 arrow keys
 	def handle_arrow_keys(self, ch):
+		self.cancel_multiple_cursors()
+
 		if(KeyBindings.is_key(ch, "MOVE_CURSOR_LEFT")):
 			self.ed.curpos = self.ed.screen.get_curpos_after_move_left(self.ed.curpos, self.ed.tab_size, self.ed.word_wrap, self.ed.hard_wrap)
 		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_RIGHT")):
@@ -73,6 +82,8 @@ class EditorKeyHandler:
 	# handles Ctrl+Arrow key combinations
 	# behaviour: move to the next/previous separator position
 	def handle_ctrl_arrow_keys(self, ch):
+		self.cancel_multiple_cursors()
+
 		if(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_PREVIOUS_WORD")):
 			# previous-word left
 			if(self.ed.curpos.x == 0):
@@ -100,6 +111,8 @@ class EditorKeyHandler:
 	# handles Shift+Arrow key combinations
 	# behaviour: initiates/extends text selection
 	def handle_shift_arrow_keys(self, ch):
+		self.cancel_multiple_cursors()
+
 		if(not self.ed.selection_mode):
 			self.ed.selection_mode = True
 			self.ed.sel_start = copy.copy(self.ed.curpos)
@@ -119,6 +132,7 @@ class EditorKeyHandler:
 	# of the cursor, or deletes the selected text
 	def handle_delete_key(self, ch):
 		if(self.ed.selection_mode):
+			self.cancel_multiple_cursors()
 			self.ed.utility.delete_selected_text()
 			return True
 		
@@ -131,13 +145,22 @@ class EditorKeyHandler:
 			return False
 		
 		if(col == clen):
+			self.cancel_multiple_cursors()
 			ntext = self.ed.buffer.lines[self.ed.curpos.y + 1]
 			self.ed.buffer.lines.pop(self.ed.curpos.y + 1)
 			self.ed.buffer.lines[self.ed.curpos.y] += ntext
 		else:
 			left = text[0:col] if col > 0 else ""
-			right = text[col+1:] if col < len(text)-1 else ""
+			right = text[col+1:] if col < clen-1 else ""
 			self.ed.buffer.lines[self.ed.curpos.y] = left + right
+
+			for sc in self.ed.slave_cursors:
+				text = self.ed.buffer.lines[sc.y]
+				clen = len(text)
+				col = sc.x
+				left = text[0:col] if col > 0 else ""
+				right = text[col+1:] if col < clen-1 else ""
+				self.ed.buffer.lines[sc.y] = left + right
 				
 		return True
 	
@@ -145,6 +168,7 @@ class EditorKeyHandler:
 	# cursor, or deletes the selected text
 	def handle_backspace_key(self, ch):
 		if(self.ed.selection_mode):
+			self.cancel_multiple_cursors()
 			self.ed.utility.delete_selected_text()						
 			return True		
 
@@ -156,6 +180,7 @@ class EditorKeyHandler:
 			return False
 
 		if(col == 0):
+			self.cancel_multiple_cursors()
 			self.ed.buffer.lines.pop(self.ed.curpos.y)
 			temp = len(self.ed.buffer.lines[self.ed.curpos.y-1])
 			self.ed.buffer.lines[self.ed.curpos.y - 1] += text
@@ -165,12 +190,21 @@ class EditorKeyHandler:
 			left = text[0:col-1] if col > 1 else ""
 			right = text[col:] if col < len(text) else ""
 			self.ed.buffer.lines[self.ed.curpos.y] = left + right
-			self.ed.curpos.x -= 1		
+			self.ed.curpos.x -= 1
+
+			for sc in self.ed.slave_cursors:
+				text = self.ed.buffer.lines[sc.y]
+				col = sc.x
+				left = text[0:col-1] if col > 1 else ""
+				right = text[col:] if col < len(text) else ""
+				self.ed.buffer.lines[sc.y] = left + right
+				sc.x -= 1
 		
 		return True
 
 	# handles HOME and END keys
 	def handle_home_end_keys(self, ch):
+		self.cancel_multiple_cursors()
 		self.ed.selection_mode = False
 
 		if(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_START")):
@@ -180,6 +214,7 @@ class EditorKeyHandler:
 		
 	# handles Shift+Home and Shift+End keys
 	def handle_shift_home_end_keys(self, ch):
+		self.cancel_multiple_cursors()
 		if(not self.ed.selection_mode):
 			self.ed.selection_mode = True
 			self.ed.sel_start = copy.copy(self.ed.curpos)
@@ -194,6 +229,7 @@ class EditorKeyHandler:
 	# handles TAB/Ctrl+I and Shift+TAB keys
 	# in selection mode: increase / decrease indent
 	def handle_tab_keys(self, ch):
+		self.cancel_multiple_cursors()
 		if(self.ed.selection_mode):
 			if(KeyBindings.is_key(ch, "INSERT_TAB")):
 				return self.ed.shift_selection_right()
@@ -225,6 +261,7 @@ class EditorKeyHandler:
 		
 	# handles ENTER / Ctrl+J
 	def handle_newline(self):
+		self.cancel_multiple_cursors()
 		if(self.ed.selection_mode): self.ed.utility.delete_selected_text()
 
 		text = self.ed.buffer.lines[self.ed.curpos.y]
@@ -247,6 +284,7 @@ class EditorKeyHandler:
 			
 	# handles printable characters in the charset
 	def handle_printable_character(self, ch):
+		if(self.ed.selection_mode): self.cancel_multiple_cursors()
 		sch = str(chr(ch))
 		
 		if(self.ed.auto_close):
@@ -268,18 +306,29 @@ class EditorKeyHandler:
 					sch = open[pos] + close[pos]
 
 		if(self.ed.selection_mode): del_text = self.ed.utility.delete_selected_text()
+
 		text = self.ed.buffer.lines[self.ed.curpos.y]
 		col = self.ed.curpos.x
 		left = text[0:col] if col > 0 else ""
 		right = text[col:] if len(text) > 0 else ""
-				
+		
 		self.ed.buffer.lines[self.ed.curpos.y] = left + sch + right
 		self.ed.curpos.x += 1
+
+		for sc in self.ed.slave_cursors:
+			text = self.ed.buffer.lines[sc.y]
+			col = sc.x
+			left = text[0:col] if col > 0 else ""
+			right = text[col:] if len(text) > 0 else ""
+
+			self.ed.buffer.lines[sc.y] = left + sch + right
+			sc.x += 1
 
 		return True
 			
 	# handles the PGUP and PGDOWN keys
 	def handle_page_navigation_keys(self, ch):
+		self.cancel_multiple_cursors()
 		h = self.ed.height
 		nlen = len(self.ed.buffer.lines)
 		if(KeyBindings.is_key(ch, "MOVE_TO_PREVIOUS_PAGE")):
@@ -311,6 +360,7 @@ class EditorKeyHandler:
 
 	# handles the Ctrl + HOME / END keys
 	def handle_ctrl_home_end_keys(self, ch):
+		self.cancel_multiple_cursors()
 		if(self.ed.selection_mode): self.ed.selection_mode = False
 
 		if(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_DOCUMENT_START")):
@@ -322,6 +372,7 @@ class EditorKeyHandler:
 	
 	# handles the Shift + PGUP / PGDOWN keys
 	def handle_shift_page_navigation_keys(self, ch):
+		self.cancel_multiple_cursors()
 		if(not self.ed.selection_mode):
 			self.ed.selection_mode = True
 			self.ed.sel_start = copy.copy(self.ed.curpos)
@@ -358,11 +409,13 @@ class EditorKeyHandler:
 			self.ed.sel_end = copy.copy(self.ed.curpos)
 		
 	def handle_undo(self):
+		self.cancel_multiple_cursors()
 		self.ed.buffer.do_undo()
 		self.ed.recompute()
 		self.ed.parent.bottom_up_repaint()
 
 	def handle_redo(self):
+		self.cancel_multiple_cursors()
 		self.ed.buffer.do_redo()
 		self.ed.recompute()
 		self.ed.parent.bottom_up_repaint()
@@ -375,6 +428,7 @@ class EditorKeyHandler:
 				self.ed.parent.win.app.dialog_handler.invoke_file_save_as(self.ed.buffer)
 
 	def handle_select_all(self):
+		self.cancel_multiple_cursors()
 		nlen = len(self.ed.buffer.lines)
 		self.ed.selection_mode = True
 		self.ed.sel_start.y = 0
@@ -383,6 +437,7 @@ class EditorKeyHandler:
 		self.ed.sel_end.x = len(self.ed.buffer.lines[nlen-1])
 
 	def handle_select_line(self):
+		self.cancel_multiple_cursors()
 		self.ed.selection_mode = True
 		self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y-1])
 		self.ed.sel_start.y = self.ed.curpos.y
@@ -391,11 +446,13 @@ class EditorKeyHandler:
 		self.ed.sel_end.x = self.ed.curpos.x
 
 	def handle_copy(self):
+		self.cancel_multiple_cursors()
 		if(not self.ed.selection_mode): return
 		sel_text = self.ed.get_selected_text()
 		clipboard.copy(sel_text)
 
 	def handle_cut(self):
+		self.cancel_multiple_cursors()
 		if(not self.ed.selection_mode): return False
 		del_text = self.ed.utility.delete_selected_text()
 		clipboard.copy(del_text)
@@ -403,6 +460,7 @@ class EditorKeyHandler:
 		return True
 			
 	def handle_paste(self):
+		self.cancel_multiple_cursors()
 		whole = clipboard.paste()
 		if(len(whole) == 0): return False
 
@@ -432,3 +490,17 @@ class EditorKeyHandler:
 
 		self.ed.recompute()
 		return True
+
+	def add_slave_cursor(self):
+		if(len(self.ed.slave_cursors) == 0):
+			last = self.ed.curpos
+		else:
+			last = self.ed.slave_cursors[-1]
+		
+		if(last.y >= len(self.ed.buffer.lines)-1): return
+		if(last.x > len(self.ed.buffer.lines[last.y+1])): return
+
+		self.ed.slave_cursors.append( CursorPosition(last.y + 1, last.x) )
+
+	def cancel_multiple_cursors(self):
+		self.ed.slave_cursors = list()

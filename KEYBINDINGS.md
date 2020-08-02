@@ -74,6 +74,8 @@ These key combinations work only if an editor is currently active.
 |<kbd>Ctrl</kbd> + <kbd>Y</kbd>|Redo|
 |<kbd>Ctrl</kbd> + <kbd>F</kbd>|Find|
 |<kbd>Ctrl</kbd> + <kbd>H</kbd>|Replace|
+|<kbd>Ctrl</kbd> + <kbd>K</kbd>|Add a cursor below|
+|<kbd>Ctrl</kbd> + <kbd>^</kbd>|Cancel multi-cursor mode|
 
 ### Commands for find and replace operations
 

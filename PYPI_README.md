@@ -53,6 +53,7 @@ The following is a list of features available in **ash**:
 - View list of recent files, view project explorer (in project mode)
 - Syntax highlighting (limited)
 - Git integration (shows untracked, modified files, etc.)
+- Multiple Cursors
 - Command palette
 - Basic mouse support
 

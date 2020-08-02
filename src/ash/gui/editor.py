@@ -23,6 +23,7 @@ class Editor(Widget):
 		# initialize parent window
 		self.parent = parent
 		self.screen = None
+		self.slave_cursors = list()
 
 		# initialize helper classes
 		self.utility = EditorUtility(self)
@@ -72,6 +73,7 @@ class Editor(Widget):
 		self.selection_mode = False
 		self.curpos.x = 0
 		self.curpos.y = 0
+		self.slave_cursors = list()
 		self.recompute()
 
 	def set_buffer(self, bid, buffer):
@@ -226,7 +228,7 @@ class Editor(Widget):
 			"is_regex": self.find_regex
 		}
 		
-		self.screen.render(self.curpos, self.tab_size, self.word_wrap, self.hard_wrap, sel_info, highlight_info, self.is_in_focus, self.should_stylize)
+		self.screen.render(self.curpos, self.tab_size, self.word_wrap, self.hard_wrap, sel_info, highlight_info, self.is_in_focus, self.slave_cursors, self.should_stylize)
 		self.screen.draw(self.y, self.x)
 		
 	# <-------------------------------------------------------------------------------------->

@@ -508,7 +508,7 @@ cdef class Screen:
 			self.last_hard_wrap = hard_wrap
 
 	# render text data to screen buffer
-	def render(self, real_curpos, tab_size, word_wrap, hard_wrap, selection_info, highlight_info, is_in_focus, stylize = True):
+	def render(self, real_curpos, tab_size, word_wrap, hard_wrap, selection_info, highlight_info, is_in_focus, slave_cursors, stylize = True):
 		# There are 3 types of cursor positions:
 		# 1. real curpos = w.r.t. real line (passed as parameter to this function)
 		# 2. rendered curpos = after taking tab & wrapping into consideration
@@ -644,8 +644,18 @@ cdef class Screen:
 			
 		# compute cursor position and place it
 		if(is_in_focus):
+			# add primary cursor
 			visual_curpos = self.translate_rendered_to_visual_pos(rendered_curpos, gutter_width)
 			self.put_cursor(visual_curpos.y, visual_curpos.x)
+
+			# add slave cursors
+			if(slave_cursors != None):
+				for sc in slave_cursors:
+					rendered_slave_curpos, _ = self.translate_real_curpos_to_rendered_curpos(self.buffer.lines, sc, text_area_width, tab_size, word_wrap, hard_wrap)
+					visual_slave_curpos = self.translate_rendered_to_visual_pos(rendered_slave_curpos, gutter_width)
+					self.put_cursor(visual_slave_curpos.y, visual_slave_curpos.x)
+
+			# highlight current line
 			if(self.show_line_numbers): self.highlight_line(current_line_number_y, gutter_width)
 
 		#t5 = datetime.datetime.now()
@@ -715,7 +725,7 @@ cdef class Screen:
 			return CursorPosition(real_curpos.y + 1, 0)
 
 	def get_curpos_after_move_up(self, real_curpos, tab_size, word_wrap, hard_wrap):
-		_, width = self.render(real_curpos, tab_size, word_wrap, hard_wrap, None, None, True, False)
+		_, width = self.render(real_curpos, tab_size, word_wrap, hard_wrap, None, None, True, None, False)
 		lines = self.buffer.lines
 		y, col_spans = self.get_subline_offset(lines, width, tab_size, word_wrap, hard_wrap, real_curpos)
 		if(y == 0 and real_curpos.y == 0):
@@ -726,7 +736,7 @@ cdef class Screen:
 			return self.translate_rendered_curpos_to_real_curpos(lines, width, rendered_curpos, tab_size, word_wrap, hard_wrap)
 		
 	def get_curpos_after_move_down(self, real_curpos, tab_size, word_wrap, hard_wrap):
-		rendered_curpos, width = self.render(real_curpos, tab_size, word_wrap, hard_wrap, None, None, True, False)
+		rendered_curpos, width = self.render(real_curpos, tab_size, word_wrap, hard_wrap, None, None, True, None, False)
 		lines = self.buffer.lines
 		y, col_spans = self.get_subline_offset(lines, width, tab_size, word_wrap, hard_wrap, real_curpos)
 		

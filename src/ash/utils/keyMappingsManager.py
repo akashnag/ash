@@ -40,7 +40,9 @@ class KeyMappingsManager:
 			"LIST_MAKE_SELECTION"			: [[ "^J", "KEY_ENTER" ], "Ctrl+J/Enter", "Select the currently selected item"],
 			"LIST_DELETE_SELECTION"			: ["KEY_DC", "Del", "Deletes the currently selected item"],
 			"LIST_ADD_NEW"					: ["^N", "Ctrl+N", "Add a new item to the list"],
-			
+
+			"ADD_SLAVE_CURSOR"				: ["^K", "Ctrl+K", "Add a cursor below"],
+			"CANCEL_MULTICURSOR_MODE"		: ["^^", "Ctrl+^", "Cancel multi-cursor mode"],
 			"MOVE_WINDOW_LEFT"				: ["kLFT5", f"Ctrl+{ARROW_LEFT}", "Move the active window left"],
 			"MOVE_WINDOW_RIGHT"				: ["kRIT5", f"Ctrl+{ARROW_RIGHT}", "Move the active window right"],
 			"MOVE_WINDOW_UP"				: ["kUP5", f"Ctrl+{ARROW_UP}", "Move the active window up"],

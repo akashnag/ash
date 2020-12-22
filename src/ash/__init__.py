@@ -12,8 +12,8 @@ import copy
 import glob
 
 __version__			= "0.1.0-dev"
-__revision__		= "6.6"
-__release_date__	= "August 02, 2020"
+__revision__		= "7.0"
+__release_date__	= "Dec 22, 2020"
 
 APP_COPYRIGHT_TEXT	= "© Copyright 2020, Akash Nag. All rights reserved."
 APP_LICENSE_TEXT	= "Licensed under the MIT License."

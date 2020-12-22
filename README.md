@@ -83,6 +83,7 @@ The following features will be implemented gradually:
 You need certain packages and Python 3 itself to download **ash**, as there are no prebuilt binaries available yet:
 
 ```bash
+$ sudo apt install git
 $ sudo apt install xclip
 $ sudo apt install python3
 $ sudo apt install python3-pip

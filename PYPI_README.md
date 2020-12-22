@@ -82,6 +82,7 @@ The following features will be implemented gradually:
 You need certain packages and Python 3 itself to download and run the developmental build:
 
 ```bash
+$ sudo apt install git
 $ sudo apt install xclip
 $ sudo apt install python3
 $ sudo apt install python3-pip

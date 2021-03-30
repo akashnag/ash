@@ -1,5 +1,5 @@
 chardet==3.0.4
-Pygments==2.3.1
+Pygments==2.7.4
 pyperclip==1.8.0
 Send2Trash==1.5.0
 GitPython==3.1.7

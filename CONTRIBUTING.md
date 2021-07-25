@@ -29,6 +29,10 @@ This section contains the list of known bugs and features that are on the roadma
 
 If you find any issue, please report it first before submitting a PR. If you can help with implementing any of the features above (prioritize issues and major changes, before moving on to new features), please submit a PR, or contact me on [Gitter](https://gitter.im/akashnag/ash) for more information.
 
+## Design Goals
+
+The long-term goal for this project is to be a [VS Code](https://code.visualstudio.com/) alternative for the terminal.
+
 ## Project Struture
 
 The source code for the project is in the `/ash/src` folder. It uses the curses library to perform all screen-drawing functions. The project contains the following packages:

@@ -1,30 +1,42 @@
 # Contribution Guidelines
 
-This section contains the list of known bugs and features that are on the roadmap for implementation. If you want to contribute to this project, please start here:
+This section contains the list of known bugs and features that are on the roadmap for implementation. If you want to contribute to this project, please start here. If you want to contribute, please consider contributing in the following order:
 
-## Known bugs
-- Syntax highlighting is broken
+1. Major issues to be resolved
+1. Major changes required
+1. New features to be implemented
 
-## Features to be implemented
-- Syntax highlighting for common languages
-- Git integration
-- View a list of files recently opened
-- Auto-completion/Suggestions
-- Plugin system
-- Macros
-- Command palette
+## Major issues to be resolved
 
-If you find any issue, please report it first and then consider if you can solve it yourself. If so, please make a PR.
+1. Performance is unacceptable when both word-wrap and syntax-highlighting are turned on
 
-If you can help with implementing any of the features above, please make a PR, or contact me on [Gitter](https://gitter.im/akashnag/ash) for more information.
+## Major changes required
+
+1. Implement a borderless *Frame* widget which can house other widgets (including Editors). Currently, only windows can contain other widgets.
+1. TabNode currently can host only editors; must be able to handle a Frame.
+
+## New features to be implemented
+
+1. Dockable project-explorer, search, etc. like Visual Studio Code, subject to screen-space*
+1. Integrated terminal*
+1. Command palette
+1. Auto-completion/Suggestions
+1. Plugin system
+1. Macros
+1. Porting to Windows 10+
+
+\* <i>Requires implementation of the Frame widget first</i>
+
+If you find any issue, please report it first before submitting a PR. If you can help with implementing any of the features above (prioritize issues and major changes, before moving on to new features), please submit a PR, or contact me on [Gitter](https://gitter.im/akashnag/ash) for more information.
 
 ## Project Struture
 
 The source code for the project is in the `/ash/src` folder. It uses the curses library to perform all screen-drawing functions. The project contains the following packages:
+
 1. `ash`: the root package
 2. `ash.core`: contains the back-end of the application
 3. `ash.gui`: containst the front-end of the application
 4. `ash.formatting`: contains all color, syntax-highlighting, etc. related modules
 5. `ash.utils`: contains all miscellaneous modules
 
-The entry point for the application is `/ash/src/ash.py`.
+The entry point for the application is `/ash/src/ash.py`

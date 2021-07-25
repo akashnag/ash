@@ -74,7 +74,8 @@ The following features will be implemented gradually:
 1. Your terminal must support Unicode and be able to display at least 256 colors with the capability of remapping color palettes (Works best on: `xterm-256`)
 1. If you are running the source distribution, you need the GNU C compiler collection besides Python 3.8, as some parts of the application are written in Cython. The first time you run the application, Cython will compile and build the `*.pyx` files, which may increase load time (Ignore the warnings during compilation)
 
-**This version of ash has been tested on Ubuntu 20.04 with Python 3.8.2 (64-bit)**
+**ash** is primarily targetted to Linux and has not been tested on any OS.
+**This version of ash has only been tested on Ubuntu 20.04 with Python 3.8.2 (64-bit)**
 
 ## Installation
 
@@ -92,6 +93,7 @@ $ sudo apt install python3-pip
 ### Installing ash
 
 You have multiple options here:
+
 - Install from PyPi
 - Install the latest stable release from GitHub
 - Install the latest nightly release from GitHub
@@ -162,9 +164,10 @@ If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM
 
 ## Usage
 
-Once you have downloaded the **ash** source code, and set it up as detailed above, you are ready to use it. 
+Once you have downloaded the **ash** source code, and set it up as detailed above, you are ready to use it.
 
 **NOTES:**
+
 1. If you have not updated your path variable, you must specify the full path to the ash binary.
 1. Your terminal resolution should be at least 102 (width) x 22 (height). Opening the editor in a lower resolution may unexpectedly crash the application. This requirement is necessary to properly display the dialog-boxes.
 

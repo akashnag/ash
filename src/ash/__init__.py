@@ -39,7 +39,7 @@ MIN_EDITOR_WIDTH	= 15
 MIN_EDITOR_HEIGHT	= 5
 
 # path to the application data directory and configuration files
-APP_DATA_DIR			= os.path.join(os.getenv("HOME"), ".ash-editor")
+APP_DATA_DIR			= os.path.join(os.path.expanduser("~"), ".ash-editor")
 APP_PLUGINS_DIR			= os.path.join(APP_DATA_DIR, "plugins")
 APP_KEYMAPS_DIR			= os.path.join(APP_DATA_DIR, "keymaps")
 APP_THEMES_DIR			= os.path.join(APP_DATA_DIR, "themes")

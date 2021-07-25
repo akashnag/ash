@@ -51,6 +51,7 @@ BORDER_BOTTOM_LEFT		= "\u2514"
 BORDER_BOTTOM_RIGHT		= "\u2518"
 
 # <------------------- widget types ------------------------->
+WIDGET_TYPE_FRAME			= 0
 WIDGET_TYPE_LABEL			= 1
 WIDGET_TYPE_MULTILINE_LABEL	= 2
 WIDGET_TYPE_TEXTFIELD 		= 3

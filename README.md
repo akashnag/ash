@@ -67,6 +67,7 @@ The following features will be implemented gradually:
 - Autocompletion/Suggestions
 - Macros
 - Integrated terminal
+- Plugin system
 
 ## Requirements
 

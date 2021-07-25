@@ -8,7 +8,7 @@ This section contains the list of known bugs and features that are on the roadma
 
 ## Major issues to be resolved
 
-1. Performance is unacceptable when both word-wrap and syntax-highlighting are turned on
+1. Performance is unacceptable when both soft-wrap and syntax-highlighting are turned on
 
 ## Major changes required
 
@@ -22,10 +22,11 @@ This section contains the list of known bugs and features that are on the roadma
 1. Command palette
 1. Auto-completion/Suggestions
 1. Plugin system
+1. Reading from standard input
 1. Macros
 1. Porting to Windows 10+
 
-\* <i>Requires implementation of the Frame widget first</i>
+\* *Requires implementation of the Frame widget first*
 
 If you find any issue, please report it first before submitting a PR. If you can help with implementing any of the features above (prioritize issues and major changes, before moving on to new features), please submit a PR, or contact me on [Gitter](https://gitter.im/akashnag/ash) for more information.
 
@@ -43,4 +44,4 @@ The source code for the project is in the `/ash/src` folder. It uses the curses 
 4. `ash.formatting`: contains all color, syntax-highlighting, etc. related modules
 5. `ash.utils`: contains all miscellaneous modules
 
-The entry point for the application is `/ash/src/ash.py`
+The entry point for the application is `/ash/src/ash/ash_main.py`

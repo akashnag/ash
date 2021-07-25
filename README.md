@@ -80,7 +80,7 @@ The following features will be implemented gradually:
 
 ### Prerequisites
 
-You need certain packages and Python 3 itself to download **ash**, as there are no prebuilt binaries available yet:
+You need certain packages and Python 3 itself to download **ash**, as there are no prebuilt binaries available yet. Instructions for Ubuntu:
 
 ```bash
 $ sudo apt install git
@@ -126,6 +126,8 @@ $ sudo pip3 install .
 ```
 
 #### Build from source and install
+
+Instructions for Ubuntu:
 
 ```bash
 $ sudo apt install git

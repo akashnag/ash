@@ -79,7 +79,7 @@ The following features will be implemented gradually:
 
 ### Prerequisites
 
-You need certain packages and Python 3 itself to download and run the developmental build:
+You need certain packages and Python 3 itself to download and run the developmental build. Instructions for Ubuntu:
 
 ```bash
 $ sudo apt install git

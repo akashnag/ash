@@ -9,7 +9,7 @@ with urlopen(url="https://github.com/akashnag/ash/raw/master/PYPI_README.md") as
 
 setup(
 	name="ash-editor",
-    version="0.1.0-dev7",
+    version="0.1.0-dev8",
 	description='A modern terminal text-editor',
 	classifiers=[
 	'License :: OSI Approved :: MIT License',
@@ -25,7 +25,7 @@ setup(
 	license='MIT',
 	install_requires=[
 		'chardet>=3.0.4',
-		'Pygments>=2.3.1',
+		'Pygments>=2.7.4',
 		'pyperclip>=1.8.0',
 		'Send2Trash>=1.5.0',
 		'GitPython>=3.1.7',

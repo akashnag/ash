@@ -384,14 +384,17 @@ cdef class Screen:
 		cdef int i, j, sub_line_offset, real_line_index
 		cdef int max_col
 
-		real_line_index, sub_line_offset = self.mapping_rendered_line_to_real_line[rendered_curpos.y]
-		correspondence = self.get_correspondence(lines[real_line_index], width, tab_size, word_wrap, hard_wrap)
+		try:
+			real_line_index, sub_line_offset = self.mapping_rendered_line_to_real_line[rendered_curpos.y]
+			correspondence = self.get_correspondence(lines[real_line_index], width, tab_size, word_wrap, hard_wrap)
 
-		real_col = correspondence.get((sub_line_offset, rendered_curpos.x))
-		max_col = self.get_max_col_in_correspondence(correspondence, sub_line_offset)
+			real_col = correspondence.get((sub_line_offset, rendered_curpos.x))
+			max_col = self.get_max_col_in_correspondence(correspondence, sub_line_offset)
 
-		if(real_col == None): real_col = max_col
-		return CursorPosition(real_line_index, real_col)
+			if(real_col == None): real_col = max_col
+			return CursorPosition(real_line_index, real_col)
+		except:
+			return None
 
 	# returns the maximum real column position possible in the given sub-line as mapped by correspondence
 	cdef get_max_col_in_correspondence(self, correspondence, int sub_line_offset):

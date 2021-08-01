@@ -33,10 +33,10 @@
 The following is a list of features available in **ash**:
 
 - Easy to use, clean and intuitive interface
-- Common key bindings (Help on F1, Arrow keys for movement, Shift+Arrow/Home/End/PgUp/PgDown for selecting text, cut/copy/paste using Ctrl+X/C/V, undo/redo using Ctrl+Z/Y, find/replace/goto using Ctrl+F/H/G, etc.)
-- Support for remapping key bindings to your taste
+- Common key bindings (Help on F1, Arrow keys for movement, Shift+Arrow/Home/End/PgUp/PgDown for selecting text, cut/copy/paste using Ctrl+X/C/V, undo/redo using Ctrl+Z/Y, find/replace/goto using Ctrl+F/H/G, etc.) and support for remapping key bindings to your taste
 - Common editor features such as undo/redo, line numbers, find-replace, cut-copy-paste, etc.
 - True support for wrapping (both hard & soft) with intuitive cursor movements along wrapped text
+- Multi-file editing with support for windows and tabs
 - Auto-backup
 - Support for Unicode
 - Project mode (opening a directory instead of individual files)
@@ -97,10 +97,12 @@ You have multiple options here:
 
 - Install from PyPi
 - Install the latest stable release from GitHub
-- Install the latest nightly release from GitHub
+- Install the latest nightly release from GitHub **(recommended)**
 - Build and install from source
 
 #### Install from PyPi
+
+**Note: the PyPi release may not contain all features listed above**
 
 Execute the following to install from PyPi:
 
@@ -120,7 +122,7 @@ Go to the **ash** [Website](https://akashnag.github.io/ash) and download the lat
 $ sudo pip3 install .
 ```
 
-#### Install the latest nightly release
+#### Install the latest nightly release (recommended)
 
 The nightly builds contains all the latest features of ash. Go to the **ash** [Website](https://akashnag.github.io/ash) and download the latest nightly release. Then extract the downloaded tar-ball into a folder and once inside that folder, open up your terminal from there and execute:
 

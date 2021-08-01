@@ -32,10 +32,10 @@
 The following is a list of features available in **ash**:
 
 - Easy to use, clean and intuitive interface
-- Common key bindings (Help on F1, Arrow keys for movement, Shift+Arrow/Home/End/PgUp/PgDown for selecting text, cut/copy/paste using Ctrl+X/C/V, undo/redo using Ctrl+Z/Y, find/replace/goto using Ctrl+F/H/G, etc.)
-- Support for remapping key bindings to your taste
+- Common key bindings (Help on F1, Arrow keys for movement, Shift+Arrow/Home/End/PgUp/PgDown for selecting text, cut/copy/paste using Ctrl+X/C/V, undo/redo using Ctrl+Z/Y, find/replace/goto using Ctrl+F/H/G, etc.) and support for remapping key bindings to your taste
 - Common editor features such as undo/redo, line numbers, find-replace, cut-copy-paste, etc.
 - True support for wrapping (both hard & soft) with intuitive cursor movements along wrapped text
+- Multi-file editing with support for windows and tabs
 - Auto-backup
 - Support for Unicode
 - Project mode (opening a directory instead of individual files)
@@ -56,6 +56,7 @@ The following is a list of features available in **ash**:
 - Multiple Cursors
 - Command palette
 - Basic mouse support
+- Open terminal / execute shell commands (gnome + bash only)
 
 **Roadmap for the future:**
 
@@ -89,6 +90,8 @@ $ sudo apt install python3-pip
 ```
 
 ### Installing ash
+
+**Note: this release may not contain all features listed above. To get the latest updates and bug-fixes, download the latest nightly build from the [Website](https://akashnag.github.io/ash)**
 
 ```bash
 $ sudo pip3 install ash-editor

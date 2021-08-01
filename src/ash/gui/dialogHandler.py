@@ -454,12 +454,17 @@ class DialogHandler:
 				lstKeys.add_item(key + desc)
 
 		lstKeys.add_item(" ")
-		
+		temp_com_list = []
+
 		for command, info in coms.items():
 			if(not has_search or command.lower().find(search) > -1 or info[1].lower().find(search) > -1):
-				lstKeys.add_item(command, None, True)
-				lstKeys.add_item(info[1])
-				lstKeys.add_item(" ")
+				temp_com_list.append((command, info[1]))
+
+		temp_com_list.sort(key = lambda x: x[1])
+		for command, info in temp_com_list:
+			lstKeys.add_item(command, None, True)
+			lstKeys.add_item(info)
+			lstKeys.add_item(" ")
 		
 		lstKeys.add_item("Custom key mappings can be set in $HOME/.ash-editor/keymappings.txt")
 		lstKeys.repaint()

@@ -11,6 +11,7 @@ class CommandInterpreter:
 	def __init__(self, app, mw):
 		self.app = app
 		self.mw = mw
+		
 		self.commands = {
 			"qa!"	: (self.app.dialog_handler.invoke_forced_quit, "Discard all unsaved changes and quit application"),
 			"wq"	: (self.mw.save_and_close_active_editor, "Save and close the active editor"),
@@ -20,17 +21,20 @@ class CommandInterpreter:
 			"vsplit": (self.mw.split_vertically, "Split vertically"),
 			"hmerge": (self.mw.split_horizontally, "Merge horizontally"),
 			"vmerge": (self.mw.split_vertically, "Merge vertically"),
-			"rdisk" : (self.mw.reload_active_buffer_from_disk, "Discard unsaved changes and reload the active buffer from disk")
+			"rdisk" : (self.mw.reload_active_buffer_from_disk, "Discard unsaved changes and reload the active buffer from disk"),
+			"!"		: (self.execute_shell_command, "Executes a shell command, or opens a terminal if called without params")
 		}
+
 		self.prefix_commands = {
-			"open"	: (self.open_file, " ", "Open file:[param1]"),
-			"wc"	: (self.write_a_copy, " ", "Write a copy to file:[param1]"),
-			"hso"	: (self.hsplit_open, " ", "Splits window horizontally and opens self / file:[param1]"),
-			"vso"	: (self.vsplit_open, " ", "Splits window vertically and opens self / file:[param1]")
+			"open"	: (self.open_file, "Open file:[param1]"),
+			"wc"	: (self.write_a_copy, "Write a copy to file:[param1]"),
+			"hso"	: (self.hsplit_open, "Splits window horizontally and opens self / file:[param1]"),
+			"vso"	: (self.vsplit_open, "Splits window vertically and opens self / file:[param1]"),
+			"!"		: (self.execute_shell_command, "Executes a shell command, or opens a terminal if called without params")
 		}
 
 	def get_command_list(self):
-		return self.commands
+		return {**self.commands, **self.prefix_commands}
 
 	def interpret_command(self, command):
 		if(command == None): return
@@ -53,7 +57,7 @@ class CommandInterpreter:
 		if(pos == len(command)):
 			param_list = None
 		else:
-			param_list = command[pos+1:].split(func_info[1])
+			param_list = command[pos+1:].split(" ")
 		func = func_info[0]
 		func(param_list)
 
@@ -114,3 +118,20 @@ class CommandInterpreter:
 			if(bid == None):
 				bid, buffer = self.app.buffers.create_new_buffer(filename)
 		self.mw.split_vertically(bid)
+
+	# Syntax:
+	# \! shell command
+	def execute_shell_command(self, params=None):
+		open_terminal = False
+		if(params is None):
+			open_terminal = True
+			command = "{} --command '{} -c \"exec {}\"'".format(DEFAULT_TERMINAL, DEFAULT_SHELL, DEFAULT_SHELL)
+		else:
+			command = (" ".join(params)).strip()
+
+		try:
+			process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+			_, error = process.communicate()
+			if((not open_terminal) and len(error) > 0): raise Exception(error.decode('utf-8'))
+		except Exception as error:
+			self.app.show_error("An error occurred while executing the shell command:\n" + str(error))

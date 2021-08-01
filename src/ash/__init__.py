@@ -10,6 +10,7 @@ import os
 import sys
 import copy
 import glob
+import subprocess
 
 __version__			= "0.1.0-dev"
 __revision__		= "7.0"
@@ -49,3 +50,6 @@ SESSION_FILE			= os.path.join(APP_DATA_DIR, "session.dat")
 SETTINGS_FILE			= os.path.join(APP_DATA_DIR, "settings.dat")
 INSTALLED_THEMES_FILE 	= os.path.join(APP_DATA_DIR, "installed_themes.txt")
 INSTALLED_KEYMAPS_FILE 	= os.path.join(APP_DATA_DIR, "installed_keymaps.txt")
+
+DEFAULT_SHELL			= "bash"
+DEFAULT_TERMINAL		= "gnome-terminal"

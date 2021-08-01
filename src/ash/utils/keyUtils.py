@@ -44,7 +44,7 @@ class KeyBindings:
 		blist = list()
 		for command, key in cls.BINDINGS.items():
 			blist.append( (key[1], key[2]) )
-		return blist
+		return sorted(blist, key = lambda x: x[1])
 
 	@classmethod
 	def is_mouse(cls, ch):

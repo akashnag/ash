@@ -198,6 +198,7 @@ class AshEditorApp:
 
 	# primary key handler to receive all key combinations from TopLevelWindow
 	def main_key_handler(self, ch):
+		# Keep the following code for diagnostic purposes:
 		#if(not KeyBindings.is_key(ch, "FORCE_QUIT") and self.show_error("You pressed: " + str(curses.keyname(ch)))):
 		#	self.main_window.repaint()
 		#	return -1

@@ -404,13 +404,13 @@ class DialogHandler:
 		
 		self.app.dlgHelp = ModalDialog(self.app.main_window, y, x, 13, 60, "ABOUT", self.help_key_handler)
 		self.app.dlgHelp.add_widget("label1", Label(self.app.dlgHelp, 3, 2, "Ash text-editor", gc("form-label") | curses.A_BOLD))
-		self.app.dlgHelp.add_widget("label2", Label(self.app.dlgHelp, 4, 2, f"Version: {ash.__version__} (Revision: {ash.__revision__})", gc("form-label")))
+		self.app.dlgHelp.add_widget("label2", Label(self.app.dlgHelp, 4, 2, f"Version: {ash.__version__} (Build: {ash.__build__})", gc("form-label")))
 		self.app.dlgHelp.add_widget("label3", Label(self.app.dlgHelp, 5, 2, f"Released: {ash.__release_date__}", gc("form-label")))
-		self.app.dlgHelp.add_widget("label4", Label(self.app.dlgHelp, 6, 2, "Copyright 2020, Akash Nag. All rights reserved.", gc("form-label")))
-		self.app.dlgHelp.add_widget("label5", Label(self.app.dlgHelp, 7, 2, "Licensed under the MIT License", gc("form-label")))
+		self.app.dlgHelp.add_widget("label4", Label(self.app.dlgHelp, 6, 2, ash.APP_COPYRIGHT_TEXT, gc("form-label")))
+		self.app.dlgHelp.add_widget("label5", Label(self.app.dlgHelp, 7, 2, ash.APP_LICENSE_TEXT, gc("form-label")))
 		self.app.dlgHelp.add_widget("label6", Label(self.app.dlgHelp, 9, 2, "For more information, visit:", gc("form-label")))
-		self.app.dlgHelp.add_widget("label7", Label(self.app.dlgHelp, 10, 2, "Website: https://akashnag.github.io/ash", gc("form-label")))
-		self.app.dlgHelp.add_widget("label8", Label(self.app.dlgHelp, 11, 2, "GitHub: https://github.com/akashnag/ash", gc("form-label")))
+		self.app.dlgHelp.add_widget("label7", Label(self.app.dlgHelp, 10, 2, f"Website: {ash.APP_WEBSITE_URL}", gc("form-label")))
+		self.app.dlgHelp.add_widget("label8", Label(self.app.dlgHelp, 11, 2, f"GitHub: {ash.APP_GITHUB_URL}", gc("form-label")))
 		
 		self.app.dlgHelp.show()
 

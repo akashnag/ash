@@ -121,7 +121,7 @@ class AshEditorApp:
 		
 	def print_version(self):
 		print("Ash: a modern terminal text-editor")
-		print("Version: " + ash.__version__ + " (revision: " + ash.__revision__ + ")")
+		print("Version: " + ash.__version__ + " (build: " + ash.__build__ + ")")
 		print("Released: " + ash.__release_date__)
 		print(ash.APP_COPYRIGHT_TEXT)
 		print(ash.APP_LICENSE_TEXT)
@@ -134,7 +134,7 @@ class AshEditorApp:
 
 	# returns the version of Ash
 	def get_app_version(self):
-		return ash.__version__
+		return str(ash.__version__) + str(ash.__build__)
 
 	# returns the name of the application
 	def get_app_name(self):

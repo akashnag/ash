@@ -439,7 +439,7 @@ class EditorKeyHandler:
 	def handle_select_line(self):
 		self.cancel_multiple_cursors()
 		self.ed.selection_mode = True
-		self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y-1])
+		self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
 		self.ed.sel_start.y = self.ed.curpos.y
 		self.ed.sel_start.x = 0
 		self.ed.sel_end.y = self.ed.curpos.y

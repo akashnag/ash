@@ -13,11 +13,13 @@ import glob
 import subprocess
 
 __version__			= "0.1.0-dev"
-__revision__		= "7.0"
-__release_date__	= "Dec 22, 2020"
+__build__			= "10"
+__release_date__	= "Jan 25, 2022"
 
-APP_COPYRIGHT_TEXT	= "© Copyright 2020, Akash Nag. All rights reserved."
+APP_COPYRIGHT_TEXT	= "© Copyright 2000-2022, Akash Nag. All rights reserved."
 APP_LICENSE_TEXT	= "Licensed under the MIT License."
+APP_WEBSITE_URL		= "https://akashnag.github.io/ash"
+APP_GITHUB_URL		= "https://github.com/akashnag/ash"
 
 UNSAVED_BULLET		= "\u2022"
 TICK_MARK			= "\u2713"

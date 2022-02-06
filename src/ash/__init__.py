@@ -13,16 +13,13 @@ import glob
 import subprocess
 
 __version__			= "0.1.0-dev"
-__build__			= "10"
-__release_date__	= "Jan 25, 2022"
+__build__			= "11"
+__release_date__	= "Feb 6, 2022"
 
-APP_COPYRIGHT_TEXT	= "© Copyright 2000-2022, Akash Nag. All rights reserved."
+APP_COPYRIGHT_TEXT	= "© Copyright 2020-2022, Akash Nag. All rights reserved."
 APP_LICENSE_TEXT	= "Licensed under the MIT License."
 APP_WEBSITE_URL		= "https://akashnag.github.io/ash"
 APP_GITHUB_URL		= "https://github.com/akashnag/ash"
-
-UNSAVED_BULLET		= "\u2022"
-TICK_MARK			= "\u2713"
 
 # list of supported encodings
 SUPPORTED_ENCODINGS = [ "utf-8", "ascii", "utf-7", "utf-16", "utf-32", "latin-1" ]
@@ -47,11 +44,15 @@ APP_PLUGINS_DIR			= os.path.join(APP_DATA_DIR, "plugins")
 APP_KEYMAPS_DIR			= os.path.join(APP_DATA_DIR, "keymaps")
 APP_THEMES_DIR			= os.path.join(APP_DATA_DIR, "themes")
 
+PROJECT_SETTINGS_DIR_NAME = ".ash-editor"
+PROJECT_SETTINGS_FILE_NAME = "settings.json"
+
+TEMP_OUTPUT_FILE		= os.path.join(APP_DATA_DIR, "temp.output")
 LOG_FILE 				= os.path.join(APP_DATA_DIR, "log.txt")
 SESSION_FILE			= os.path.join(APP_DATA_DIR, "session.dat")
-SETTINGS_FILE			= os.path.join(APP_DATA_DIR, "settings.dat")
+SETTINGS_FILE			= os.path.join(APP_DATA_DIR, "settings.json")
 INSTALLED_THEMES_FILE 	= os.path.join(APP_DATA_DIR, "installed_themes.txt")
 INSTALLED_KEYMAPS_FILE 	= os.path.join(APP_DATA_DIR, "installed_keymaps.txt")
 
 DEFAULT_SHELL			= "bash"
-DEFAULT_TERMINAL		= "gnome-terminal"
+DEFAULT_TERMINAL		= "xterm"

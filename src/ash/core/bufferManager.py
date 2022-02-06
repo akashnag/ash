@@ -22,7 +22,7 @@ HISTORY_FREQUENCY_SIZE	= 8					# undo: every 8 edit operations
 
 # Buffer class: encapsulates a single buffer/file
 class Buffer:
-	def __init__(self, manager, id, filename = None, encoding = "utf-8", has_backup = False):
+	def __init__(self, manager, id, filename = None, encoding = None, has_backup = False):
 		self.manager = manager
 		self.id = id
 		self.filename = normalized_path(filename)
@@ -55,7 +55,7 @@ class Buffer:
 			self.formatter = SyntaxHighlighter(self.filename)
 		
 		self.history = EditHistory(self.lines, CursorPosition(0,0))
-		if(self.encoding == None): self.encoding = "utf-8"
+		if(self.encoding == None): self.encoding = self.manager.app.settings_manager.get_setting("default_encoding")
 
 	# set the text encoding for the buffer
 	def set_encoding(self, encoding):
@@ -173,13 +173,14 @@ class Buffer:
 			self.lines.pop(index)
 			for i in range(len(sub_lines)-1, -1, -1):
 				self.lines.insert(index, sub_lines[i])
-			self.encoding = "utf-8"
+			self.encoding = self.manager.app.settings_manager.get_setting("default_encoding")
 
 		for ed in self.editors:
 			ed.notify_update()
 	
 	# write out a copy
-	def write_a_copy(self, filename, encoding = "utf-8"):
+	def write_a_copy(self, filename, encoding = None):
+		if(encoding == None): encoding = self.manager.app.settings_manager.get_setting("default_encoding")
 		textFile = codecs.open(filename, "w", encoding)
 		for line in self.lines:
 			textFile.write(line + "\n")
@@ -378,7 +379,7 @@ class BufferManager:
 		if(self.does_file_have_its_own_buffer(filename)): raise(AshException("Error 5: buffermanager.create_new_buffer()"))
 		if(encoding == None):
 			if(filename == None or not os.path.isfile(filename)):
-				encoding = "utf-8"
+				encoding = self.app.settings_manager.get_setting("default_encoding")
 			else:
 				encoding = predict_file_encoding(filename)
 		try:
@@ -391,7 +392,7 @@ class BufferManager:
 
 	# creates a new buffer: either blank or from a file on disk
 	def create_new_buffer_from_data(self, data):
-		self.buffers[self.buffer_count] = Buffer(self, self.buffer_count, None, "utf-8", False)
+		self.buffers[self.buffer_count] = Buffer(self, self.buffer_count, None, self.app.settings_manager.get_setting("default_encoding"), False)
 		self.buffers[self.buffer_count].render_data_to_lines(data)
 		self.buffer_count += 1
 		return (self.buffer_count - 1, self.buffers[self.buffer_count - 1])

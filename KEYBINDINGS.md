@@ -1,6 +1,6 @@
 # Key Bindings for ash
 
-The following is a list of default key bindings for **ash**. All of these can be remapped as per the user's preferences in the file `$HOME/.ashedkeys`.
+The following is a list of default key bindings for **ash**. All of these can be remapped as per the user's preferences by creating new keymaps in the `~/.ash-editor/keymaps/` directory. The default keymap is stored in the file 'default.keymap'.
 
 ### Global key combinations
 
@@ -15,6 +15,8 @@ These key combinations can be used even if no editor is currently active.
 |<kbd>Ctrl</kbd> + <kbd>&#8592;</kbd> <kbd>&#8593;</kbd> <kbd>&#8594;</kbd> <kbd>&#8595;</kbd>|Move the active dialog-box around the screen|
 |<kbd>Space</kbd>|Check/Uncheck a checkbox in focus|
 |<kbd>Enter</kbd> _or_ <kbd>Ctrl</kbd> + <kbd>W</kbd> _or_ <kbd>Ctrl</kbd> + <kbd>J</kbd>|Save changes and close the current dialog box|
+|<kbd>Alt</kbd> + <kbd>&#8595;</kbd>|Open the top-level menu|
+|<kbd>Alt</kbd> + <kbd>&#8593;</kbd>|Close/hide the top-level menu|
 |<kbd>Ctrl</kbd> + <kbd>L</kbd>|Show the list of active buffers/files|
 |<kbd>Ctrl</kbd> + <kbd>T</kbd>|Show the list of active tabs|
 |<kbd>Ctrl</kbd> + <kbd>N</kbd>|Open a new buffer for editing|

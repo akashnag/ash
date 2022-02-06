@@ -24,16 +24,12 @@ class Editor(Widget):
 		self.parent = parent
 		self.screen = None
 		self.slave_cursors = list()
+		self.app = self._get_app_object()
 
 		# initialize helper classes
 		self.utility = EditorUtility(self)
 		self.keyHandler = EditorKeyHandler(self)
 
-		self.show_line_numbers = True
-		self.should_stylize = True
-		self.word_wrap = False
-		self.show_scrollbars = False
-						
 		# set up the text and cursor data structures
 		self.curpos = CursorPosition(0,0)
 		
@@ -53,14 +49,7 @@ class Editor(Widget):
 		self.find_mode = False
 		
 		# set default tab size
-		self.tab_size = 4
-
-		# set wrap options
-		self.word_wrap = False
-		self.hard_wrap = False
-
-		self.auto_close = True
-		
+		self.reset_preferences()
 		self.is_in_focus = False
 
 		# use dummy values
@@ -69,6 +58,21 @@ class Editor(Widget):
 		self.buffer = None
 		self.resize(area.y, area.x, area.height, area.width, True)
 		
+	def _get_app_object(self):
+		temp_obj = self
+		temp_app = None
+
+		while(temp_app == None):
+			try:
+				temp_app = temp_obj.app
+			except:
+				try:
+					temp_obj = temp_obj.parent
+				except:
+					temp_obj = temp_obj.manager
+
+		return temp_app
+
 	def reset(self):
 		self.selection_mode = False
 		self.curpos.x = 0
@@ -86,13 +90,14 @@ class Editor(Widget):
 	def destroy(self):			# called by TopLevelWindow.close_active_editor()
 		self.buffer.detach_editor(self)
 
-	def set_preferences(self, tab_size, show_line_numbers, word_wrap, hard_wrap, stylize, auto_close, show_scrollbars):
-		self.word_wrap = word_wrap
-		self.hard_wrap = hard_wrap
-		self.should_stylize = stylize
-		self.auto_close = auto_close
-		self.show_line_numbers = show_line_numbers
-		self.show_scrollbars = show_scrollbars
+	def reset_preferences(self):
+		self.tab_size = self.app.settings_manager.get_setting("tab_width")
+		self.word_wrap = self.app.settings_manager.get_setting("wrap_text")
+		self.hard_wrap = self.app.settings_manager.get_setting("hard_wrap")
+		self.should_stylize = self.app.settings_manager.get_setting("syntax_highlighting")
+		self.auto_close = self.app.settings_manager.get_setting("auto_close_matching_pairs")
+		self.show_line_numbers = self.app.settings_manager.get_setting("line_numbers")
+		self.show_scrollbars = self.app.settings_manager.get_setting("scrollbars")
 		if(self.screen != None): self.screen.toggle_line_numbers_and_scrollbars(self.show_line_numbers, self.show_scrollbars)
 		self.reset()
 		self.repaint()
@@ -106,7 +111,7 @@ class Editor(Widget):
 		self.height = height
 		self.width = width		
 		if(self.screen == None):
-			self.screen = Screen(self.parent, self.buffer, self.height, self.width, self.show_line_numbers, self.show_scrollbars)
+			self.screen = Screen(self.app.supports_colors, self.parent, self.buffer, self.height, self.width, self.show_line_numbers, self.show_scrollbars)
 		else:
 			self.screen.resize(self.height, self.width)
 		self.reset()
@@ -230,6 +235,8 @@ class Editor(Widget):
 		
 		self.screen.render(self.curpos, self.tab_size, self.word_wrap, self.hard_wrap, sel_info, highlight_info, self.is_in_focus, self.slave_cursors, self.should_stylize)
 		self.screen.draw(self.y, self.x)
+		
+		
 		
 	# <-------------------------------------------------------------------------------------->
 
@@ -366,7 +373,7 @@ class Editor(Widget):
 			("Preferences...", True, app_dh.invoke_set_preferences)
 		]
 		
-		self.popup_menu = PopupMenu(self, y, x, popup_menu_items)
+		self.popup_menu = PopupMenu(self, y, x, popup_menu_items, supports_colors=self.app.supports_colors)
 		ret_code = self.popup_menu.show()
 		self.repaint()
 

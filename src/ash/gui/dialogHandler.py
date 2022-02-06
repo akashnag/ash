@@ -206,9 +206,9 @@ class DialogHandler:
 		txtSearchFile = TextField(self.app.dlgRecentFiles, 3, 10, 68, callback=self.recent_files_search_text_changed)
 		
 		lblFiles = Label(self.app.dlgRecentFiles, 5, 2, "Recent Files:", gc("form-label") | curses.A_BOLD)		
-		lstRecentFiles = ListBox(self.app.dlgRecentFiles, 6, 2, 38, 13, placeholder_text="(No recent files)")
+		lstRecentFiles = ListBox(self.app.dlgRecentFiles, 6, 2, 38, 13, placeholder_text="(No recent files)", supports_colors=self.app.supports_colors)
 		lblProjects = Label(self.app.dlgRecentFiles, 5, 41, "Recent Projects:", gc("form-label") | curses.A_BOLD)		
-		lstRecentProjects = ListBox(self.app.dlgRecentFiles, 6, 41, 37, 13, placeholder_text="(No recent projects)")
+		lstRecentProjects = ListBox(self.app.dlgRecentFiles, 6, 41, 37, 13, placeholder_text="(No recent projects)", supports_colors=self.app.supports_colors)
 		
 		for i in range(len(recent_files_list)-1, -1, -1):
 			disp = get_file_title(recent_files_list[i])
@@ -270,21 +270,21 @@ class DialogHandler:
 					mw.repaint()
 					self.app.dlgRecentFiles.repaint()
 					return -1
+			else:
+				if(BufferManager.is_binary(filename)):
+					self.app.show_error("Cannot open binary file!")
+					mw.repaint()
+					self.app.dlgRecentFiles.repaint()
+					return -1
 
-			if(BufferManager.is_binary(filename)):
-				self.app.show_error("Cannot open binary file!")
-				mw.repaint()
-				self.app.dlgRecentFiles.repaint()
+				sel_buffer = self.app.buffers.get_buffer_by_filename(filename)
+				if(sel_buffer == None):
+					sel_bid, sel_buffer = self.app.buffers.create_new_buffer(filename=filename, has_backup=BufferManager.backup_exists(filename))
+					if(sel_bid == None or sel_buffer == None): return -1		# cancelled by user
+				
+				self.app.dlgRecentFiles.hide()
+				mw.invoke_activate_editor(sel_buffer.id, sel_buffer)
 				return -1
-
-			sel_buffer = self.app.buffers.get_buffer_by_filename(filename)
-			if(sel_buffer == None):
-				sel_bid, sel_buffer = self.app.buffers.create_new_buffer(filename=filename, has_backup=BufferManager.backup_exists(filename))
-				if(sel_bid == None or sel_buffer == None): return -1		# cancelled by user
-			
-			self.app.dlgRecentFiles.hide()
-			mw.invoke_activate_editor(sel_buffer.id, sel_buffer)
-			return -1
 			
 		return ch
 	
@@ -303,13 +303,13 @@ class DialogHandler:
 			return
 
 		self.app.dlgPreferences = ModalDialog(self.app.main_window, y, x, 11, 61, "EDITOR PREFERENCES", self.preferences_key_handler)
-		current_tab_size = str(aed.tab_size)
+		current_tab_size = str(self.app.settings_manager.get_setting("tab_width"))
 
 		lblTabSize = Label(self.app.dlgPreferences, 3, 2, "Tab Width:")
 		txtTabSize = TextField(self.app.dlgPreferences, 3, 13, 17, current_tab_size, True)
 		
 		lblEncodings = Label(self.app.dlgPreferences, 5, 2, "Encoding:")
-		lstEncodings = ListBox(self.app.dlgPreferences, 6, 2, 28, 4)
+		lstEncodings = ListBox(self.app.dlgPreferences, 6, 2, 28, 4, supports_colors=self.app.supports_colors)
 
 		chkShowLineNumbers = CheckBox(self.app.dlgPreferences, 3, 32, "Show line numbers")
 		chkWordWrap = CheckBox(self.app.dlgPreferences, 4, 32, "Word wrap")
@@ -317,17 +317,17 @@ class DialogHandler:
 		chkStylize = CheckBox(self.app.dlgPreferences, 6, 32, "Syntax highlighting")
 		chkAutoClose = CheckBox(self.app.dlgPreferences, 7, 32, "Complete matching pairs")
 		chkShowScrollbars = CheckBox(self.app.dlgPreferences, 8, 32, "Show scrollbar")
-		chkShowSuggestions = CheckBox(self.app.dlgPreferences, 9, 32, "Show suggestions")
+		#chkShowSuggestions = CheckBox(self.app.dlgPreferences, 9, 32, "Show suggestions")
 		
 		for enc in SUPPORTED_ENCODINGS:
 			lstEncodings.add_item(("  " if aed.buffer.encoding != enc else TICK_MARK + " ") +  enc)
 		
-		chkShowLineNumbers.set_value(aed.show_line_numbers)
-		chkWordWrap.set_value(aed.word_wrap)
-		chkHardWrap.set_value(aed.hard_wrap)
-		chkStylize.set_value(aed.should_stylize)
-		chkAutoClose.set_value(aed.auto_close)
-		chkShowScrollbars.set_value(aed.show_scrollbars)
+		chkShowLineNumbers.set_value(self.app.settings_manager.get_setting("line_numbers"))
+		chkWordWrap.set_value(self.app.settings_manager.get_setting("wrap_text"))
+		chkHardWrap.set_value(self.app.settings_manager.get_setting("hard_wrap"))
+		chkStylize.set_value(self.app.settings_manager.get_setting("syntax_highlighting"))
+		chkAutoClose.set_value(self.app.settings_manager.get_setting("auto_close_matching_pairs"))
+		chkShowScrollbars.set_value(self.app.settings_manager.get_setting("scrollbars"))
 		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index(aed.buffer.encoding)
 		
 		self.app.dlgPreferences.add_widget("lblTabSize", lblTabSize)
@@ -341,7 +341,7 @@ class DialogHandler:
 		self.app.dlgPreferences.add_widget("chkStylize", chkStylize)
 		self.app.dlgPreferences.add_widget("chkAutoClose", chkAutoClose)
 		self.app.dlgPreferences.add_widget("chkShowScrollbars", chkShowScrollbars)
-		self.app.dlgPreferences.add_widget("chkShowSuggestions", chkShowSuggestions)
+		#self.app.dlgPreferences.add_widget("chkShowSuggestions", chkShowSuggestions)
 		
 		self.app.dlgPreferences.show()
 
@@ -372,7 +372,18 @@ class DialogHandler:
 				return -1
 
 			aed.buffer.set_encoding(SUPPORTED_ENCODINGS[encoding_index])
-			aed.set_preferences(tab_size, show_line_numbers, word_wrap, hard_wrap, stylize, auto_close, show_scrollbars)
+			
+			self.app.settings_manager.add_multi_setting({
+				"tab_width": tab_size,
+				"line_numbers": show_line_numbers,
+				"wrap_text": word_wrap,
+				"hard_wrap": hard_wrap,
+				"syntax_highlighting": stylize,
+				"auto_close_matching_pairs": auto_close,
+				"scrollbars": show_scrollbars
+			})
+			aed.reset_preferences()
+			
 			self.app.main_window.repaint()
 			aed.repaint()
 			return -1
@@ -381,15 +392,18 @@ class DialogHandler:
 
 	# <----------------------------------- File New --------------------------------->
 
-	def invoke_file_new(self):
+	def invoke_file_new(self, force_open_in_new_tab = False):
 		mw = self.app.main_window
 		aed = mw.get_active_editor()
 
 		# create blank buffer
 		new_bid, new_buffer = self.app.buffers.create_new_buffer()
-		open_in_new_tab = False
-		if(aed != None and self.app.ask_question("CREATE IN NEW TAB", "Create buffer in new tab?")):
+		if(force_open_in_new_tab):
 			open_in_new_tab = True
+		else:
+			open_in_new_tab = False
+			if(aed != None and self.app.ask_question("CREATE IN NEW TAB", "Create buffer in new tab?")):
+				open_in_new_tab = True
 		mw.invoke_activate_editor(new_bid, new_buffer, open_in_new_tab)
 
 	# <------------------------------------ Help --------------------------------------------->
@@ -427,7 +441,7 @@ class DialogHandler:
 		
 		lblSearch = Label(self.app.dlgHelp, 3, 2, "Search: ")
 		txtSearch = TextField(self.app.dlgHelp, 3, 10, 68, callback=self.help_search_text_changed)
-		lstKeys = ListBox(self.app.dlgHelp, 5, 2, 76, 14)
+		lstKeys = ListBox(self.app.dlgHelp, 5, 2, 76, 14, supports_colors=self.app.supports_colors)
 
 		self.app.dlgHelp.add_widget("lblSearch", lblSearch)
 		self.app.dlgHelp.add_widget("txtSearch", txtSearch)
@@ -466,7 +480,7 @@ class DialogHandler:
 			lstKeys.add_item(info)
 			lstKeys.add_item(" ")
 		
-		lstKeys.add_item("Custom key mappings can be set in $HOME/.ash-editor/keymappings.txt")
+		lstKeys.add_item("Custom key mappings can be set in $HOME/.ash-editor/keymaps/default.keymap")
 		lstKeys.repaint()
 
 	def help_key_handler(self, ch):
@@ -479,7 +493,9 @@ class DialogHandler:
 	# <----------------------------------- Project Explorer --------------------------------->
 
 	def invoke_project_explorer(self):
-		if(self.app.app_mode != APP_MODE_PROJECT): return
+		if(self.app.app_mode != APP_MODE_PROJECT): 
+			self.app.show_error("No projects/folders active", error=False)
+			return
 
 		self.app.readjust()
 		try:
@@ -491,7 +507,7 @@ class DialogHandler:
 		
 		lblSearch = Label(self.app.dlgProjectExplorer, 3, 2, "Search:")
 		txtSearchFile = TextField(self.app.dlgProjectExplorer, 3, 10, 68, callback=self.project_explorer_search_text_changed)
-		lstFiles = TreeView(self.app.dlgProjectExplorer, 5, 2, 76, 14, self.app.buffers, self.app.project_dir)
+		lstFiles = TreeView(self.app.dlgProjectExplorer, 5, 2, 76, 14, self.app.buffers, self.app.project_dir, supports_colors=self.app.supports_colors)
 		
 		self.app.dlgProjectExplorer.add_widget("lblSearch", lblSearch)
 		self.app.dlgProjectExplorer.add_widget("txtSearchFile", txtSearchFile)
@@ -552,9 +568,9 @@ class DialogHandler:
 		
 		lblFileName = Label(self.app.dlgFileOpen, 3, 2, "File/Folder:")
 		txtFileName = TextField(self.app.dlgFileOpen, 3, 15, 63, str(os.getcwd()) + "/", callback=self.file_open_filename_changed)
-		lstFiles = ListBox(self.app.dlgFileOpen, 5, 2, 76, 12, "(Empty directory)")
+		lstFiles = ListBox(self.app.dlgFileOpen, 5, 2, 76, 12, "(Empty directory)", supports_colors=self.app.supports_colors)
 		lblEncodings = Label(self.app.dlgFileOpen, 18, 2, "Encoding: ")
-		lstEncodings = ListBox(self.app.dlgFileOpen, 18, 12, 66, 1)
+		lstEncodings = ListBox(self.app.dlgFileOpen, 18, 12, 66, 1, supports_colors=self.app.supports_colors)
 
 		# add the encodings
 		for enc in SUPPORTED_ENCODINGS:
@@ -585,7 +601,7 @@ class DialogHandler:
 			for f in all_files:
 				if(os.path.isfile(f) and not should_ignore_file(f)):
 					lstFiles.add_item(get_file_title(f), tag=str(f))
-				elif(not should_ignore_directory(f)):
+				elif(os.path.isdir(f) and not should_ignore_directory(f)):
 					lstFiles.add_item(f"[{get_file_title(f)}]", tag=str(f), highlight=True)
 			lstFiles.repaint()
 
@@ -667,7 +683,7 @@ class DialogHandler:
 			self.app.warn_insufficient_screen_space()
 			return
 		self.app.dlgActiveFiles = ModalDialog(self.app.main_window, y, x, 14, 60, "ACTIVE FILES/BUFFERS", self.active_files_key_handler)
-		lstActiveFiles = ListBox(self.app.dlgActiveFiles, 3, 2, 56, 10, "(No active files)")
+		lstActiveFiles = ListBox(self.app.dlgActiveFiles, 3, 2, 56, 10, "(No active files)", supports_colors=self.app.supports_colors)
 		
 		# add the list of active files
 		blist = self.app.buffers.get_list()
@@ -713,7 +729,7 @@ class DialogHandler:
 			return
 	
 		self.app.dlgActiveTabs = ModalDialog(self.app.main_window, y, x, 9, 40, "ACTIVE TABS", self.show_active_tabs_key_handler)
-		lstActiveTabs = ListBox(self.app.dlgActiveTabs, 3, 2, 36, 5, callback = self.active_tab_selection_changed)
+		lstActiveTabs = ListBox(self.app.dlgActiveTabs, 3, 2, 36, 5, callback = self.active_tab_selection_changed, supports_colors=self.app.supports_colors)
 		
 		tabs_info = self.app.main_window.get_tabs_info()
 		active_tab_index = self.app.main_window.get_active_tab_index()
@@ -779,7 +795,7 @@ class DialogHandler:
 		
 		lblFileName = Label(self.app.dlgSaveAs, 3, 2, "Filename:")
 		txtFileName = TextField(self.app.dlgSaveAs, 3, 12, 66, filename, callback=self.file_save_as_filename_changed)
-		lstFiles = ListBox(self.app.dlgSaveAs, 5, 2, 76, 12, "(Empty directory)")
+		lstFiles = ListBox(self.app.dlgSaveAs, 5, 2, 76, 12, "(Empty directory)", supports_colors=self.app.supports_colors)
 
 		self.app.dlgSaveAs_Buffer = buffer
 		self.app.dlgSaveAs.add_widget("lblFileName", lblFileName)
@@ -799,7 +815,7 @@ class DialogHandler:
 			for f in all_files:
 				if(os.path.isfile(f) and not should_ignore_file(f)):
 					lstFiles.add_item(get_file_title(f), tag=str(f))
-				elif(not should_ignore_directory(f)):
+				elif(os.path.isdir(f) and not should_ignore_directory(f)):
 					lstFiles.add_item(f"[{get_file_title(f)}]", tag=str(f), highlight=True)
 			lstFiles.repaint()
 
@@ -855,7 +871,7 @@ class DialogHandler:
 		txtFileName = TextField(self.app.dlgThemeManager, 4, 2, 56, "http://")
 		
 		lblChangeTheme = Label(self.app.dlgThemeManager, 6, 2, "Change theme:")
-		lstThemes = ListBox(self.app.dlgThemeManager, 7, 2, 56, 8, "(No themes installed)", callback=self.theme_selection_changed)
+		lstThemes = ListBox(self.app.dlgThemeManager, 7, 2, 56, 8, "(No themes installed)", callback=self.theme_selection_changed, supports_colors=self.app.supports_colors)
 
 		installed_themes = self.app.theme_manager.get_installed_themes()
 		for t in installed_themes:
@@ -909,7 +925,7 @@ class DialogHandler:
 		txtFileName = TextField(self.app.dlgKeyMappingsManager, 4, 2, 56, "http://")
 		
 		lblChangeKeyMap = Label(self.app.dlgKeyMappingsManager, 6, 2, "Change keymap:")
-		lstKeyMaps = ListBox(self.app.dlgKeyMappingsManager, 7, 2, 56, 8, "(No keymaps installed)")
+		lstKeyMaps = ListBox(self.app.dlgKeyMappingsManager, 7, 2, 56, 8, "(No keymaps installed)", supports_colors=self.app.supports_colors)
 
 		installed_keymaps = self.app.key_mappings_manager.get_installed_keymaps()
 		for t in installed_keymaps:
@@ -950,70 +966,86 @@ class DialogHandler:
 	def invoke_settings(self):
 		self.app.readjust()
 		try:
-			y, x = get_center_coords(self.app, 13, 60)
+			y, x = get_center_coords(self.app, 19 if self.app.app_mode == APP_MODE_PROJECT else 9, 60)
 		except:
 			self.app.warn_insufficient_screen_space()
 			return
 			
-		self.app.dlgSettings = ModalDialog(self.app.main_window, y, x, 13, 60, "SETTINGS", self.settings_key_handler)
+		self.app.dlgSettings = ModalDialog(self.app.main_window, y, x, 19 if self.app.app_mode == APP_MODE_PROJECT else 9, 60, "SETTINGS" if self.app.app_mode == APP_MODE_FILE else "PROJECT SETTINGS", self.settings_key_handler)
 		
-		lblIgnore1 = Label(self.app.dlgSettings, 3, 2, "Ignored directories:")
-		lstIgnoredDirs = ListBox(self.app.dlgSettings, 4, 2, 27, 8, "(No directories specified)")
+		lblIgnoredDirs = Label(self.app.dlgSettings, 3, 2, "Ignored directories (semicolon separated list):")
+		txtIgnoredDirs = TextField(self.app.dlgSettings, 4, 2, 56, ";".join(self.app.settings_manager.get_setting("ignored_directories")), True)
+		
+		lblIgnoredExtensions = Label(self.app.dlgSettings, 6, 2, "Ignored file extensions (semicolon separated list):")
+		txtIgnoredExtensions = TextField(self.app.dlgSettings, 7, 2, 56, ";".join(self.app.settings_manager.get_setting("ignored_file_extensions")), True)
+		txtIgnoredExtensions.blur()
 
-		lblIgnore2 = Label(self.app.dlgSettings, 3, 30, "Ignored file extensions:")
-		lstIgnoredFiles = ListBox(self.app.dlgSettings, 4, 30, 28, 8, "(No extensions specified)")
-		
-		self.app.dlgSettings.add_widget("lblIgnore1", lblIgnore1)
-		self.app.dlgSettings.add_widget("lblIgnore2", lblIgnore2)
-		self.app.dlgSettings.add_widget("lstIgnoredDirs", lstIgnoredDirs)
-		self.app.dlgSettings.add_widget("lstIgnoredFiles", lstIgnoredFiles)
+		self.app.dlgSettings.add_widget("lblIgnoredDirs", lblIgnoredDirs)
+		self.app.dlgSettings.add_widget("txtIgnoredDirs", txtIgnoredDirs)
+		self.app.dlgSettings.add_widget("lblIgnoredExtensions", lblIgnoredExtensions)
+		self.app.dlgSettings.add_widget("txtIgnoredExtensions", txtIgnoredExtensions)
+
+		if(self.app.app_mode == APP_MODE_PROJECT):
+			lblBuildProject = Label(self.app.dlgSettings, 9, 2, "Command to build project:")
+			txtBuildProject = TextField(self.app.dlgSettings, 10, 2, 56, self.app.settings_manager.get_setting("build_project_command"), True)
+			txtBuildProject.blur()
+
+			lblExecuteProject = Label(self.app.dlgSettings, 12, 2, "Command to execute project:")
+			txtExecuteProject = TextField(self.app.dlgSettings, 13, 2, 56, self.app.settings_manager.get_setting("execute_project_command"), True)
+			txtExecuteProject.blur()
+
+			lblNote1 = Label(self.app.dlgSettings, 15, 2, "%f: full path of the current file")
+			lblNote2 = Label(self.app.dlgSettings, 16, 2, "%e: full path of the current file without extension")
+			lblNote3 = Label(self.app.dlgSettings, 17, 2, "%d: project root directory or directory of the current file")
+
+			self.app.dlgSettings.add_widget("lblBuildProject", lblBuildProject)
+			self.app.dlgSettings.add_widget("txtBuildProject", txtBuildProject)
+			self.app.dlgSettings.add_widget("lblExecuteProject", lblExecuteProject)
+			self.app.dlgSettings.add_widget("txtExecuteProject", txtExecuteProject)
+			self.app.dlgSettings.add_widget("lblNote1", lblNote1)
+			self.app.dlgSettings.add_widget("lblNote2", lblNote2)
+			self.app.dlgSettings.add_widget("lblNote3", lblNote3)
 		
 		self.refresh_settings()
 		self.app.dlgSettings.show()
 
 	def refresh_settings(self):
-		lstIgnoredDirs = self.app.dlgSettings.get_widget("lstIgnoredDirs")
-		lstIgnoredFiles = self.app.dlgSettings.get_widget("lstIgnoredFiles")
+		txtIgnoredDirs = self.app.dlgSettings.get_widget("txtIgnoredDirs")
+		txtIgnoredExtensions = self.app.dlgSettings.get_widget("txtIgnoredExtensions")
 
-		IGNORED_FILE_EXTENSIONS = ash.SETTINGS.get("IGNORED_FILE_EXTENSIONS")
-		IGNORED_DIRECTORIES = ash.SETTINGS.get("IGNORED_DIRECTORIES")
-
-		lstIgnoredDirs.clear()
-		for dir in IGNORED_DIRECTORIES:
-			lstIgnoredDirs.add_item(dir, tag=dir)
-
-		lstIgnoredFiles.clear()
-		for ext in IGNORED_FILE_EXTENSIONS:
-			lstIgnoredFiles.add_item("*" + ext, tag=ext)
+		txtIgnoredDirs.set_text(";".join(self.app.settings_manager.get_setting("ignored_directories")))
+		txtIgnoredExtensions.set_text(";".join(self.app.settings_manager.get_setting("ignored_file_extensions")))
 		
+		if(self.app.app_mode == APP_MODE_PROJECT):
+			txtBuildProject = self.app.dlgSettings.get_widget("txtBuildProject")
+			txtExecuteProject = self.app.dlgSettings.get_widget("txtExecuteProject")
+			txtBuildProject.set_text(self.app.settings_manager.get_setting("build_project_command"))
+			txtExecuteProject.set_text(self.app.settings_manager.get_setting("execute_project_command"))
+
 		
 	def settings_key_handler(self, ch):
-		lstIgnoredDirs = self.app.dlgSettings.get_widget("lstIgnoredDirs")
-		lstIgnoredFiles = self.app.dlgSettings.get_widget("lstIgnoredFiles")
+		txtIgnoredDirs = self.app.dlgSettings.get_widget("txtIgnoredDirs")
+		txtIgnoredExtensions = self.app.dlgSettings.get_widget("txtIgnoredExtensions")
+
+		if(self.app.app_mode == APP_MODE_PROJECT):
+			txtBuildProject = self.app.dlgSettings.get_widget("txtBuildProject")
+			txtExecuteProject = self.app.dlgSettings.get_widget("txtExecuteProject")
 
 		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
 			self.app.dlgSettings.hide()
 			return -1
-		elif(KeyBindings.is_key(ch, "LIST_ADD_NEW")):
-			if(lstIgnoredDirs.is_in_focus):
-				dirname = self.app.prompt("New Exception", "Enter a directory name to ignore:")
-				if(dirname != None): self.app.settings_manager.add_to_setting("IGNORED_DIRECTORIES", dirname)
-			elif(lstIgnoredFiles.is_in_focus):
-				ext = self.app.prompt("New Exception", "Enter a file extension (without leading dot) to ignore:")
-				if(ext != None): self.app.settings_manager.add_to_setting("IGNORED_FILE_EXTENSIONS", "." + ext)
+		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
+			settings = {
+				"ignored_directories": str(txtIgnoredDirs).split(";"),
+				"ignored_file_extensions": str(txtIgnoredExtensions).split(";")
+			}
 			
-			self.refresh_settings()
-			self.app.dlgSettings.repaint()
+			if(self.app.app_mode == APP_MODE_PROJECT):
+				settings["build_project_command"] = str(txtBuildProject)
+				settings["execute_project_command"] = str(txtExecuteProject)
+			
+			self.app.settings_manager.add_multi_setting(settings)
+			self.app.dlgSettings.hide()
 			return -1
-		elif(KeyBindings.is_key(ch, "LIST_DELETE_SELECTION")):
-			if(self.app.ask_question("CONFIRM DELETE", "Are you sure you want to remove this item?")):
-				if(lstIgnoredDirs.is_in_focus):
-					self.app.settings_manager.remove_from_setting("IGNORED_DIRECTORIES", lstIgnoredDirs.get_sel_tag())
-				elif(lstIgnoredFiles.is_in_focus):
-					self.app.settings_manager.remove_from_setting("IGNORED_FILE_EXTENSIONS", lstIgnoredFiles.get_sel_tag())
-				
-				self.refresh_settings()
-				self.app.dlgSettings.repaint()
-				return -1
-		
+
 		return ch

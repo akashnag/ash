@@ -1,7 +1,7 @@
 The MIT License (MIT)
 =====================
 
-Copyright © 2020, Akash Nag
+Copyright © 2020-2022, Akash Nag
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

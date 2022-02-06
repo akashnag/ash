@@ -26,7 +26,7 @@ class ProjectFindReplaceDialog(Window):
 		self.chkMatchCase = CheckBox(self, (7 if self.replace else 5), 2, "Match case")
 		self.chkWholeWords = CheckBox(self, (7 if self.replace else 5), 18, "Whole words")
 		self.chkRegex = CheckBox(self, (7 if self.replace else 5), 35, "Regex")
-		self.lstResults = GroupedListBox(self, (8 if self.replace else 6), 2, 66, (11 if self.replace else 13), "No results")
+		self.lstResults = GroupedListBox(self, (8 if self.replace else 6), 2, 66, (11 if self.replace else 13), "No results", supports_colors=self.parent.app.supports_colors)
 		
 		self.add_widget("txtFind", self.txtFind)
 		if(self.replace): self.add_widget("txtReplace", self.txtReplace)

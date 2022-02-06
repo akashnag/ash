@@ -44,9 +44,9 @@ class CheckBox(Widget):
 		if(self.is_in_focus and self.focus_theme != None): paint_theme = self.focus_theme
 
 		if(self.checked):
-			s = "\u2611  " + self.text + " "
+			s = CHECKED_BOX + "  " + self.text + " "
 		else:
-			s = "\u2610  " + self.text + " "
+			s = UNCHECKED_BOX + "  " + self.text + " "
 		
 		self.parent.addstr(self.y, self.x, s, paint_theme)
 	

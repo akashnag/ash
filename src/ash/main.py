@@ -35,6 +35,7 @@ class AshEditorApp:
 		self.ash_dir = ash_dir
 		self.args = args
 		self.argc = len(args)
+		self.supports_colors = True
 		self.dialog_handler = DialogHandler(self)
 
 		# create the application data directory
@@ -52,6 +53,9 @@ class AshEditorApp:
 
 		# find all files
 		all_files = glob.glob(self.project_dir + "/**/*", recursive=True)
+
+		# reset the settings
+		self.settings_manager = SettingsManager(self)
 
 		# create buffers for each file
 		for i, f in enumerate(all_files):
@@ -89,16 +93,28 @@ class AshEditorApp:
 	def load_files(self, progress_handler = None):
 		if(self.argc == 1):
 			self.app_mode = APP_MODE_FILE
-			self.piped_data = read_piped_data()
-			if(self.piped_data != None):
-				self.buffers.create_new_buffer_from_data(self.piped_data)
+			
+			# SettingsManager must be initialized after setting of app_mode property
+			self.settings_manager = SettingsManager(self)
+		
+			# data is piped: will hang due to not processing EOF
+			# no solution found :(
 		elif(self.argc == 2 and os.path.isdir(self.args[1])):			
 			self.app_mode = APP_MODE_PROJECT
 			self.project_dir = str(os.path.abspath(self.args[1]))
+
+			# SettingsManager must be initialized after setting of app_mode property
+			self.settings_manager = SettingsManager(self)
+		
 			self.open_project(progress_handler)
 		else:
 			self.app_mode = APP_MODE_FILE
+		
+			# SettingsManager must be initialized after setting of app_mode property
+			self.settings_manager = SettingsManager(self)
+		
 			self.open_files_from_commandline_args(progress_handler)
+
 		
 	def run(self):
 		if(self.argc >= 2):
@@ -152,8 +168,7 @@ class AshEditorApp:
 		self.buffers = BufferManager(self)
 		self.theme_manager = ThemeManager(self)
 		self.key_mappings_manager = KeyMappingsManager(self)
-		self.settings_manager = SettingsManager(self)
-
+		
 		# create the Main Window and session storage objects
 		self.main_window = TopLevelWindow(self, self.stdscr, "ash " + self.get_app_version(), self.main_key_handler)
 		self.session_storage = SessionStorage(self, self.main_window.window_manager, self.buffers)

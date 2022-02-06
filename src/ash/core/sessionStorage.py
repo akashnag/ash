@@ -63,7 +63,7 @@ class ProjectData:
 
 class SessionData:
 	def __init__(self, recent = None, projects = None, project_map = None):
-		self.version = ash.__version__
+		self.version = ash.__version__ + ash.__build__
 		self.recent_files_list = list() if recent == None else list(recent)					# contains a list of strings (file paths)
 		self.projects_list = list() if projects == None else list(projects)					# contains a list of project paths
 		self.project_data_map = dict() if project_map == None else dict(project_map)		# contains a list of ProjectData objects

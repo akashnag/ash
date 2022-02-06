@@ -6,6 +6,7 @@
 # This module handles installation of themes
 
 import ash
+import json
 from ash.formatting.colors import *
 from urllib.request import urlopen
 
@@ -39,39 +40,59 @@ class ThemeManager:
 				installed_themes.insert( ("default", True))
 				self.write_out_installed_themes(installed_themes, colors, element_colors)
 			else:
-				colors, element_colors = load_theme_from_file(sel_theme_file)
+				colors, element_colors = self.load_theme_from_file(sel_theme_file)
 		
 		# set the current theme
-		set_colors(colors, element_colors)
+		if(not set_colors(colors, element_colors)):
+			self.app.supports_colors = False
 
 	def load_theme_from_file(self, theme_file, colors = None, element_colors = None):
 		if(colors == None): colors = dict()
 		if(element_colors == None): element_colors = dict()
 
+		"""
+			Theme file should be a JSON file (with extension .theme)
+			it should contain two top-level keys: 'colors', and 'elements'
+			each should have multiple key and value pairs
+		
+			Example syntax:
+
+			{
+				"colors": {
+					"magenta" : "rgb(113,154,132)",
+					"black": "rgb(0,0,0)"
+					...
+				},
+				"elements": {
+					"background": "(white,black)",
+					...
+				}
+			}
+		"""
+
 		configFile = open(theme_file, "rt")
-		config = configFile.read().splitlines()
+		config = json.load(configFile)
 		configFile.close()
 
-		for line in config:
-			# syntax: 'magenta=rgb(113,154,132)'
-			line = line.strip().lower().replace(" ", "")
-			pos1 = line.find("=rgb(")
-			pos2 = line.find("=(")
+		temp_colors = config["colors"]
+		temp_elements = config["elements"]
 
-			if(not line.endswith(")") or not line.startswith("color-")): continue
-			if(pos1 == -1 and pos2 == -1): continue
+		for color_name, color_value in temp_colors.items():
+			color_name = color_name.strip().lower()
+			color_value = color_value.strip().lower()
+			if(color_value.startswith("rgb(") and color_value.endswith(")")):
+				triplet = color_value[4:-1].split(",")
+				if(len(triplet) == 3):
+					rgb = ( round(int(triplet[0]) * MULTIPLIER), round(int(triplet[1]) * MULTIPLIER), round(int(triplet[2]) * MULTIPLIER) )
+					colors[color_name] = rgb
 
-			if(pos1 > -1):
-				triplet = line[pos1+5:-1].split(",")
-				if(len(triplet) != 3): continue
-				rgb = ( round(int(triplet[0]) * MULTIPLIER), round(int(triplet[1]) * MULTIPLIER), round(int(triplet[2]) * MULTIPLIER) )
-				colname = line[6:pos1]
-				colors[colname] = rgb
-			elif(pos2 > -1):
-				colname = line[6:pos2]
-				pair = line[pos2+2:-1].split(",")
-				if(len(pair) != 2): continue
-				element_colors[colname] = (pair[0], pair[1])
+		for element_name, color_value in temp_elements.items():
+			element_name = element_name.strip().lower()
+			color_value = color_value.strip().lower()
+			if(color_value.startswith("(") and color_value.endswith(")")):
+				pair = color_value[1:-1].split(",")
+				if(len(pair) == 2):
+					element_colors[element_name] = (pair[0].strip(), pair[1].strip())
 
 		return (colors, element_colors)
 
@@ -136,7 +157,8 @@ class ThemeManager:
 			self.app.show_error(f"Cannot find file: '{theme_name}.theme'")
 			return
 		colors, element_colors = self.load_theme_from_file(sel_theme_file)
-		set_colors(colors, element_colors)
+		if(not set_colors(colors, element_colors)):
+			self.app.supports_colors = False
 
 	def write_out_installed_themes(self, installed_themes):
 		fp = open(ash.INSTALLED_THEMES_FILE, "wt")
@@ -145,11 +167,21 @@ class ThemeManager:
 		fp.close()
 
 	def write_out_theme_file(self, theme_file, colors, element_colors):
+		data = {
+			"colors": dict(),
+			"elements": dict()
+		}
+		
+		for color_name, rgb in colors.items():
+			color_value = "rgb(" + str(int(rgb[0] // MULTIPLIER)) + ", " + str(int(rgb[1] // MULTIPLIER)) + ", " + str(int(rgb[2] // MULTIPLIER)) + ")"
+			data["colors"][color_name] = color_value
+		
+		for element_name, color_pair in element_colors.items():
+			data["elements"][element_name] = f"({color_pair[0]}, {color_pair[1]})"
+
+		json_object = json.dumps(data, indent = 4)
 		fp = open(theme_file, "wt")
-		for name, rgb in colors.items():
-			fp.write("color-" + name + " = rgb(" + str(int(rgb[0] // MULTIPLIER)) + ", " + str(int(rgb[1] // MULTIPLIER)) + ", " + str(int(rgb[2] // MULTIPLIER)) + ")\n")
-		for name, pair in element_colors.items():
-			fp.write("color-" + name + " = (" + pair[0] + ", " + pair[1] + ")\n")
+		fp.write(json_object)
 		fp.close()
 
 	def remove_installed_theme(self, theme_name):
@@ -162,4 +194,5 @@ class ThemeManager:
 			if(t[0] == theme_name):
 				installed_themes.pop(i)
 				break
+			
 		self.write_out_installed_themes(installed_themes)

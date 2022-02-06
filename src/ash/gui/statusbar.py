@@ -8,10 +8,11 @@
 from ash.gui import *
 
 class StatusBar(Widget):
-	def __init__(self, parent, section_widths):
+	def __init__(self, parent, section_widths, supports_colors=True):
 		super().__init__(WIDGET_TYPE_STATUSBAR, False, False)
 		self.parent = parent
 		self.section_widths = section_widths
+		self.supports_colors = supports_colors
 		self.sections = [ "" for i in range(len(section_widths)) ]
 		self.alignments = [ "left" for i in range(len(section_widths)) ]
 
@@ -74,11 +75,11 @@ class StatusBar(Widget):
 
 			if(cumw + w > width): 
 				s = s[0:width-cumw]
-				win.addstr(y, x + cumw, s, gc("status-" + str(i)))
+				win.addstr(y, x + cumw, s, gc("status-" + str(i)) | (0 if self.supports_colors else curses.A_REVERSE))
 				return
 				
 			try:
-				win.addstr(y, x + cumw, s, gc("status-" + str(i)))
+				win.addstr(y, x + cumw, s, gc("status-" + str(i)) | (0 if self.supports_colors else curses.A_REVERSE))
 			except:
 				pass
 			cumw += w

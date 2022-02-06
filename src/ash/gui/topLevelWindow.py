@@ -161,7 +161,7 @@ class TopLevelWindow(Window):
 			if(self.status != None): self.status.repaint(self.win, self.width-1, self.height-1, 0)
 		else:
 			if(len(error_msg) + 1 > self.width - 1): error_msg = error_msg[0:self.width-2]
-			self.win.addstr(self.height-1, 0, (" " + error_msg).ljust(self.width-1), gc("messagebox-background"))
+			self.win.addstr(self.height-1, 0, (" " + error_msg).ljust(self.width-1), gc("messagebox-background") | (0 if self.app.supports_colors else curses.A_REVERSE))
 		
 		try:
 			title_text = self.title + " - " + self.app_name
@@ -201,7 +201,10 @@ class TopLevelWindow(Window):
 		# *status (8), *file-type (11), encoding(7), sloc (20), file-size (10), 
 		# *unsaved-file-count (4), *tab-size (1), cursor-position (6+1+6+3+8=24)
 		#self.status = StatusBar(self, [ 10, 13, 9, 22, 12, 6, 3, -1 ])
-		if(self.show_statusbar): self.status = StatusBar(self, [ 0.099, 0.1287, 0.0891, 0.2178, 0.1188, 0.0594, 0.0297, -1 ])
+		
+		if(self.show_statusbar): 
+			self.status = StatusBar(self, [ 0.099, 0.1287, 0.0891, 0.2178, 0.1188, 0.0594, 0.0297, -1 ], supports_colors=self.app.supports_colors)
+		
 		self.window_manager.readjust()
 
 	def invoke_activate_editor(self, buffer_id, buffer, new_tab=False):
@@ -230,7 +233,7 @@ class TopLevelWindow(Window):
 			aedkh = aed.keyHandler
 			aed_buffer = aed.buffer
 		adh = self.app.dialog_handler
-		self.menu_bar = MenuBar(self, self.win, 0, 0)
+		self.menu_bar = MenuBar(self, self.win, 0, 0, supports_colors=self.app.supports_colors)
 		has_editor = (True if aed != None else False)
 
 		file_menu_items = [
@@ -283,6 +286,14 @@ class TopLevelWindow(Window):
 			("Settings...", True, adh.invoke_settings)
 		]
 
+		run_menu_items = [
+			("Compile file", has_editor, self.compile_current_file),
+			("Execute file", has_editor, self.execute_current_file),
+			("---", True, None),
+			("Build project", self.app.app_mode == APP_MODE_PROJECT, self.build_current_project),
+			("Execute project", self.app.app_mode == APP_MODE_PROJECT, self.execute_current_project)
+		]
+
 		window_menu_items = [
 			("New Tab", True, self.add_blank_tab),
 			("---", True, None),
@@ -306,20 +317,22 @@ class TopLevelWindow(Window):
 			("About...", True, adh.invoke_help_about)
 		]
 
-		mnuFile = PopupMenu(self, 1, 0, file_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar)
-		mnuEdit = PopupMenu(self, 1, 6, edit_menu_items, width = 35, is_dropdown=True, parent_menu=self.menu_bar)
-		mnuView = PopupMenu(self, 1, 12, view_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar)
-		mnuTools = PopupMenu(self, 1, 18, tools_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar)
-		mnuWindow = PopupMenu(self, 1, 25, window_menu_items, width = 35, is_dropdown=True, parent_menu=self.menu_bar)
-		mnuHelp = PopupMenu(self, 1, 33, help_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar)
+		mnuFile = PopupMenu(self, 1, 0, file_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuEdit = PopupMenu(self, 1, 6, edit_menu_items, width = 35, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuView = PopupMenu(self, 1, 12, view_menu_items, width=28, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuTools = PopupMenu(self, 1, 18, tools_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuRun = PopupMenu(self, 1, 25, run_menu_items, width = 20, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuWindow = PopupMenu(self, 1, 30, window_menu_items, width = 35, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuHelp = PopupMenu(self, 1, 38, help_menu_items, width=20, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
 
-		# |FILE||EDIT||VIEW||TOOLS||WINDOW||HELP|
-		# 012345678901234567890123456789012345678
+		# |FILE||EDIT||VIEW||TOOLS||RUN||WINDOW||HELP|
+		# 01234567890123456789012345678901234567890123
 
 		self.menu_bar.add_menu("File", mnuFile)
 		self.menu_bar.add_menu("Edit", mnuEdit)
 		self.menu_bar.add_menu("View", mnuView)
 		self.menu_bar.add_menu("Tools", mnuTools)
+		self.menu_bar.add_menu("Run", mnuRun)
 		self.menu_bar.add_menu("Window", mnuWindow)
 		self.menu_bar.add_menu("Help", mnuHelp)
 
@@ -329,6 +342,112 @@ class TopLevelWindow(Window):
 	def hide_menu_bar(self):
 		self.menu_bar_visible = False
 		self.repaint()
+
+	# <------------------------ functions for IDE functionalities ------------------------------->
+
+	def compile_current_file(self):
+		aed = self.get_active_editor()
+		if(aed == None):
+			self.app.show_error("No active file to compile!")
+			return
+		
+		filename = aed.buffer.filename
+		pos2 = filename.rfind(".")
+		pos1 = filename.rfind("/")
+		
+		if(pos2 < 0 or pos1 < 0 or pos1 > pos2):
+			self.app.show_error("File type can not be determined!")
+			return
+
+		if(filename == None):
+			self.app.show_error("File must be saved first before compiling!")
+			return
+
+		extension = filename[pos2:].lower()
+		filetitle_sans_extension = filename[pos1+1:pos2]
+		file_directory = filename[:pos1]
+		
+		compile_settings = self.app.settings_manager.get_setting("compile_file_command")
+		if(compile_settings == None or extension not in compile_settings):
+			self.app.show_error("Compiler for this file-type not set!")
+			return
+
+		compiler_command = compile_settings[extension].strip()
+		if(len(compiler_command) == 0):
+			self.app.show_error("Compiler for this file-type not set!")
+			return
+
+		compiler_command = compiler_command.replace("%d", f'"{file_directory}"')
+		compiler_command = compiler_command.replace("%e", f'"{filetitle_sans_extension}"')
+		compiler_command = compiler_command.replace("%f", f"'{filename}'")
+		
+		self.app.command_interpreter.execute_shell_command_in_terminal([compiler_command])
+
+
+	def execute_current_file(self):
+		aed = self.get_active_editor()
+		if(aed == None):
+			self.app.show_error("No active file to execute!")
+			return
+		
+		filename = aed.buffer.filename
+		pos2 = filename.rfind(".")
+		pos1 = filename.rfind("/")
+		
+		if(pos2 < 0 or pos1 < 0 or pos1 > pos2):
+			self.app.show_error("File type can not be determined!")
+			return
+
+		if(filename == None):
+			self.app.show_error("File must be saved first before executing!")
+			return
+
+		extension = filename[pos2:].lower()
+		filetitle_sans_extension = filename[pos1+1:pos2]
+		file_directory = filename[:pos1]
+		
+		execute_settings = self.app.settings_manager.get_setting("execute_file_command")
+		if(execute_settings == None or extension not in execute_settings):
+			self.app.show_error("Execution command for this file-type not set!")
+			return
+
+		execution_command = execute_settings[extension].strip()
+		if(len(execution_command) == 0):
+			self.app.show_error("Execution command for this file-type not set!")
+			return
+
+		execution_command = execution_command.replace("%d", f'"{file_directory}"')
+		execution_command = execution_command.replace("%e", f'"{filetitle_sans_extension}"')
+		execution_command = execution_command.replace("%f", f"'{filename}'")
+		
+		self.app.command_interpreter.execute_shell_command_in_terminal([execution_command])
+
+
+	def build_current_project(self):
+		if(self.app.app_mode != APP_MODE_PROJECT):
+			self.app.show_error("No project active!")
+			return
+
+		build_command = self.app.settings_manager.get_setting("build_project_command").strip()
+		if(len(build_command) == 0):
+			self.app.show_error("Build command not set for this project!")
+			return
+
+		build_command = build_command.replace("%d", f'"{self.app.project_dir}"')
+		self.app.command_interpreter.execute_shell_command_in_terminal([build_command])
+
+	def execute_current_project(self):
+		if(self.app.app_mode != APP_MODE_PROJECT):
+			self.app.show_error("No project active!")
+			return
+
+		execution_command = self.app.settings_manager.get_setting("execute_project_command").strip()
+		if(len(execution_command) == 0):
+			self.app.show_error("Execution command not set for this project!")
+			return
+
+		execution_command = execution_command.replace("%d", f'"{self.app.project_dir}"')
+		self.app.command_interpreter.execute_shell_command_in_terminal([execution_command])
 
 	# <------------------------------------ stub functions ------------------------------->
 

@@ -10,11 +10,12 @@ from ash.gui import *
 from ash.formatting.colors import *
 
 class MenuBar:
-	def __init__(self, parent, win, y, x):
+	def __init__(self, parent, win, y, x, supports_colors):
 		self.parent = parent
 		self.y = y
 		self.x = x
 		self.win = win
+		self.supports_colors = supports_colors
 		self.items = list()
 		self.active_menu_index = -1
 
@@ -52,16 +53,16 @@ class MenuBar:
 
 	def repaint(self, width, partial = False):
 		if(not partial):
-			self.win.addstr(self.y, self.x, " " * width, gc("menu-bar"))
+			self.win.addstr(self.y, self.x, " " * width, gc("menu-bar") | (0 if self.supports_colors else curses.A_REVERSE))
 		
 		offset = self.x
 		for i, menu in enumerate(self.items):
 			text = menu[0]
 			dropdown = menu[1]
 			if(i == self.active_menu_index):
-				self.win.addstr(self.y, offset, BORDER_VERTICAL + text + BORDER_VERTICAL, gc("menu-bar"))
+				self.win.addstr(self.y, offset, BORDER_VERTICAL + text + BORDER_VERTICAL, gc("menu-bar") | (0 if self.supports_colors else curses.A_REVERSE))
 			else:
-				self.win.addstr(self.y, offset, " " + text + " ", gc("menu-bar"))
+				self.win.addstr(self.y, offset, " " + text + " ", gc("menu-bar") | (0 if self.supports_colors else curses.A_REVERSE))
 			offset += len(text)+2
 
 		self.last_width = width

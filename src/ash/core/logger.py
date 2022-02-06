@@ -13,7 +13,7 @@ from datetime import datetime
 # creates the log file: must be called at startup
 def log_init(preserve = False):
 	logFile = open(ash.LOG_FILE, ("at" if preserve else "wt"))
-	logFile.write("ash " + ash.__version__ + "\n" + str(datetime.now()) + "\n")
+	logFile.write("ash " + ash.__version__ + ash.__build__ + "\n" + str(datetime.now()) + "\n")
 	logFile.close()
 
 # appends data to the log

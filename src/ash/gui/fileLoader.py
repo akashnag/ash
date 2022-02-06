@@ -13,8 +13,8 @@ LOAD_STEP		= 1024			# bytes to read in each step
 
 class FileLoader(Window):
 	def __init__(self, parent, filename, encoding):
-		y, x = get_center_coords(parent, 6, 50)
-		super().__init__(y, x, 6, 50, "LOADING FILE")
+		y, x = get_center_coords(parent, 7, 50)
+		super().__init__(y, x, 7, 50, "LOADING FILE")
 		self.type = type
 		self.parent = parent.stdscr
 		self.border_theme = gc("outer-border")
@@ -76,7 +76,7 @@ class FileLoader(Window):
 
 		if(self.total_size > 0):
 			w = int((self.bytes_read / self.total_size) * (self.width - 4))
-			self.win.addstr(4, 2, ("\u2588" * w).ljust(self.width-4), self.theme)
+			self.win.addstr(5, 2, ("\u2588" * w).ljust(self.width-4), self.theme)
 			self.win.refresh()
 
 	# check the response

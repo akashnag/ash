@@ -10,7 +10,9 @@ from ash.formatting.colors import *
 from urllib.request import urlopen
 
 from ash.utils import *
+from ash.utils.fileUtils import get_file_title
 from ash.utils.keyUtils import *
+import json
 
 class KeyMappingsManager:
 	def __init__(self, app):
@@ -158,39 +160,29 @@ class KeyMappingsManager:
 				installed_keymaps.insert( ("default", True))
 				self.write_out_installed_keymaps(installed_keymaps)
 			else:
-				BINDINGS = load_keymap_from_file(sel_keymap_file)
+				BINDINGS = self.load_keymap_from_file(sel_keymap_file)
 		
 		# set the current bindings
 		KeyBindings.BINDINGS = BINDINGS
 
 	def load_keymap_from_file(self, keymap_file):
 		if(not os.path.isfile(keymap_file)): return
-
 		BINDINGS = self.get_default_key_bindings()
-		keyFile = open(keymap_file, "rt")
-		data = keyFile.read().splitlines()
-		keyFile.close()
-		
-		for d in data:
-			if(not (d.startswith("KEY_") and d.find("=(") > -1 and d.endswith(")"))): continue
-			temp = d[4:].strip().split("=(")
-			command = temp[0].strip().upper()
-			key = temp[1][:-1]
-			temp = key.split(";")
-			pretty = temp[1].strip()
-			key = temp[0]
-			
-			if(key.startswith("[") and key.endswith("]")):
-				key = key[1:-1].split(",")
-				key_list = list()
-				for k in key:
-					key_list.append(k)
-			else:
-				key_list = key
-			
-			BINDINGS[command][0] = key_list
-			BINDINGS[command][1] = pretty
-		
+
+		try:
+			keymapFile = open(keymap_file, "rt")
+			data = json.load(keymapFile)
+			keymapFile.close()
+
+			for key, value_dict in data.items():
+				BINDINGS[key] = (
+					value_dict["curses_keycode"],
+					value_dict["key_name"],
+					value_dict["description"]
+				)
+		except:
+			self.app.show_error("Error loading key-bindings file!")
+
 		return BINDINGS
 
 	def get_installed_keymaps(self):
@@ -264,16 +256,30 @@ class KeyMappingsManager:
 		fp.close()
 
 	def write_out_keymap_file(self, keymap_file, BINDINGS):
-		keyFile = open(keymap_file, "wt")
+		"""
+			Example syntax:
+			{
+				"CLOSE_WINDOW": {
+					"curses_keycode" : "^Q" or ["^Q", "^C"],
+					"key_name": "Ctrl+Q",
+					"description": "Close the active window"
+				},
+				...
+			}
+		"""
+
+		# convert BINDINGS dictionary to writable format
+		data = dict()
 		for command, key in BINDINGS.items():
-			if(type(key[0]) == str):
-				keyFile.write("KEY_" + command + "=(" + key[0] + ";" + key[1] + ")\n")
-			elif(type(key[0]) == list):
-				x = "KEY_" + command + "=([" + key[0][0]
-				for i in range(1, len(key[0])):
-					x += "," + key[0][i]
-				x += "];" + key[1] + ")\n"
-				keyFile.write(x)
+			data[command] = {
+				"curses_keycode": key[0],
+				"key_name": key[1],
+				"description": key[2]
+			}
+
+		keyFile = open(keymap_file, "wt")
+		json_object = json.dumps(data, indent = 4)
+		keyFile.write(json_object)
 		keyFile.close()
 
 	def remove_installed_keymap(self, keymap_name):

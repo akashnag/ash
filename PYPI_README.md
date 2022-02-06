@@ -1,6 +1,6 @@
 ![ash logo](https://github.com/akashnag/ash/raw/master/assets/banner.png)
 
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/akashnag/ash/blob/master/LICENSE.md) ![Downloads](https://img.shields.io/github/downloads/akashnag/ash/total) ![Size](https://img.shields.io/github/size/akashnag/ash/dist/ash-editor-0.1.0.dev10.tar.gz) ![SLOC](https://sloc.xyz/github/akashnag/ash)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/akashnag/ash/blob/master/LICENSE.md) ![Downloads](https://img.shields.io/github/downloads/akashnag/ash/total) ![Size](https://img.shields.io/github/size/akashnag/ash/dist/ash-editor-0.1.0.dev11.tar.gz) ![SLOC](https://sloc.xyz/github/akashnag/ash)
 
 **ash** is a simple and clean terminal-based text editor, that aims to be easy to use with modern key-bindings. It is capable of handling multiple files simultaneously and has a wide array of modern features. Here is a picture of **ash** editing this README file:
 
@@ -109,7 +109,7 @@ $ sudo pip3 uninstall ash-editor
 
 ## Colors
 
-If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `theme.txt` file inside your home directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.ash-editor/theme.txt`.
+If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `default.theme` JSON file inside the ~/.ash-editor/themes directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.ash-editor/themes/default.theme`. The theme file defines the color names first followed by setting the foreground and the background colors of each GUI element of the app.
 
 ## Usage
 

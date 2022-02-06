@@ -40,7 +40,7 @@ class GroupedListItem:
 			return self.children
 
 class GroupedListBox(Widget):
-	def __init__(self, parent, y, x, width, row_count, placeholder_text = None, callback = None):
+	def __init__(self, parent, y, x, width, row_count, placeholder_text = None, callback = None, supports_colors=True):
 		super().__init__(WIDGET_TYPE_LISTBOX)
 		self.parent = parent
 		self.y = y
@@ -50,6 +50,7 @@ class GroupedListBox(Widget):
 		self.row_count = row_count
 		self.placeholder_text = placeholder_text
 		self.callback = callback
+		self.supports_colors = supports_colors
 		self.items = list()
 		self.tags = list()
 		self.disp_items = list()
@@ -117,11 +118,11 @@ class GroupedListBox(Widget):
 
 			if(i == self.sel_index):
 				if(self.is_in_focus):
-					style = self.focus_theme
+					style = self.focus_theme | (0 if self.supports_colors else curses.A_REVERSE)
 					if(self.should_highlight[i]): style |= curses.A_BOLD
 					self.parent.addstr(self.y + i - self.list_start, self.x, text, style)
 				else:
-					style = self.sel_blur_theme
+					style = self.sel_blur_theme | (0 if self.supports_colors else curses.A_BOLD)
 					if(self.should_highlight[i]): style |= curses.A_BOLD
 					self.parent.addstr(self.y + i - self.list_start, self.x, text, style)
 			else:

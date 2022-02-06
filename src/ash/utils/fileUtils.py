@@ -119,8 +119,8 @@ def get_textfile_mimetype(filename):
 
 # checks if a file rests in any of the IGNORED DIRECTORIES or has an extension in IGNORED_FILE_EXTENSIONS
 def should_ignore_file(filename):
-	IGNORED_FILE_EXTENSIONS = ash.SETTINGS.get("IGNORED_FILE_EXTENSIONS")
-	IGNORED_DIRECTORIES = ash.SETTINGS.get("IGNORED_DIRECTORIES")
+	IGNORED_FILE_EXTENSIONS = ash.SETTINGS.get("ignored_file_extensions")
+	IGNORED_DIRECTORIES = ash.SETTINGS.get("ignored_directories")
 
 	pos = filename.rfind(".")
 	if(os.path.isfile(filename) and pos > -1):		
@@ -137,7 +137,7 @@ def should_ignore_file(filename):
 
 # check if a directory is in any of the IGNORED DIRECTORIES
 def should_ignore_directory(dirname):
-	if(get_file_title(dirname) not in ash.SETTINGS.get("IGNORED_DIRECTORIES")):
+	if(get_file_title(dirname) not in ash.SETTINGS.get("ignored_directories")):
 		return False
 	else:
 		return True

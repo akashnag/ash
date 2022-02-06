@@ -36,6 +36,13 @@ LINE_EDGE 				= "\u2514"
 LINE_SPLIT 				= "\u251c"
 LINE_HORIZONTAL 		= "\u2500"
 
+# <------------------ other icon constants ----------------------->
+CHECKED_BOX				= "\u2611"
+UNCHECKED_BOX			= "\u2610"
+UNSAVED_BULLET			= "\u2022"
+TICK_MARK				= "\u2713"
+RIGHT_TRIANGLE			= "\u25b6"
+
 # <------------------- border constants -------------------->
 BORDER_HORIZONTAL		= "\u2500"
 BORDER_VERTICAL			= "\u2502"

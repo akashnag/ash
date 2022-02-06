@@ -6,6 +6,9 @@
 # This module handles all commands entered through the command-window
 
 from ash import *
+import codecs
+
+from ash.core.logger import log
 
 class CommandInterpreter:
 	def __init__(self, app, mw):
@@ -22,7 +25,8 @@ class CommandInterpreter:
 			"hmerge": (self.mw.split_horizontally, "Merge horizontally"),
 			"vmerge": (self.mw.split_vertically, "Merge vertically"),
 			"rdisk" : (self.mw.reload_active_buffer_from_disk, "Discard unsaved changes and reload the active buffer from disk"),
-			"!"		: (self.execute_shell_command, "Executes a shell command, or opens a terminal if called without params")
+			"!>"	: (self.execute_shell_command_in_background, "Executes a shell command and open the output in a new buffer"),
+			"!"		: (self.execute_shell_command_in_terminal, "Executes a shell command in a new console")
 		}
 
 		self.prefix_commands = {
@@ -30,7 +34,8 @@ class CommandInterpreter:
 			"wc"	: (self.write_a_copy, "Write a copy to file:[param1]"),
 			"hso"	: (self.hsplit_open, "Splits window horizontally and opens self / file:[param1]"),
 			"vso"	: (self.vsplit_open, "Splits window vertically and opens self / file:[param1]"),
-			"!"		: (self.execute_shell_command, "Executes a shell command, or opens a terminal if called without params")
+			"!>"	: (self.execute_shell_command_in_background, "Executes a shell command and open the output in a new buffer"),
+			"!"		: (self.execute_shell_command_in_terminal, "Executes a shell command in a new console")
 		}
 
 	def get_command_list(self):
@@ -120,18 +125,32 @@ class CommandInterpreter:
 		self.mw.split_vertically(bid)
 
 	# Syntax:
-	# \! shell command
-	def execute_shell_command(self, params=None):
-		open_terminal = False
-		if(params is None):
-			open_terminal = True
-			command = "{} --command '{} -c \"exec {}\"'".format(DEFAULT_TERMINAL, DEFAULT_SHELL, DEFAULT_SHELL)
-		else:
-			command = (" ".join(params)).strip()
-
+	# \!> shell command
+	def execute_shell_command_in_background(self, params=None):
 		try:
-			process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-			_, error = process.communicate()
-			if((not open_terminal) and len(error) > 0): raise Exception(error.decode('utf-8'))
+			output = subprocess.check_output(params)
+			output = output.decode("utf-8")
+
+			filename = TEMP_OUTPUT_FILE
+			with open(filename, "wt") as f:
+				f.write(output)
+			
+			sel_buffer = self.app.buffers.get_buffer_by_filename(filename)
+			if(sel_buffer == None):
+				_, sel_buffer = self.app.buffers.create_new_buffer(filename=filename, encoding=None, has_backup=False)
+			else:
+				sel_buffer.reload_from_disk()
+
+			self.app.main_window.invoke_activate_editor(sel_buffer.id, sel_buffer, True)
+		except Exception as error:
+			self.app.show_error("An error occurred while executing the shell command:\n" + str(error))
+
+	# Syntax:
+	# \! shell command
+	def execute_shell_command_in_terminal(self, params=None):
+		try:
+			command = " ".join(params)
+			x = f'{DEFAULT_TERMINAL} -hold -e "{command}"'
+			subprocess.Popen(x, shell=True)
 		except Exception as error:
 			self.app.show_error("An error occurred while executing the shell command:\n" + str(error))

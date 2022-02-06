@@ -6,6 +6,7 @@
 # This module handles all color formatting for the application
 
 import ash
+from ash.core.ashException import AshException
 from ash.formatting import *
 
 # multiplier constant for translation to/from RGB
@@ -142,10 +143,16 @@ def get_element_color_index(element_name):
 
 # records color pairs into curses color-pair palette
 def set_colors(colors, element_colors):
+	supports_colors = True
+
 	for colname, rgb in colors.items():
 		index = get_color_index(colname)
 		if(index < 0): continue
-		curses.init_color(index, rgb[0], rgb[1], rgb[2])
+		try:
+			curses.init_color(index, rgb[0], rgb[1], rgb[2])
+		except:
+			supports_colors = False
+			break
 		
 	for elemname, pair in element_colors.items():
 		index = get_element_color_index(elemname)
@@ -155,7 +162,12 @@ def set_colors(colors, element_colors):
 		try:
 			curses.init_pair(index, fgindex, bgindex)
 		except:
-			raise(AshException(str(index), str(fgindex), str(bgindex)))
+			# if terminal does not support color remapping
+			supports_colors = False
+			break
+			#raise(AshException(", ".join([str(index), str(fgindex), str(bgindex)])))
+
+	return supports_colors
 
 # retrieve a curses.color_pair() object for a given color combination
 def gc(cp = "global-default"):

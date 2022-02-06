@@ -27,9 +27,11 @@ cdef class Screen:
 	cdef int last_gutter_width
 	cdef int last_tab_size, last_text_area_width
 	cdef bint last_word_wrap, last_hard_wrap
+	cdef bint supports_colors
 
 	# initialize the screen buffer
-	def __init__(self, win, buffer, int height, int width, show_line_numbers, show_scrollbars):
+	def __init__(self, supports_colors, win, buffer, int height, int width, show_line_numbers, show_scrollbars):
+		self.supports_colors = 1 if supports_colors else 0
 		self.all_col_spans = None
 		self.show_line_numbers = show_line_numbers
 		self.show_scrollbars = show_scrollbars
@@ -74,13 +76,13 @@ cdef class Screen:
 	# show the fake cursor in the specified location
 	cdef put_cursor(self, int y, int x):
 		try:
-			self.style_buffer[y][x] = gc("cursor")
+			self.style_buffer[y][x] = gc("cursor") | (0 if(self.supports_colors==1) else curses.A_REVERSE)
 		except:
 			pass
 
 	# highlight a line
 	cdef highlight_line(self, int y, int gutter_width):
-		self.set_style(y, 0, gutter_width, gc("highlighted-line-number"))
+		self.set_style(y, 0, gutter_width, gc("highlighted-line-number") | (0 if(self.supports_colors==1) else curses.A_BOLD))
 
 	# set the style of the gutter
 	cdef set_gutter_style(self, int gutter_width):
@@ -92,6 +94,7 @@ cdef class Screen:
 		for x in range(x_start, x_end):
 			self.style_buffer[y][x] = style
 
+	# set the style of a particular location in the screen buffer
 	cdef set_style_single(self, pos, style):
 		try:
 			self.style_buffer[pos.y][pos.x] = style
@@ -107,6 +110,7 @@ cdef class Screen:
 		else:
 			return 1 + (1 if self.show_scrollbars else 0)
 
+	# returns a list of indices in a text wherever separators (given in delims) are found
 	cdef get_delimiter_positions_list(self, text, delims):
 		cdef int i, n
 		n = len(text)
@@ -115,9 +119,11 @@ cdef class Screen:
 		for i in range(n):
 			if(text[i] in delims): pos.append(i)
 		
+		# also add the length of the string (as the last index+1)
 		pos.append(n)
 		return sorted(pos)
 
+	# reflows a document containing multiple lines depending on wrap settings and after expansion of tabs
 	def reflow_all(self, width, lines, tab_size, word_wrap, hard_wrap):
 		self.all_col_spans = dict()
 		self.mapping_real_line_to_rendered_line = dict()		# only the 1st rendered line
@@ -125,6 +131,7 @@ cdef class Screen:
 		
 		self.total_rendered_lines = 0
 		rendered_counter = 0
+		
 		for i, line in enumerate(lines):
 			self.all_col_spans[i] = self.reflow(width, line, tab_size, word_wrap, hard_wrap)
 			self.mapping_real_line_to_rendered_line[i] = rendered_counter
@@ -145,7 +152,7 @@ cdef class Screen:
 	cdef reflow(self, int width, line, int tab_size, bint word_wrap, bint hard_wrap):
 		text = line.expandtabs(tab_size)
 		col_spans = list()
-		separators = " ,.()[]{}:;\'\"?"
+		separators = set(" ,.()[]{}:;\'\"?")
 		pos = self.get_delimiter_positions_list(text, separators)
 		
 		cdef int pos_start = 0
@@ -163,8 +170,8 @@ cdef class Screen:
 		
 		# hard wrap is ON
 		if(hard_wrap):
-			ls = w // width
-			col_width = w % width
+			ls = w // width					# number of lines to be broken into
+			col_width = w % width			# width of the last line
 			while(ls > 0):
 				col_spans.append( (col_start, col_start + width - 1) )
 				col_start += width
@@ -195,7 +202,7 @@ cdef class Screen:
 		
 		return col_spans
 
-	cdef _get_line_start(self, int gutter_width, int nlines, lines, int tab_size, bint word_wrap, bint hard_wrap):
+	cdef _get_line_start(self, int nlines, lines):
 		cdef int rendered_line_index = -1
 		cdef int i, real_line_start, line_start_offset, j
 
@@ -267,13 +274,13 @@ cdef class Screen:
 				temp.x = x
 				rendered_temp, _ = self.translate_real_curpos_to_rendered_curpos(lines, temp, text_area_width, tab_size, word_wrap, hard_wrap, visible_line_index)
 				visual = self.translate_rendered_to_visual_pos(rendered_temp, gutter_width)
-				self.set_style_single(visual, gc("selection"))
+				self.set_style_single(visual, gc("selection") | (0 if(self.supports_colors==1) else curses.A_REVERSE))
 		else:
 			for x in range(sel_start.x, sel_end.x):
 				temp.x = x
 				rendered_temp, _ = self.translate_real_curpos_to_rendered_curpos(lines, temp, text_area_width, tab_size, word_wrap, hard_wrap, visible_line_index)
 				visual = self.translate_rendered_to_visual_pos(rendered_temp, gutter_width)
-				self.set_style_single(visual, gc("selection"))
+				self.set_style_single(visual, gc("selection") | (0 if(self.supports_colors==1) else curses.A_REVERSE))
 
 		for y in range(sel_start.y + 1, sel_end.y):
 			temp.y = y
@@ -283,7 +290,7 @@ cdef class Screen:
 				temp.x = x
 				rendered_temp, _ = self.translate_real_curpos_to_rendered_curpos(lines, temp, text_area_width, tab_size, word_wrap, hard_wrap, visible_line_index)
 				visual = self.translate_rendered_to_visual_pos(rendered_temp, gutter_width)
-				self.set_style_single(visual, gc("selection"))
+				self.set_style_single(visual, gc("selection") | (0 if(self.supports_colors==1) else curses.A_REVERSE))
 		
 		if(sel_start.y != sel_end.y):
 			temp.y = sel_end.y
@@ -292,7 +299,7 @@ cdef class Screen:
 				temp.x = x
 				rendered_temp, _ = self.translate_real_curpos_to_rendered_curpos(lines, temp, text_area_width, tab_size, word_wrap, hard_wrap, visible_line_index)
 				visual = self.translate_rendered_to_visual_pos(rendered_temp, gutter_width)
-				self.set_style_single(visual, gc("selection"))
+				self.set_style_single(visual, gc("selection") | (0 if(self.supports_colors==1) else curses.A_REVERSE))
 
 	cdef translate_rendered_to_visual_pos(self, rendered_pos, int gutter_width):
 		if(self.line_start > rendered_pos.y or self.col_start > rendered_pos.x):
@@ -353,7 +360,7 @@ cdef class Screen:
 					real_pos.x = pos + i
 					rendered_pos, _ = self.translate_real_curpos_to_rendered_curpos(lines, real_pos, text_area_width, tab_size, word_wrap, hard_wrap, visible_line_index)
 					visual_pos = self.translate_rendered_to_visual_pos(rendered_pos, gutter_width)
-					self.set_style_single(visual_pos, gc("highlight"))
+					self.set_style_single(visual_pos, gc("highlight") | (0 if(self.supports_colors==1) else curses.A_REVERSE))
 
 	# returns a dict() with key=rendered_curpos(sub_line_offset_y, col) and value = real_curpos.x
 	cdef get_correspondence(self, line, int width, int tab_size, bint word_wrap, bint hard_wrap):
@@ -403,24 +410,27 @@ cdef class Screen:
 			if(key[0] == sub_line_offset and key[1] >= max_col): max_col = key[1]
 		return correspondence.get( (sub_line_offset,max_col) )
 
+	
 	cdef get_subline_offset(self, lines, int width, int tab_size, bint word_wrap, bint hard_wrap, real_curpos):
 		if(self.all_col_spans == None):
 			col_spans = self.reflow(width, lines[real_curpos.y], tab_size, word_wrap, hard_wrap)
 		else:
 			col_spans = self.all_col_spans[real_curpos.y]
+
 		if(len(col_spans)==0): return (0, col_spans)
+
 		cdef int y
 		for y, cs in enumerate(col_spans):
 			if(real_curpos.x >= cs[0] and real_curpos.x <= cs[1]): return (y,col_spans)
+		
 		return (len(col_spans)-1, col_spans)
 
 	cdef translate_real_curpos_col_to_rendered_curpos_col(self, line, int tab_size, int real_col):
 		cdef int x = 0, i
+
 		for i in range(real_col):
-			if(line[i] == "\t"):
-				x += (tab_size - (x % tab_size))
-			else:
-				x += 1
+			x += (tab_size - (x % tab_size)) if(line[i]=="\t") else 1
+			
 		return x
 
 	# returns the visible-line-index for a line after reflowing: for optimizing translation from real to rendered-curpos (during selection highlighting)
@@ -451,12 +461,14 @@ cdef class Screen:
 
 		rendered_line_col = col_spans[n-1][1] - col_spans[n-1][0] + 1							# default is: end of the line
 		current_line_length = col_spans[n-1][1] - col_spans[n-1][0] + 1
+
 		for i, cs in enumerate(col_spans):
 			visible_line_index += 1
 			if(rendered_x >= cs[0] and rendered_x <= cs[1]):									# if found before end of the line then return that
 				rendered_line_col = rendered_x - cs[0]
 				current_line_length = cs[1] - cs[0] + 1
-				break			
+				break
+							
 		return (CursorPosition(visible_line_index, rendered_line_col), current_line_length)
 
 	cdef _compute_vertical_visibility(self, rendered_curpos):
@@ -557,9 +569,8 @@ cdef class Screen:
 		#t3 = datetime.datetime.now()
 
 		# determine the first line to be displayed
-		real_line_start, line_start_col_spans, line_start_offset = self._get_line_start(gutter_width, nlines, lines, tab_size, word_wrap, hard_wrap)
+		real_line_start, line_start_col_spans, line_start_offset = self._get_line_start(nlines, lines)
 		self.real_line_start_index_visible = real_line_start		# store for use in highlighting
-
 		
 		# show (if any) remaining wrapped text from previous line
 		if(line_start_offset > 0):

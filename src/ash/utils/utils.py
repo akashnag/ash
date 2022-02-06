@@ -5,11 +5,16 @@
 
 # This module handles all utility functions
 
+from ash.core.ashException import AshException
 from ash.utils import *
 
 import re
 import select
 import sys
+import threading
+import multiprocessing
+import time
+import termios
 
 def is_enclosed(y, x, area):
 	area_y, area_x, area_height, area_width = area
@@ -205,6 +210,7 @@ def find_whole_word(text, search):
 	else:
 		return -1
 
+
 # read data from stdin pipe
 #def read_piped_data():
 #	data = ""
@@ -214,6 +220,31 @@ def find_whole_word(text, search):
 #		data += x
 #	return (data if len(data) > 0 else None)
 
+"""
+def read_char_from_stdin(data):
+	data.append(sys.stdin.read(1))
+
+def read_piped_data():
+	data = ""
+	while(sys.stdin in select.select([sys.stdin,],[],[],0.0)[0]):
+		incoming = []
+
+		t1 = multiprocessing.Process(target=read_char_from_stdin, args=(incoming,))
+		t1.daemon = True
+		t1.start()
+		time.sleep(0.01)
+		t1.terminate()
+		
+		if(len(incoming) == 0): break
+		data += incoming[0]
+
+	sys.stdin = open("/dev/tty")
+	
+	data += "\nProcessing done!"
+	return (data if len(data) > 0 else None)
+"""
+
+"""
 def read_piped_data():
 	data = ""
 	while(sys.stdin in select.select([sys.stdin,],[],[],0.0)[0]):
@@ -223,3 +254,4 @@ def read_piped_data():
 
 	sys.stdin = open("/dev/tty")
 	return (data if len(data) > 0 else None)
+"""

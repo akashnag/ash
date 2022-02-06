@@ -79,7 +79,7 @@ class TreeNode:
 			return None		# this fn is not for files
 	
 class TreeView(Widget):
-	def __init__(self, parent, y, x, width, row_count, buffer_manager, project_dir):
+	def __init__(self, parent, y, x, width, row_count, buffer_manager, project_dir, supports_colors=True):
 		super().__init__(WIDGET_TYPE_LISTBOX)
 		self.parent = parent
 		self.y = y
@@ -89,6 +89,7 @@ class TreeView(Widget):
 		self.row_count = row_count
 		self.buffer_manager = buffer_manager
 		self.project_dir = project_dir
+		self.supports_colors = supports_colors
 		self.theme = gc("global-default")
 		self.focus_theme = gc("formfield-focussed")
 		self.sel_blur_theme = gc("formfield-selection-blurred")		
@@ -240,9 +241,9 @@ class TreeView(Widget):
 
 			if(i == self.sel_index):
 				if(self.is_in_focus):
-					self.parent.addstr(self.y + i - self.start, self.x, text, self.focus_theme)
+					self.parent.addstr(self.y + i - self.start, self.x, text, self.focus_theme | (0 if self.supports_colors else curses.A_REVERSE))
 				else:
-					self.parent.addstr(self.y + i - self.start, self.x, text, self.sel_blur_theme)
+					self.parent.addstr(self.y + i - self.start, self.x, text, self.sel_blur_theme | (0 if self.supports_colors else curses.A_BOLD))
 			else:				
 				self.parent.addstr(self.y + i - self.start, self.x, text[0:text_offset], self.theme)
 				self.parent.addstr(self.y + i - self.start, self.x + text_offset, text[text_offset:], style)

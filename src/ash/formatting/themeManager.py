@@ -18,7 +18,7 @@ class ThemeManager:
 	def init_colors(self):
 		# write out the default theme file (will reset any changes made to it)
 		colors, element_colors = get_default_colors()
-		self.write_out_theme_file( os.path.join(ash.APP_THEMES_DIR, "default.theme"), colors, element_colors )
+		self.write_out_theme_file( os.path.join(ash.APP_THEMES_DIR, "default.json"), colors, element_colors )
 
 		# load the current theme from installed_themes
 		installed_themes = self.get_installed_themes()
@@ -33,7 +33,7 @@ class ThemeManager:
 		# if not default theme, load theme from file
 		if(sel_index > 0):
 			if(sel_theme == None): sel_theme = "default"
-			sel_theme_file = os.path.join(ash.APP_THEMES_DIR, sel_theme + ".theme")
+			sel_theme_file = os.path.join(ash.APP_THEMES_DIR, sel_theme + ".json")
 			if(not os.path.isfile(sel_theme_file)):
 				installed_themes.pop(sel_index)
 				installed_themes.pop(0)
@@ -119,8 +119,8 @@ class ThemeManager:
 		return installed_themes
 
 	def install_theme(self, theme_file):
-		if(not theme_file.endswith(".theme")):
-			self.app.show_error("Theme files must end with .theme")
+		if(not theme_file.endswith(".json")):
+			self.app.show_error("Theme files must end with .json")
 			return
 
 		if((not theme_file.startswith("file://")) and (not theme_file.startswith("http://")) and (not theme_file.startswith("https://"))):
@@ -134,8 +134,8 @@ class ThemeManager:
 			self.app.show_error("An error occurred while fetching theme")
 			return
 		
-		if(get_file_title(theme_file) == "default.theme"):
-			self.app.show_error("Cannot have theme named 'default.theme'")
+		if(get_file_title(theme_file) == "default.json"):
+			self.app.show_error("Cannot have theme named 'default.json'")
 			return
 
 		local_theme_file = os.path.join(ash.APP_THEMES_DIR, get_file_title(theme_file))
@@ -152,9 +152,9 @@ class ThemeManager:
 		self.write_out_installed_themes(installed_themes)
 
 	def set_theme(self, theme_name):
-		sel_theme_file = os.path.join(ash.APP_THEMES_DIR, theme_name + ".theme")
+		sel_theme_file = os.path.join(ash.APP_THEMES_DIR, theme_name + ".json")
 		if(not os.path.isfile( sel_theme_file )):
-			self.app.show_error(f"Cannot find file: '{theme_name}.theme'")
+			self.app.show_error(f"Cannot find file: '{theme_name}.json'")
 			return
 		colors, element_colors = self.load_theme_from_file(sel_theme_file)
 		if(not set_colors(colors, element_colors)):

@@ -274,7 +274,7 @@ class TopLevelWindow(Window):
 			("---", True, None),
 			("Active Buffers/Files...", True, adh.invoke_list_active_files),
 			("Recent Files...", True, adh.invoke_recent_files),
-			("Project Explorer...", True, adh.invoke_project_explorer),
+			("Project Explorer...", self.app.app_mode == APP_MODE_PROJECT, adh.invoke_project_explorer),
 			("---", True, None),
 			((TICK_MARK + " Status bar" if self.show_statusbar else "Status bar"), True, self.toggle_statusbar_visibility)
 		]
@@ -283,7 +283,8 @@ class TopLevelWindow(Window):
 			("Theme Manager...", True, adh.invoke_theme_manager),
 			("Key Mappings...", True, adh.invoke_key_mappings_manager),
 			("---", True, None),
-			("Settings...", True, adh.invoke_settings)
+			("Project Settings", self.app.app_mode == APP_MODE_PROJECT, adh.invoke_project_settings),
+			("Global Settings", True, adh.invoke_global_settings)
 		]
 
 		run_menu_items = [

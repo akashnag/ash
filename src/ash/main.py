@@ -308,6 +308,24 @@ class AshEditorApp:
 		elif(KeyBindings.is_key(ch, "SHOW_ABOUT")):
 			self.dialog_handler.invoke_help_about()
 			return -1
+		elif(KeyBindings.is_key(ch, "EDIT_PROJECT_SETTINGS")):
+			self.dialog_handler.invoke_project_settings()
+			return -1
+		elif(KeyBindings.is_key(ch, "EDIT_GLOBAL_SETTINGS")):
+			self.dialog_handler.invoke_global_settings()
+			return -1
+		elif(KeyBindings.is_key(ch, "COMPILE_ACTIVE_FILE")):
+			self.main_window.compile_current_file()
+			return -1
+		elif(KeyBindings.is_key(ch, "EXECUTE_ACTIVE_FILE")):
+			self.main_window.execute_current_file()
+			return -1
+		elif(KeyBindings.is_key(ch, "BUILD_PROJECT")):
+			self.main_window.build_current_project()
+			return -1
+		elif(KeyBindings.is_key(ch, "EXECUTE_PROJECT")):
+			self.main_window.execute_current_project()
+			return -1
 			
 		return ch
 

@@ -207,7 +207,17 @@ class Buffer:
 		if(self.manager.app.app_mode != APP_MODE_PROJECT): 
 			self.manager.app.session_storage.add_opened_file_to_record(self.filename)
 
+		self.fire_special_file_on_save_triggers()
 		return self.manager.merge_if_required(self.id)
+
+	# checks to see if current file is any one of special files, if so trigger refresh
+	def fire_special_file_on_save_triggers(self):
+		if(self.filename == self.manager.app.settings_manager.get_current_settings_file()):
+			self.manager.app.settings_manager.reload_settings()
+			aed = self.manager.app.main_window.get_active_editor()
+			if(aed != None): aed.reset_preferences()
+			self.manager.app.main_window.repaint()
+			if(aed != None): aed.repaint()
 
 	# checks to see if the buffer contains no data
 	def is_empty(self):
@@ -580,6 +590,8 @@ class BufferManager:
 		if(not os.path.isfile(filename)): return True
 		mt = str(mimetypes.guess_type(filename, strict=False)[0]).lower()
 		if(mt.startswith("text/")):
+			return False
+		elif(mt in ["application/json", "application/xml", "application/xhtml+xml"]):
 			return False
 		elif(mt != "none"):
 			return True

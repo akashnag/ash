@@ -60,12 +60,16 @@ class PopupMenu:
 					else:
 						ret_code = func_name(params)
 					
-					try:
-						self.parent.show_menu_bar()
-					except:
-						# editor object has no menu bar
-						pass
-
+					# hide the menu bar
+					self.win = None
+					obj = self
+					while(obj != None):
+						try:
+							obj.parent.hide_menu_bar()
+							break
+						except:
+							obj = obj.parent_menu
+							
 					if(type(ret_code) != bool):
 						return False
 					else:
@@ -78,7 +82,7 @@ class PopupMenu:
 			elif(self.is_dropdown and KeyBindings.is_key(ch, "HIDE_MENU_BAR")):
 				self.win = None
 				obj = self
-				while(True):
+				while(obj != None):
 					try:
 						obj.parent.hide_menu_bar()
 						break

@@ -49,6 +49,16 @@ class SettingsManager:
 		if(x == None): x = self.get_default_settings().get(setting_name)
 		return x
 
+	def get_current_settings_file(self):
+		if(self.app.app_mode == ash.APP_MODE_PROJECT):
+			project_settings_dir = os.path.join(self.app.project_dir, ash.PROJECT_SETTINGS_DIR_NAME)
+			return os.path.join(project_settings_dir, ash.PROJECT_SETTINGS_FILE_NAME)			
+		else:
+			return ash.SETTINGS_FILE
+
+	def reload_settings(self):
+		self.init_settings()
+
 	def init_settings(self):
 		if(not os.path.isfile(ash.SETTINGS_FILE)):
 			self.write_settings(ash.SETTINGS_FILE, self.get_default_settings())

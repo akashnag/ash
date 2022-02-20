@@ -1,6 +1,6 @@
 ![ash logo](https://github.com/akashnag/ash/raw/master/assets/banner.png)
 
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/akashnag/ash/blob/master/LICENSE.md) ![Downloads](https://img.shields.io/github/downloads/akashnag/ash/total) ![Size](https://img.shields.io/github/size/akashnag/ash/dist/ash-editor-0.1.0.dev11.tar.gz) ![SLOC](https://sloc.xyz/github/akashnag/ash)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/akashnag/ash/blob/master/LICENSE.md) ![Downloads](https://img.shields.io/github/downloads/akashnag/ash/total) ![Size](https://img.shields.io/github/size/akashnag/ash/dist/ash-editor-0.1.0.dev12.tar.gz) ![SLOC](https://sloc.xyz/github/akashnag/ash)
 
 **ash** is a simple and clean terminal-based text editor, that aims to be easy to use with modern key-bindings. It is capable of handling multiple files simultaneously and has a wide array of modern features. Here is a picture of **ash** editing this README file:
 
@@ -56,22 +56,14 @@ The following is a list of features available in **ash**:
 - Multiple Cursors
 - Command palette
 - Basic mouse support
-- Open terminal / execute shell commands (gnome + bash only)
-
-**Roadmap for the future:**
-
-The following features will be implemented gradually:
-
-- Plugin system
-- Reading from standard input
-- Autocompletion/Suggestions
-- Macros
-- Integrated terminal
+- Open terminal / execute shell commands
+- Limited IDE features like compile, build, execute...
+- Supports project/folder specific settings along with global settings
 
 ## Requirements
 
 1. You need a resolution of at least 102 x 22 in your terminal emulator
-1. Your terminal must support Unicode and be able to display at least 256 colors with the capability of remapping color palettes (Works best on: `xterm-256`)
+1. Your terminal must support Unicode and be able to display at least 256 colors with the capability of remapping color palettes (Works best on: `xterm-256`). Monochrome terminals are also partially supported.
 1. If you are running the source distribution, you need the GNU C compiler collection besides Python 3.8, as some parts of the application are written in Cython. The first time you run the application, Cython will compile and build the `*.pyx` files, which may increase load time (Ignore the warnings during compilation)
 
 **This version of ash has been tested on Ubuntu 20.04 with Python 3.8.2 (64-bit)**
@@ -109,7 +101,7 @@ $ sudo pip3 uninstall ash-editor
 
 ## Colors
 
-If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `default.theme` JSON file inside the ~/.ash-editor/themes directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.ash-editor/themes/default.theme`. The theme file defines the color names first followed by setting the foreground and the background colors of each GUI element of the app.
+If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `default.json` JSON file inside the ~/.ash-editor/themes directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.ash-editor/themes/default.json`. The theme file defines the color names first followed by setting the foreground and the background colors of each GUI element of the app.
 
 ## Usage
 

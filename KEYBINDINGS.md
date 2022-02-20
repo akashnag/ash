@@ -1,6 +1,6 @@
 # Key Bindings for ash
 
-The following is a list of default key bindings for **ash**. All of these can be remapped as per the user's preferences by creating new keymaps in the `~/.ash-editor/keymaps/` directory. The default keymap is stored in the file 'default.keymap'.
+The following is a list of default key bindings for **ash**. All of these can be remapped as per the user's preferences by creating new keymaps in the `~/.ash-editor/keymaps/` directory. The default keymap is stored in the file 'default.json'.
 
 ### Global key combinations
 

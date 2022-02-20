@@ -480,7 +480,7 @@ class DialogHandler:
 			lstKeys.add_item(info)
 			lstKeys.add_item(" ")
 		
-		lstKeys.add_item("Custom key mappings can be set in $HOME/.ash-editor/keymaps/default.keymap")
+		lstKeys.add_item("Custom key mappings can be set in $HOME/.ash-editor/keymaps/default.json")
 		lstKeys.repaint()
 
 	def help_key_handler(self, ch):
@@ -963,89 +963,24 @@ class DialogHandler:
 
 	# <---------------------- Settings ------------------------------------------------>
 
-	def invoke_settings(self):
-		self.app.readjust()
-		try:
-			y, x = get_center_coords(self.app, 19 if self.app.app_mode == APP_MODE_PROJECT else 9, 60)
-		except:
-			self.app.warn_insufficient_screen_space()
-			return
-			
-		self.app.dlgSettings = ModalDialog(self.app.main_window, y, x, 19 if self.app.app_mode == APP_MODE_PROJECT else 9, 60, "SETTINGS" if self.app.app_mode == APP_MODE_FILE else "PROJECT SETTINGS", self.settings_key_handler)
-		
-		lblIgnoredDirs = Label(self.app.dlgSettings, 3, 2, "Ignored directories (semicolon separated list):")
-		txtIgnoredDirs = TextField(self.app.dlgSettings, 4, 2, 56, ";".join(self.app.settings_manager.get_setting("ignored_directories")), True)
-		
-		lblIgnoredExtensions = Label(self.app.dlgSettings, 6, 2, "Ignored file extensions (semicolon separated list):")
-		txtIgnoredExtensions = TextField(self.app.dlgSettings, 7, 2, 56, ";".join(self.app.settings_manager.get_setting("ignored_file_extensions")), True)
-		txtIgnoredExtensions.blur()
+	def invoke_project_settings(self):
+		if(self.app.app_mode != ash.APP_MODE_PROJECT): return
+		filename = self.app.settings_manager.get_current_settings_file()
+		self.open_file_in_new_tab(filename)
 
-		self.app.dlgSettings.add_widget("lblIgnoredDirs", lblIgnoredDirs)
-		self.app.dlgSettings.add_widget("txtIgnoredDirs", txtIgnoredDirs)
-		self.app.dlgSettings.add_widget("lblIgnoredExtensions", lblIgnoredExtensions)
-		self.app.dlgSettings.add_widget("txtIgnoredExtensions", txtIgnoredExtensions)
+	def invoke_global_settings(self):
+		filename = self.app.settings_manager.get_current_settings_file()
+		self.open_file_in_new_tab(filename)
 
-		if(self.app.app_mode == APP_MODE_PROJECT):
-			lblBuildProject = Label(self.app.dlgSettings, 9, 2, "Command to build project:")
-			txtBuildProject = TextField(self.app.dlgSettings, 10, 2, 56, self.app.settings_manager.get_setting("build_project_command"), True)
-			txtBuildProject.blur()
+	# <-------------------------------------------------------------------------------->
+	def open_file_in_new_tab(self, filename):
+		sel_buffer = self.app.buffers.get_buffer_by_filename(filename)
 
-			lblExecuteProject = Label(self.app.dlgSettings, 12, 2, "Command to execute project:")
-			txtExecuteProject = TextField(self.app.dlgSettings, 13, 2, 56, self.app.settings_manager.get_setting("execute_project_command"), True)
-			txtExecuteProject.blur()
-
-			lblNote1 = Label(self.app.dlgSettings, 15, 2, "%f: full path of the current file")
-			lblNote2 = Label(self.app.dlgSettings, 16, 2, "%e: full path of the current file without extension")
-			lblNote3 = Label(self.app.dlgSettings, 17, 2, "%d: project root directory or directory of the current file")
-
-			self.app.dlgSettings.add_widget("lblBuildProject", lblBuildProject)
-			self.app.dlgSettings.add_widget("txtBuildProject", txtBuildProject)
-			self.app.dlgSettings.add_widget("lblExecuteProject", lblExecuteProject)
-			self.app.dlgSettings.add_widget("txtExecuteProject", txtExecuteProject)
-			self.app.dlgSettings.add_widget("lblNote1", lblNote1)
-			self.app.dlgSettings.add_widget("lblNote2", lblNote2)
-			self.app.dlgSettings.add_widget("lblNote3", lblNote3)
-		
-		self.refresh_settings()
-		self.app.dlgSettings.show()
-
-	def refresh_settings(self):
-		txtIgnoredDirs = self.app.dlgSettings.get_widget("txtIgnoredDirs")
-		txtIgnoredExtensions = self.app.dlgSettings.get_widget("txtIgnoredExtensions")
-
-		txtIgnoredDirs.set_text(";".join(self.app.settings_manager.get_setting("ignored_directories")))
-		txtIgnoredExtensions.set_text(";".join(self.app.settings_manager.get_setting("ignored_file_extensions")))
-		
-		if(self.app.app_mode == APP_MODE_PROJECT):
-			txtBuildProject = self.app.dlgSettings.get_widget("txtBuildProject")
-			txtExecuteProject = self.app.dlgSettings.get_widget("txtExecuteProject")
-			txtBuildProject.set_text(self.app.settings_manager.get_setting("build_project_command"))
-			txtExecuteProject.set_text(self.app.settings_manager.get_setting("execute_project_command"))
-
-		
-	def settings_key_handler(self, ch):
-		txtIgnoredDirs = self.app.dlgSettings.get_widget("txtIgnoredDirs")
-		txtIgnoredExtensions = self.app.dlgSettings.get_widget("txtIgnoredExtensions")
-
-		if(self.app.app_mode == APP_MODE_PROJECT):
-			txtBuildProject = self.app.dlgSettings.get_widget("txtBuildProject")
-			txtExecuteProject = self.app.dlgSettings.get_widget("txtExecuteProject")
-
-		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
-			self.app.dlgSettings.hide()
-			return -1
-		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
-			settings = {
-				"ignored_directories": str(txtIgnoredDirs).split(";"),
-				"ignored_file_extensions": str(txtIgnoredExtensions).split(";")
-			}
-			
-			if(self.app.app_mode == APP_MODE_PROJECT):
-				settings["build_project_command"] = str(txtBuildProject)
-				settings["execute_project_command"] = str(txtExecuteProject)
-			
-			self.app.settings_manager.add_multi_setting(settings)
-			self.app.dlgSettings.hide()
-			return -1
-
-		return ch
+		if(sel_buffer == None):
+			# create new buffer
+			backup_status = BufferManager.backup_exists(filename)
+			sel_bid, sel_buffer = self.app.buffers.create_new_buffer(filename=filename, encoding=self.app.settings_manager.get_setting("default_encoding"), has_backup=backup_status)
+			if(sel_bid == None or sel_buffer == None): return -1		# cancelled by user
+				
+		# at this point, buffer exists in sel_buffer
+		self.app.main_window.invoke_activate_editor(sel_buffer.id, sel_buffer, True)

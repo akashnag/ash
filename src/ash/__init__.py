@@ -11,6 +11,7 @@ import sys
 import copy
 import glob
 import subprocess
+import platform
 
 __version__			= "0.1.0-dev"
 __build__			= "13"
@@ -39,7 +40,10 @@ MIN_EDITOR_WIDTH	= 15
 MIN_EDITOR_HEIGHT	= 5
 
 # path to the application data directory and configuration files
-APP_DATA_DIR			= os.path.join(os.path.expanduser("~"), ".config", "ash-editor")
+if platform.system() == "Linux":
+    APP_DATA_DIR			= os.path.join(os.path.expanduser("~"), ".config", "ash-editor")
+else:
+    APP_DATA_DIR			= os.path.join(os.path.expanduser("~"), ".ash-editor")
 APP_PLUGINS_DIR			= os.path.join(APP_DATA_DIR, "plugins")
 APP_KEYMAPS_DIR			= os.path.join(APP_DATA_DIR, "keymaps")
 APP_THEMES_DIR			= os.path.join(APP_DATA_DIR, "themes")

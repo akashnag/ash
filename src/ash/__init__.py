@@ -13,7 +13,7 @@ import glob
 import subprocess
 
 __version__			= "0.1.0-dev"
-__build__			= "12"
+__build__			= "13"
 __release_date__	= "Feb 20, 2022"
 
 APP_COPYRIGHT_TEXT	= "© Copyright 2020-2022, Akash Nag. All rights reserved."
@@ -39,7 +39,7 @@ MIN_EDITOR_WIDTH	= 15
 MIN_EDITOR_HEIGHT	= 5
 
 # path to the application data directory and configuration files
-APP_DATA_DIR			= os.path.join(os.path.expanduser("~"), ".ash-editor")
+APP_DATA_DIR			= os.path.join(os.path.expanduser("~"), ".config", "ash-editor")
 APP_PLUGINS_DIR			= os.path.join(APP_DATA_DIR, "plugins")
 APP_KEYMAPS_DIR			= os.path.join(APP_DATA_DIR, "keymaps")
 APP_THEMES_DIR			= os.path.join(APP_DATA_DIR, "themes")

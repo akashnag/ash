@@ -177,7 +177,7 @@ class DialogHandler:
 				mw.close_active_editor()
 				return
 			
-			response = self.app.ask_question("SAVE/DISCARD ALL", "One or more unsaved files exist, choose:\nYes: save all filed-changes and quit\nNo: discard all unsaved changes and quit\nCancel: don't quit", True)
+			response = self.app.ask_question("SAVE/DISCARD ALL", "One or more unsaved files exist, choose:\nYes: save all filed-changes and quit (unguaranteed in case of errors)\nNo: discard all unsaved changes and quit\nCancel: don't quit", True)
 			if(response == None): return
 			if(response): self.app.buffers.write_all_wherever_possible()
 			

@@ -486,9 +486,12 @@ class BufferManager:
 				if(buffer.filename == None):
 					counter += 1
 					if(not ignore_errors): 
-						raise(AshException("Error 4: buffermanager.write_all()"))
+						raise(AshException("Error 4.1: buffermanager.write_all()"))
 				else:
-					buffer.write_to_disk()
+					try:
+						buffer.write_to_disk()
+					except:
+						if(not ignore_errors): raise(AshException("Error 4.2: buffermanager.write_all()"))
 		return counter
 
 	# destroy all buffers, reset counter

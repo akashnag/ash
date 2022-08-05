@@ -25,9 +25,20 @@ class EditorKeyHandler:
 		elif(KeyBindings.is_key(ch, "PASTE")):
 			return self.handle_paste()
 		elif(KeyBindings.is_key(ch, "SAVE")):
-			self.handle_save()
+			try:
+				self.handle_save()
+			except:
+				self.ed.parent.win.app.show_error("An error occurred while saving the file!")
+		elif(KeyBindings.is_key(ch, "SAVE_AS")):
+			try:
+				self.ed.parent.win.app.dialog_handler.invoke_file_save_as(self.ed.buffer)
+			except:
+				self.ed.parent.win.app.show_error("An error occurred while saving the file!")
 		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_EDITOR")):
-			self.save_and_close()
+			try:
+				self.save_and_close()
+			except:
+				self.ed.parent.win.app.show_error("An error occurred while saving the file!")
 		elif(KeyBindings.is_key(ch, "GOTO_LINE")):
 			self.ed.parent.win.app.dialog_handler.invoke_go_to_line()
 		elif(KeyBindings.is_key(ch, "OPEN_FILE")):
@@ -47,8 +58,6 @@ class EditorKeyHandler:
 			self.handle_redo()
 		elif(KeyBindings.is_key(ch, "SHOW_PREFERENCES")):
 			self.ed.parent.win.app.dialog_handler.invoke_set_preferences()
-		elif(KeyBindings.is_key(ch, "SAVE_AS")):
-			self.ed.parent.win.app.dialog_handler.invoke_file_save_as(self.ed.buffer)
 		elif(KeyBindings.is_key(ch, "DECODE_UNICODE")):
 			self.ed.buffer.decode_unicode()
 			return True

@@ -454,7 +454,7 @@ class TopLevelWindow(Window):
 
 	def get_editor_count(self):
 		return self.window_manager.get_editor_count()
-
+	
 	def close_active_editor(self):
 		self.window_manager.close_active_editor()
 		self.repaint()

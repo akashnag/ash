@@ -67,7 +67,7 @@ class Buffer:
 		
 	# remove an attached editor from the list of editors
 	def detach_editor(self, editor):
-		self.editors.remove(editor)
+		if(editor in self.editors): self.editors.remove(editor)
 
 	# checks to see if an editor is attached to this buffer
 	def is_editor_attached(self, editor):
@@ -152,15 +152,33 @@ class Buffer:
 		self.last_caller = caller
 		self.check_if_modified_externally()
 	
+	# check if the file has been modified externally or has been deleted
 	def check_if_modified_externally(self):
 		if(self.filename == None): return
 		last_time = max([self.last_read_time, self.last_write_time])
-		last_mod_time = BufferManager.get_last_modified(self.filename)
-		if(last_mod_time <= last_time): return
-		if(self.manager.app.ask_question("RELOAD", "File modified externally, reload?")):
-			self.reload_from_disk()
+		if(os.path.isfile(self.filename)):
+			last_mod_time = BufferManager.get_last_modified(self.filename)
+			if(last_mod_time > last_time):
+				if(self.manager.app.ask_question("RELOAD FILE", "This file has been modified externally.\nDo you want to reload it?")):
+					self.reload_from_disk()
+				else:
+					self.last_read_time = last_mod_time
 		else:
-			self.last_read_time = self.last_mod_time
+			self.make_backup()
+			if(self.manager.app.ask_question("FILE DELETED", "This file no longer exists on disk.\nDo you want to recreate it?")):
+				# recreate the file
+				self.write_to_disk(self.filename)
+			else:
+				# treat as unsaved buffer
+				self.filename = None
+				self.backup_file = None
+				self.display_name = "untitled-" + str(self.id + 1)
+				self.last_read_time = None
+				self.last_write_time = None
+				self.last_backup_time = None
+				self.save_status = False
+				for ed in self.editors:
+					ed.notify_update()
 
 	def decode_unicode(self):
 		if(self.undo_edit_count > 0): 		# add the latest change forcefully
@@ -501,6 +519,12 @@ class BufferManager:
 
 		self.buffer_count = 0
 		self.buffers = dict()
+
+	# destroy a specific buffer
+	def destroy_buffer(self, bid):
+		if(bid in self.buffers):
+			del self.buffers[bid]
+			self.buffer_count -= 1
 
 	# merge any buffers with same filenames (e.g. when both have the same filename after a save operation)
 	def merge_if_required(self, child_id):

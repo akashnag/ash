@@ -23,6 +23,54 @@ class PopupMenu:
 		self.parent_menu = parent_menu
 		self.supports_colors = supports_colors
 
+	def get_menu_index_from_offset(self, y, x):
+		item_index = y - self.y - 1
+		if(item_index >= len(self.items)): return -1
+		if(x <= self.x + 1 or x >= self.x + self.width - 1): return -1
+		return item_index
+
+	def select_item(self, index):
+		func = self.items[index][2]
+		if(func == None): return False
+		if(type(func) == tuple):
+			func_name = func[0]
+			params = func[1]
+		else:
+			func_name = func
+			params = None
+
+		self.win = None
+		self.parent.repaint()
+		if(params == None):
+			ret_code = func_name()
+		else:
+			ret_code = func_name(params)
+		
+		# hide the menu bar
+		self.win = None
+		obj = self
+		while(obj != None):
+			try:
+				obj.parent.hide_menu_bar()
+				break
+			except:
+				obj = obj.parent_menu
+				
+		if(type(ret_code) != bool):
+			return False
+		else:
+			return ret_code
+
+	def hide_menu_bar(self):
+		self.win = None
+		obj = self
+		while(obj != None):
+			try:
+				obj.parent.hide_menu_bar()
+				break
+			except:
+				obj = obj.parent_menu
+
 	def show(self):
 		self.win = curses.newwin(self.height, self.width, self.y, self.x)
 		
@@ -44,56 +92,31 @@ class PopupMenu:
 					self.sel_index = (self.sel_index + 1) % len(self.items)
 					if(self.items[self.sel_index][0] != "---"): break
 			elif(KeyBindings.is_key(ch, "LIST_MAKE_SELECTION")):
-				func = self.items[self.sel_index][2]
-				if(func != None):
-					if(type(func) == tuple):
-						func_name = func[0]
-						params = func[1]
-					else:
-						func_name = func
-						params = None
-
-					self.win = None
-					self.parent.repaint()
-					if(params == None):
-						ret_code = func_name()
-					else:
-						ret_code = func_name(params)
-					
-					# hide the menu bar
-					self.win = None
-					obj = self
-					while(obj != None):
-						try:
-							obj.parent.hide_menu_bar()
-							break
-						except:
-							obj = obj.parent_menu
-							
-					if(type(ret_code) != bool):
-						return False
-					else:
-						return ret_code
+				return self.select_item(self.sel_index)
 			elif(KeyBindings.is_key(ch, "CLOSE_WINDOW") or KeyBindings.is_key(ch, "RIGHT_CLICK")):
 				self.win = None
 			elif(self.is_dropdown and (KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_NEXT") or KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_PREVIOUS"))):
 				self.win = None
 				self.parent_menu.perform_action(ch)
 			elif(self.is_dropdown and KeyBindings.is_key(ch, "HIDE_MENU_BAR")):
-				self.win = None
-				obj = self
-				while(obj != None):
-					try:
-						obj.parent.hide_menu_bar()
-						break
-					except:
-						obj = obj.parent_menu
-						
+				self.hide_menu_bar()
 			elif(KeyBindings.is_key(ch, "RESIZE_WINDOW")):
 				self.win = None
 				self.parent_menu.perform_action(ch)
 			elif(KeyBindings.is_mouse(ch)):
-				pass
+				btn, y, x = KeyBindings.get_mouse(ch)
+				menu_index = self.get_menu_index_from_offset(y, x)
+				if(btn == MOUSE_CLICK and menu_index > -1):
+					self.sel_index = menu_index
+					self.repaint()
+					time.sleep(0.1)
+					self.select_item(self.sel_index)
+				elif(btn == MOUSE_CLICK and self.parent_menu != None):
+					self.hide_menu_bar()
+					self.parent_menu.repaint(self.parent_menu.parent.width)
+					self.parent_menu.mouse_click(btn, y, x)
+				elif(btn != None):
+					self.win = None					
 
 			self.repaint()
 

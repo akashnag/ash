@@ -52,6 +52,8 @@ class Editor(Widget):
 		self.reset_preferences()
 		self.is_in_focus = False
 
+		self.popup_menu = None
+
 		# use dummy values
 		self.selection_mode = False
 		self.bid = -1
@@ -72,6 +74,9 @@ class Editor(Widget):
 					temp_obj = temp_obj.manager
 
 		return temp_app
+
+	def hide_menu_bar(self):
+		self.popup_menu = None
 
 	def reset(self):
 		self.selection_mode = False
@@ -338,19 +343,20 @@ class Editor(Widget):
 	# <---------------------------- mouse handling functions ------------------------->
 
 	def get_bounds(self):
-		return (self.y + self.parent.area.y, self.x + self.parent.area.x, self.height, self.width)
+		return (self.y, self.x, self.height, self.width)
 
 	def get_relative_coords(self, y, x):
-		return (y - self.y - self.parent.area.y, x - self.x - self.parent.area.x)
+		return (y - self.y, x - self.x)
 
 	def on_click(self, y, x):
+		if(self.popup_menu != None): self.popup_menu.hide_menu_bar()
 		curpos = self.screen.get_curpos_after_click(y, x, self.buffer.lines, self.width, self.tab_size, self.word_wrap, self.hard_wrap)
-		if(curpos != None):
-			self.curpos = copy.copy(curpos)
-			self.repaint()
+		if(curpos != None): self.curpos = copy.copy(curpos)
+		self.repaint()
 
 	def on_right_click(self, y = -1, x = -1):
 		if(y >= 0 and x >= 0): self.on_click(y, x)
+		
 		visual_curpos = self.screen.translate_real_to_visual_curpos(self.curpos, self.buffer.lines, self.width, self.tab_size, self.word_wrap, self.hard_wrap)
 		app_dh = self.parent.tab.manager.app.dialog_handler
 
@@ -381,3 +387,4 @@ class Editor(Widget):
 		if(ret_code): self.buffer.update(self.curpos, self)
 
 		return ret_code
+		

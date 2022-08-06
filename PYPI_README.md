@@ -66,13 +66,15 @@ The following is a list of features available in **ash**:
 1. Your terminal must support Unicode and be able to display at least 256 colors with the capability of remapping color palettes (Works best on: `xterm-256`). Monochrome terminals are also partially supported.
 1. If you are running the source distribution, you need the GNU C compiler collection besides Python 3.8, as some parts of the application are written in Cython. The first time you run the application, Cython will compile and build the `*.pyx` files, which may increase load time (Ignore the warnings during compilation)
 
-**This version of ash has been tested on Ubuntu 20.04 with Python 3.8.2 (64-bit)**
+**ash is primarily targetted to Linux. This version of ash has only been tested on Ubuntu 20.04 with Python 3.8.2 (64-bit)**
 
 ## Installation
 
+*Note: Instructions provided here are for Debian/Ubuntu based systems. For your distribution, you may need to issue different instructions to install the necessary packages.*
+
 ### Prerequisites
 
-You need certain packages and Python 3 itself to download and run the developmental build. Instructions for Ubuntu:
+You need certain packages and Python 3 itself to run **ash** on your system, as there are no prebuilt binaries available yet.
 
 ```bash
 $ sudo apt install git
@@ -81,9 +83,15 @@ $ sudo apt install python3
 $ sudo apt install python3-pip
 ```
 
+Depending on your system, you may also need to install the following packages:
+
+```bash
+$ sudo apt install python3-devel
+```
+
 ### Installing ash
 
-**Note: this release may not contain all features listed above. To get the latest updates and bug-fixes, download the latest nightly build from the [Website](https://akashnag.github.io/ash)**
+**Note: To get the latest updates and bug-fixes, download the latest nightly build from the [Website](https://akashnag.github.io/ash)**
 
 ```bash
 $ sudo pip3 install ash-editor
@@ -110,6 +118,7 @@ Once you have downloaded **ash**, and set it up as detailed above, you are ready
 **NOTES:**
 1. If you have not updated your path variable, you must specify the full path to the ash binary.
 1. Your terminal resolution should be at least 102 (width) x 22 (height). Opening the editor in a lower resolution may unexpectedly crash the application. This requirement is necessary to properly display the dialog-boxes.
+1. It will take a while to start up **ash** for the first time, this is normal. From the second time onwards, it should start up faster.
 
 To run **ash**:
 
@@ -135,11 +144,24 @@ See the [Key Bindings](https://github.com/akashnag/ash/blob/master/KEYBINDINGS.m
 
 ## Contributing
 
+### Contributing to the source code
+
 If you find any bugs, please report them. I am also happy to accept pull requests from anyone for either bug-fixes, performance improvements, or for implementing the not-yet-implemented features listed above. Please consider contributing towards new features **only when** the features listed above have been fully implemented. For more information visit the project's Github page: [ash on GitHub](https://github.com/akashnag/ash)
+
+### Bug-fixes and feature enhancements
 
 You can use the [GitHub issue tracker](https://github.com/akashnag/ash/issues) to report bugs, ask questions, or suggest new features.
 
-For discussions related to the development roadmap and the **ash** editor in general, you can join the [Gitter chat](https://gitter.im/akashnag/ash).
+### Discussions
+
+For discussions related to the development roadmap and the **ash** editor in general, you can join the [ash Discord Server](https://discord.gg/KErp57T6en).
+
+### Say Thanks\!
+
+If you are not into software development, you can still contribute financially. Financial contributions help me prioritize working on this project over others and helps me know that there is a real demand for this software.
+
+<a href="https://www.buymeacoffee.com/nagakash"><p align="center"><img src="https://github.com/akashnag/ash/raw/master/assets/bmc-button.png" height="70"/></p></a>
+
 
 ## Screenshots
 

@@ -19,6 +19,7 @@ class ProjectFindReplaceDialog(Window):
 		self.theme = gc("outer-border")
 		self.win = None
 		self.replace = replace
+		self.mouse_drag_start = False
 		
 		self.txtFind = TextField(self, 4, 2, 66)
 		if(self.replace): self.txtReplace = TextField(self, 6, 2, 66)
@@ -93,6 +94,7 @@ class ProjectFindReplaceDialog(Window):
 				if(KeyBindings.is_mouse(ch)):
 					btn, y, x = KeyBindings.get_mouse(ch)
 					if(btn == MOUSE_CLICK):
+						widget_found = False
 						for i, w in enumerate(self.widgets):
 							if(is_enclosed(y, x, w.get_bounds())):
 								self.get_active_widget().blur()
@@ -101,11 +103,20 @@ class ProjectFindReplaceDialog(Window):
 								ry, rx = w.get_relative_coords(y,x)
 								w.on_click(ry,rx)
 								aw = w
+								widget_found = True
 								break
-					if(is_enclosed(y, x, (self.y + 1, self.x + self.width - 3, 1, 1) )):
-						self.hide()
-						self.parent.repaint()
-						return
+
+						if((not widget_found) and is_enclosed(y, x, (self.y + 1, self.x + self.width - 3, 1, 1) )):
+							self.hide()
+							self.parent.repaint()
+							return
+					elif(btn == MOUSE_DOWN and is_enclosed(y, x, (self.y + 1, self.x + 1, 1, self.width - 2) )):
+						self.mouse_drag_start = True
+						self.mouse_drag_offset = (y, x)
+					elif(btn == MOUSE_UP and self.mouse_drag_start):
+						self.mouse_drag_start = False
+						self.drag_window(y, x, *self.mouse_drag_offset)
+
 				elif(self.active_widget_index > -1):
 					aw =self.get_active_widget()
 					aw.perform_action(ch)
@@ -121,6 +132,28 @@ class ProjectFindReplaceDialog(Window):
 
 			if(aw != None): aw.repaint()
 	
+	# drag the window
+	def drag_window(self, y2, x2, y1, x1):
+		delta_x = x2 - x1
+		delta_y = y2 - y1
+
+		new_y = self.y + delta_y
+		new_x = self.x + delta_x
+
+		max_y = self.parent.get_height() - self.get_height() - 1
+		max_x = self.parent.get_width() - self.get_width()
+
+		if(new_y < 1): new_y = 1
+		if(new_x < 0): new_x = 0
+		if(new_y > max_y): new_y = max_y
+		if(new_x > max_x): new_x = max_x
+
+		self.y = new_y
+		self.x = new_x
+		
+		self.win.mvwin(self.y, self.x)
+		self.parent.repaint()
+
 	def handle_find_all(self, search_text):
 		if(len(search_text.strip()) == 0):
 			search_results = None

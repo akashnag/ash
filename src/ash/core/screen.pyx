@@ -310,7 +310,7 @@ cdef class Screen:
 
 	cdef translate_visual_to_rendered_pos(self, visual_pos, int gutter_width):
 		cdef int y, x
-		y = visual_pos.y + self.line_start + 1			# +1: correction: recheck
+		y = visual_pos.y + self.line_start + 0			# TODO: +1 or +0: correction: recheck
 		x = visual_pos.x + self.col_start - gutter_width
 		if(x < 0 or y < 0):
 			return None

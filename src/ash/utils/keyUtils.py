@@ -11,6 +11,10 @@ from ash.utils import *
 MOUSE_CLICK				= 0
 MOUSE_RIGHT_CLICK		= 1
 MOUSE_DOUBLE_CLICK		= 2
+MOUSE_DOWN				= 3
+MOUSE_UP				= 4
+MOUSE_WHEEL_UP			= 5
+MOUSE_WHEEL_DOWN		= 6
 
 # <------------------ arrow symbols ----------------------->
 
@@ -59,6 +63,14 @@ class KeyBindings:
 			btn = MOUSE_DOUBLE_CLICK
 		elif(bstate == curses.BUTTON3_CLICKED):
 			btn = MOUSE_RIGHT_CLICK
+		elif(bstate == curses.BUTTON1_PRESSED):
+			btn = MOUSE_DOWN
+		elif(bstate == curses.BUTTON1_RELEASED):
+			btn = MOUSE_UP
+		elif(bstate == curses.BUTTON4_CLICKED):
+			btn = MOUSE_WHEEL_UP
+		elif(bstate == curses.BUTTON2_CLICKED):
+			btn = MOUSE_WHEEL_DOWN
 		else:
 			btn = None
 		return (btn, y, x)

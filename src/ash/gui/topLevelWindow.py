@@ -121,14 +121,18 @@ class TopLevelWindow(Window):
 				self.menu_bar.perform_action(ch)
 			elif(KeyBindings.is_mouse(ch)):
 				btn, y, x = KeyBindings.get_mouse(ch)
-				if(btn == MOUSE_CLICK or btn == MOUSE_RIGHT_CLICK):
+				if(btn == MOUSE_CLICK and y == 0 and self.menu_bar == None):
+					self.show_menu_bar()
+				elif(btn == MOUSE_CLICK and self.menu_bar != None and y == self.menu_bar.y):
+					self.menu_bar.mouse_click(btn, y, x)
+				elif(btn == MOUSE_CLICK or btn == MOUSE_RIGHT_CLICK):
 					ed_list = self.window_manager.get_editors_in_active_tab()
 					for i, w in enumerate(ed_list):
 						if(is_enclosed(y, x, w.get_bounds())):
 							self.window_manager.set_as_active_editor(w)
 							ry, rx = w.get_relative_coords(y,x)
 							if(btn == MOUSE_CLICK):
-								w.on_click(ry,rx)
+								w.on_click(ry, rx)
 							else:
 								w.on_right_click(ry, rx)
 							break
@@ -223,7 +227,7 @@ class TopLevelWindow(Window):
 
 	def init_menu_bar(self):
 		self.menu_bar_visible = False
-		pass
+		self.menu_bar = None
 
 	def show_menu_bar(self):
 		aed = self.get_active_editor()
@@ -342,6 +346,7 @@ class TopLevelWindow(Window):
 
 	def hide_menu_bar(self):
 		self.menu_bar_visible = False
+		self.menu_bar = None
 		self.repaint()
 
 	# <------------------------ functions for IDE functionalities ------------------------------->

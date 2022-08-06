@@ -26,8 +26,6 @@
 
 - - -
 
-**Note: The latest version is always the nightly build that can be downloaded from the ash [website](https://akashnag.github.io/ash), and the information presented here always refers to that build only. Unless you have any specific reason not to, you should always download the nightly build to get the latest features/updates/bug-fixes.**
-
 ## Features
 
 The following is a list of features available in **ash**:
@@ -71,9 +69,11 @@ The following is a list of features available in **ash**:
 
 ## Installation
 
+*Note: Instructions provided here are for Debian/Ubuntu based systems. For your distribution, you may need to issue different instructions to install the necessary packages.*
+
 ### Prerequisites
 
-You need certain packages and Python 3 itself to download **ash**, as there are no prebuilt binaries available yet. Instructions for Ubuntu:
+You need certain packages and Python 3 itself to run **ash** on your system, as there are no prebuilt binaries available yet.
 
 ```bash
 $ sudo apt install git
@@ -82,20 +82,24 @@ $ sudo apt install python3
 $ sudo apt install python3-pip
 ```
 
+Depending on your system, you may also need to install the following packages:
+
+```bash
+$ sudo apt install python3-devel
+```
+
 ### Installing ash
 
 You have multiple options here:
 
-- Install from PyPi
+- Install from PyPi **(recommended)**
 - Install the latest stable release from GitHub
-- Install the latest nightly release from GitHub **(recommended)**
+- Install the latest nightly release from GitHub
 - Build and install from source
 
 #### Install from PyPi
 
-**Note: the PyPi release may not contain all features listed above**
-
-Execute the following to install from PyPi:
+Execute the following instructions to install from PyPi:
 
 ```bash
 $ sudo pip3 install ash-editor
@@ -113,7 +117,7 @@ Go to the **ash** [Website](https://akashnag.github.io/ash) and download the lat
 $ sudo pip3 install .
 ```
 
-#### Install the latest nightly release (recommended)
+#### Install the latest nightly release
 
 The nightly builds contains all the latest features of ash. Go to the **ash** [Website](https://akashnag.github.io/ash) and download the latest nightly release. Then extract the downloaded tar-ball into a folder and once inside that folder, open up your terminal from there and execute:
 
@@ -123,7 +127,7 @@ $ sudo pip3 install .
 
 #### Build from source and install
 
-Instructions for Ubuntu:
+To build from source, issue the following instructions:
 
 ```bash
 $ sudo apt install git
@@ -187,11 +191,24 @@ See the [Key Bindings](KEYBINDINGS.md) for help on how to navigate in ash.
 
 ## Contributing
 
+### Contributing to the source code
+
 If you find any bugs, please report them. I am also happy to accept pull requests from anyone for either bug-fixes, performance improvements, or for implementing the not-yet-implemented features listed above. Please consider contributing towards new features **only when** the features listed above have been fully implemented. For more information on what features to implement and the project structure, see the [Contribution Guidelines](CONTRIBUTING.md)
+
+### Bug-fixes and feature enhancements
 
 You can use the [GitHub issue tracker](https://github.com/akashnag/ash/issues) to report bugs, ask questions, or suggest new features. You can include the log if that is relevant, which can be found in `~/.ash-editor/log.txt`.
 
-For discussions related to the development roadmap and the **ash** editor in general, you can join the [Gitter chat](https://gitter.im/akashnag/ash).
+### Discussions
+
+For discussions related to the development roadmap and the **ash** editor in general, you can join the [ash Discord Server](https://discord.gg/KErp57T6en).
+
+### Say Thanks\!
+
+If you are not into software development, you can still contribute financially. Financial contributions help me prioritize working on this project over others and helps me know that there is a real demand for this software.
+
+<a href="https://www.buymeacoffee.com/nagakash"><p align="center"><img src="./assets/bmc-button.png" height="70"/></p></a>
+
 
 ## Screenshots
 

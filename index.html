@@ -68,13 +68,6 @@
 			
 				<hr/>
 
-				<p><strong>
-					Note: The latest version is always the nightly build and the information 
-					presented here always refers to that build only. Unless you have any 
-					specific reason not to, you should always download the nightly build to 
-					get the latest features/updates/bug-fixes.
-				</strong></p>
-
 				<h2><a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h2>
 				<p>The following is a list of features available in <strong>ash</strong> (Note: all these features are available in the nightly build but may not be available in the stable release):</p>
 				
@@ -111,16 +104,23 @@
 				</ul>
 
 				<h2><a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
-				<p>For Linux users, follow these steps to get <strong>ash</strong> on your system:</p>
+				<p><em>
+					Note: Instructions provided here are for Debian/Ubuntu based systems. For your distribution, you may need to issue different instructions to install the necessary packages.
+				</em></p>
 
 				<h3><a id="prerequisites" class="anchor" href="#prerequisites" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prerequisites</h3>
-				<p>You need certain packages and Python 3 itself to download and run ash. Instructions for Ubuntu:</p>
+				<p>You need to install the following packages to download and run <strong>ash</strong>:</p>
 				<div class="highlight highlight-source-shell">
 <pre>
 $ sudo apt install git
 $ sudo apt install xclip
 $ sudo apt install python3
 $ sudo apt install python3-pip
+</pre>
+				<p>Depending on your system, you may also need to install the following packages:</p>
+				<div class="highlight highlight-source-shell">
+<pre>
+$ sudo apt python3-devel
 </pre>
 				</div>
 				
@@ -131,8 +131,7 @@ $ sudo apt install python3-pip
 $ sudo pip3 install ash-editor
 </pre>
 				</div>
-					
-				
+								
 				<p>Alternatively, you could download the latest stable/nightly release by clicking the Download button at the top-left corner of this page which will download a <code>.tar.gz</code> file.
   				Once downloaded, extract it a folder, and once inside that folder (make sure it contains the file <code>setup.py</code>), open up your terminal and execute the following:</p>
 
@@ -186,7 +185,13 @@ $ sudo pip3 uninstall ash-editor
 		
 				<h2><a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contributing</h2>
 				<p>If you find any bugs, please report them <a href="https://github.com/akashnag/ash/issues">here</a>.</p>
-				<p>You can also join the <a href="https://gitter.im/akashnag/ash">Gitter chat</a> for dicussions about the future development roadmap for ash.</p>
+				
+				<p>You can also join the <a href="https://discord.gg/KErp57T6en">ash Discord Server</a> for dicussions about the future development roadmap for ash.</p>
+				
+				<p>
+					If you are not into software development, you can still contribute financially. Financial contributions help me prioritize working on this project over others and helps me know that there is a real demand for this software.
+					<a href="https://www.buymeacoffee.com/nagakash"><p align="center"><img src="./assets/bmc-button.png" height="70"/></p></a>
+				</p>
 
 				<h2><a id="screenshots" class="anchor" href="#screenshots" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Screenshots</h2>
 				<p>

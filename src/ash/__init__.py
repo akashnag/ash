@@ -15,7 +15,7 @@ import platform
 
 __version__			= "0.1.0-dev"
 __build__			= "13"
-__release_date__	= "Feb 20, 2022"
+__release_date__	= "Aug 06, 2022"
 
 APP_COPYRIGHT_TEXT	= "© Copyright 2020-2022, Akash Nag. All rights reserved."
 APP_LICENSE_TEXT	= "Licensed under the MIT License."

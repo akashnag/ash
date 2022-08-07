@@ -28,7 +28,7 @@ class Editor(Widget):
 
 		# initialize helper classes
 		self.utility = EditorUtility(self)
-		self.keyHandler = EditorKeyHandler(self)
+		self.key_handler = EditorKeyHandler(self)
 
 		# set up the text and cursor data structures
 		self.curpos = CursorPosition(0,0)
@@ -146,33 +146,33 @@ class Editor(Widget):
 		if(KeyBindings.is_key(ch, "RIGHT_CLICK")):
 			edit_made = self.on_right_click()
 		elif(KeyBindings.is_key(ch, "DELETE_CHARACTER_LEFT")):
-			edit_made = self.keyHandler.handle_backspace_key(ch)
+			edit_made = self.key_handler.handle_backspace_key(ch)
 		elif(KeyBindings.is_key(ch, "DELETE_CHARACTER_RIGHT")):
-			edit_made = self.keyHandler.handle_delete_key(ch)
+			edit_made = self.key_handler.handle_delete_key(ch)
 		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_START") or KeyBindings.is_key(ch, "MOVE_CURSOR_TO_LINE_END")):
-			self.keyHandler.handle_home_end_keys(ch)
+			self.key_handler.handle_home_end_keys(ch)
 		elif(KeyBindings.is_key(ch, "SELECT_TILL_LINE_START") or KeyBindings.is_key(ch, "SELECT_TILL_LINE_END")):
-			self.keyHandler.handle_shift_home_end_keys(ch)
+			self.key_handler.handle_shift_home_end_keys(ch)
 		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_DOCUMENT_START") or KeyBindings.is_key(ch, "MOVE_CURSOR_TO_DOCUMENT_END")):
-			self.keyHandler.handle_ctrl_home_end_keys(ch)
+			self.key_handler.handle_ctrl_home_end_keys(ch)
 		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_LEFT") or KeyBindings.is_key(ch, "MOVE_CURSOR_RIGHT") or KeyBindings.is_key(ch, "MOVE_CURSOR_UP") or KeyBindings.is_key(ch, "MOVE_CURSOR_DOWN")):
-			self.keyHandler.handle_arrow_keys(ch)
+			self.key_handler.handle_arrow_keys(ch)
 		elif(KeyBindings.is_key(ch, "MOVE_TO_PREVIOUS_PAGE") or KeyBindings.is_key(ch, "MOVE_TO_NEXT_PAGE")):
-			self.keyHandler.handle_page_navigation_keys(ch)
+			self.key_handler.handle_page_navigation_keys(ch)
 		elif(KeyBindings.is_key(ch, "SELECT_PAGE_ABOVE") or KeyBindings.is_key(ch, "SELECT_PAGE_BELOW")):
-			self.keyHandler.handle_shift_page_navigation_keys(ch)
+			self.key_handler.handle_shift_page_navigation_keys(ch)
 		elif(KeyBindings.is_key(ch, "SELECT_CHARACTER_LEFT") or KeyBindings.is_key(ch, "SELECT_CHARACTER_RIGHT") or KeyBindings.is_key(ch, "SELECT_LINE_ABOVE") or KeyBindings.is_key(ch, "SELECT_LINE_BELOW")):
-			self.keyHandler.handle_shift_arrow_keys(ch)
+			self.key_handler.handle_shift_arrow_keys(ch)
 		elif(KeyBindings.is_key(ch, "MOVE_CURSOR_TO_PREVIOUS_WORD") or KeyBindings.is_key(ch, "MOVE_CURSOR_TO_NEXT_WORD")):
-			self.keyHandler.handle_ctrl_arrow_keys(ch)
+			self.key_handler.handle_ctrl_arrow_keys(ch)
 		elif(KeyBindings.is_key(ch, "INSERT_TAB") or KeyBindings.is_key(ch, "DECREASE_INDENT")):
-			edit_made = self.keyHandler.handle_tab_keys(ch)
+			edit_made = self.key_handler.handle_tab_keys(ch)
 		elif(KeyBindings.is_key(ch, "NEWLINE")):
-			edit_made = self.keyHandler.handle_newline()
+			edit_made = self.key_handler.handle_newline()
 		elif(str(chr(ch)) in self.charset):
-			edit_made = self.keyHandler.handle_printable_character(ch)
+			edit_made = self.key_handler.handle_printable_character(ch)
 		else:
-			edit_made = self.keyHandler.handle_keys(ch)
+			edit_made = self.key_handler.handle_keys(ch)
 		
 		if(edit_made): self.buffer.update(self.curpos, self)
 		self.recompute(edit_made)
@@ -240,8 +240,6 @@ class Editor(Widget):
 		
 		self.screen.render(self.curpos, self.tab_size, self.word_wrap, self.hard_wrap, sel_info, highlight_info, self.is_in_focus, self.slave_cursors, self.should_stylize)
 		self.screen.draw(self.y, self.x)
-		
-		
 		
 	# <-------------------------------------------------------------------------------------->
 
@@ -348,6 +346,16 @@ class Editor(Widget):
 	def get_relative_coords(self, y, x):
 		return (y - self.y, x - self.x)
 
+	def on_double_click(self, y, x):
+		self.on_click(y, x)
+		self.key_handler.handle_select_word()
+		self.repaint()
+
+	def on_triple_click(self, y, x):
+		self.on_click(y, x)
+		self.key_handler.handle_select_line()
+		self.repaint()
+
 	def on_click(self, y, x):
 		if(self.popup_menu != None): self.popup_menu.hide_menu_bar()
 		curpos = self.screen.get_curpos_after_click(y, x, self.buffer.lines, self.width, self.tab_size, self.word_wrap, self.hard_wrap)
@@ -366,12 +374,12 @@ class Editor(Widget):
 			y, x = visual_curpos.y + self.y + 1, visual_curpos.x + self.x + 1
 		
 		popup_menu_items = [
-			("Undo", True, self.keyHandler.handle_undo),
-			("Redo", True, self.keyHandler.handle_redo),
+			("Undo", True, self.key_handler.handle_undo),
+			("Redo", True, self.key_handler.handle_redo),
 			("---", False, None),
-			("Cut", self.selection_mode, self.keyHandler.handle_cut),
-			("Copy", self.selection_mode, self.keyHandler.handle_copy),
-			("Paste", True, self.keyHandler.handle_paste),
+			("Cut", self.selection_mode, self.key_handler.handle_cut),
+			("Copy", self.selection_mode, self.key_handler.handle_copy),
+			("Paste", True, self.key_handler.handle_paste),
 			("---", False, None),
 			("Find...", True, app_dh.invoke_find),
 			("Find & Replace...", True, app_dh.invoke_find_and_replace),

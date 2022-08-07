@@ -18,6 +18,10 @@ class EditorKeyHandler:
 
 		if(KeyBindings.is_key(ch, "SELECT_ALL")):
 			self.handle_select_all()
+		elif(KeyBindings.is_key(ch, "SELECT_CURRENT_LINE")):
+			self.handle_select_line()
+		elif(KeyBindings.is_key(ch, "SELECT_CURRENT_WORD")):
+			self.handle_select_word()
 		elif(KeyBindings.is_key(ch, "COPY")):
 			self.handle_copy()
 		elif(KeyBindings.is_key(ch, "CUT")):
@@ -86,7 +90,6 @@ class EditorKeyHandler:
 			self.ed.curpos = self.ed.screen.get_curpos_after_move_up(self.ed.curpos, self.ed.tab_size, self.ed.word_wrap, self.ed.hard_wrap)
 			
 		self.ed.selection_mode = False		# turn off selection mode
-
 	
 	# handles Ctrl+Arrow key combinations
 	# behaviour: move to the next/previous separator position
@@ -451,6 +454,16 @@ class EditorKeyHandler:
 		self.ed.curpos.x = len(self.ed.buffer.lines[self.ed.curpos.y])
 		self.ed.sel_start.y = self.ed.curpos.y
 		self.ed.sel_start.x = 0
+		self.ed.sel_end.y = self.ed.curpos.y
+		self.ed.sel_end.x = self.ed.curpos.x
+
+	def handle_select_word(self):
+		x1, x2 = get_word_boundary(self.ed.buffer.lines[self.ed.curpos.y], self.ed.curpos.x)
+		self.cancel_multiple_cursors()
+		self.ed.selection_mode = True
+		self.ed.curpos.x = x2
+		self.ed.sel_start.y = self.ed.curpos.y
+		self.ed.sel_start.x = x1
 		self.ed.sel_end.y = self.ed.curpos.y
 		self.ed.sel_end.x = self.ed.curpos.x
 

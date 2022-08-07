@@ -114,6 +114,8 @@ class KeyMappingsManager:
 			"MOVE_TO_NEXT_PAGE"				: ["KEY_NPAGE", "PgDown", "Move to the next page"],
 			"SELECT_CHARACTER_RIGHT"		: ["KEY_SRIGHT", f"Shift+{ARROW_RIGHT}", "Select the character to the right"],
 			"SELECT_CHARACTER_LEFT"			: ["KEY_SLEFT", f"Shift+{ARROW_LEFT}", "Select the character to the left"],
+			"SELECT_CURRENT_LINE"			: ["", f"<Unassigned>", "Select the current line"],
+			"SELECT_CURRENT_WORD"			: ["", f"<Unassigned>", "Select the current word"],
 			"SELECT_LINE_ABOVE"				: ["KEY_SR", f"Shift+{ARROW_UP}", "Select the line above"],
 			"SELECT_LINE_BELOW"				: ["KEY_SF", f"Shift+{ARROW_DOWN}", "Select the line below"],
 			"SELECT_TILL_LINE_START"		: ["KEY_SHOME", "Shift+Home", "Select up to the start of the current line"],

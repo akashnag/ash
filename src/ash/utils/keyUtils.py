@@ -15,6 +15,7 @@ MOUSE_DOWN				= 3
 MOUSE_UP				= 4
 MOUSE_WHEEL_UP			= 5
 MOUSE_WHEEL_DOWN		= 6
+MOUSE_TRIPLE_CLICK		= 7
 
 # <------------------ arrow symbols ----------------------->
 
@@ -61,6 +62,8 @@ class KeyBindings:
 			btn = MOUSE_CLICK
 		elif(bstate == curses.BUTTON1_DOUBLE_CLICKED):
 			btn = MOUSE_DOUBLE_CLICK
+		elif(bstate == curses.BUTTON1_TRIPLE_CLICKED):
+			btn = MOUSE_TRIPLE_CLICK
 		elif(bstate == curses.BUTTON3_CLICKED):
 			btn = MOUSE_RIGHT_CLICK
 		elif(bstate == curses.BUTTON1_PRESSED):

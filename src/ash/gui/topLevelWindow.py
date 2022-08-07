@@ -125,7 +125,7 @@ class TopLevelWindow(Window):
 					self.show_menu_bar()
 				elif(btn == MOUSE_CLICK and self.menu_bar != None and y == self.menu_bar.y):
 					self.menu_bar.mouse_click(btn, y, x)
-				elif(btn == MOUSE_CLICK or btn == MOUSE_RIGHT_CLICK):
+				else:
 					ed_list = self.window_manager.get_editors_in_active_tab()
 					for i, w in enumerate(ed_list):
 						if(is_enclosed(y, x, w.get_bounds())):
@@ -133,8 +133,12 @@ class TopLevelWindow(Window):
 							ry, rx = w.get_relative_coords(y,x)
 							if(btn == MOUSE_CLICK):
 								w.on_click(ry, rx)
-							else:
+							elif(btn == MOUSE_RIGHT_CLICK):
 								w.on_right_click(ry, rx)
+							elif(btn == MOUSE_DOUBLE_CLICK):
+								w.on_double_click(ry, rx)
+							elif(btn == MOUSE_TRIPLE_CLICK):
+								w.on_triple_click(ry, rx)
 							break
 			else:
 				aed = self.get_active_editor()
@@ -234,7 +238,7 @@ class TopLevelWindow(Window):
 		aedkh = None
 		aed_buffer = None
 		if(aed != None): 
-			aedkh = aed.keyHandler
+			aedkh = aed.key_handler
 			aed_buffer = aed.buffer
 		adh = self.app.dialog_handler
 		self.menu_bar = MenuBar(self, self.win, 0, 0, supports_colors=self.app.supports_colors)
@@ -547,11 +551,11 @@ class TopLevelWindow(Window):
 
 	def save_and_close_active_editor(self):
 		aed = self.window_manager.get_active_editor()
-		if(aed != None): aed.keyHandler.save_and_close()
+		if(aed != None): aed.key_handler.save_and_close()
 
 	def save_active_editor(self):
 		aed = self.window_manager.get_active_editor()
-		if(aed != None): aed.keyHandler.handle_save()
+		if(aed != None): aed.key_handler.handle_save()
 
 	def open_in_new_tab(self, filename, curpos, highlight_info = None):
 		buffer = self.app.buffers.get_buffer_by_filename(filename)

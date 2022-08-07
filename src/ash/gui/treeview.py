@@ -308,10 +308,22 @@ class TreeView(Widget):
 				self.parent.parent.app.show_error("Cannot rename project root")
 			else:
 				self.rename_sel_item()
-		else:
+		elif(not KeyBindings.is_mouse(ch)):
 			beep()
 
 		self.repaint()
+
+	def on_scroll(self, btn):
+		self.focus()
+		n = len(self.items)
+
+		if(btn == MOUSE_WHEEL_DOWN and self.sel_index < n-1):
+			self.sel_index = (self.sel_index + 1) % n
+		elif(btn == MOUSE_WHEEL_UP):
+			if(self.sel_index <= 0):
+				self.sel_index = 0
+			else:
+				self.sel_index = (self.sel_index - 1) % n
 
 	def search(self, search_text):
 		if(search_text != None):

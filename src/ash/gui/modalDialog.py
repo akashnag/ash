@@ -68,7 +68,7 @@ class ModalDialog(Window):
 
 			if(KeyBindings.is_mouse(ch)):
 				btn, y, x = KeyBindings.get_mouse(ch)
-									
+				
 				if(btn == MOUSE_CLICK):
 					widget_found = False
 					for i, w in enumerate(self.widgets):
@@ -79,17 +79,22 @@ class ModalDialog(Window):
 							ry, rx = w.get_relative_coords(y,x)
 							w.on_click(ry,rx)
 							widget_found = True
+							ch = -1
 							break					
 					
 					if((not widget_found) and self.handler_func != None and is_enclosed(y, x, (self.y + 1, self.x + self.width - 3, 1, 1) )):
-						self.handler_func(KeyBindings.get_key("CLOSE_WINDOW"))					
+						self.handler_func(KeyBindings.get_key("CLOSE_WINDOW"))						
 				elif(btn == MOUSE_DOWN and is_enclosed(y, x, (self.y + 1, self.x + 1, 1, self.width - 3) )):
 					self.mouse_drag_start = True
 					self.mouse_drag_offset = (y, x)
+					ch = -1
 				elif(btn == MOUSE_UP and self.mouse_drag_start):
 					self.mouse_drag_start = False
-					self.drag_window(y, x, *self.mouse_drag_offset)	
-			elif(self.active_widget_index > -1):
+					self.drag_window(y, x, *self.mouse_drag_offset)
+					ch = -1
+				elif(btn in { MOUSE_WHEEL_UP, MOUSE_WHEEL_DOWN } and self.active_widget_index > -1):
+					self.get_active_widget().on_scroll(btn)
+			if(ch != -1 and self.active_widget_index > -1):
 				self.get_active_widget().perform_action(ch)
 
 			self.repaint()

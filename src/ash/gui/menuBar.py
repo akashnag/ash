@@ -55,7 +55,7 @@ class MenuBar:
 
 	def mouse_click(self, btn, y, x):
 		menu_index = self.get_menu_index_from_offset(y, x)
-		if(menu_index > -1 and menu_index != self.active_menu_index):
+		if(menu_index > -1):
 			self.active_menu_index = menu_index
 			self.show_dropdown()		
 		

@@ -113,3 +113,6 @@ class Widget:
 
 	def on_click(self, y, x):
 		pass
+
+	def on_scroll(self, btn):
+		pass

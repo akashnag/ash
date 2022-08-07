@@ -170,13 +170,25 @@ class GroupedListBox(Widget):
 				self.items[i].collapsed = True
 				self.render()
 				self.repaint()
-			else:
+			elif(not KeyBindings.is_mouse(ch)):
 				beep()
-		else:
+		elif(not KeyBindings.is_mouse(ch)):
 			beep()
 
 		if(self.callback != None): self.callback(self.sel_index)
 		self.repaint()
+
+	def on_scroll(self, btn):
+		self.focus()
+		n = len(self.items)
+
+		if(btn == MOUSE_WHEEL_DOWN and self.sel_index < n-1):
+			self.sel_index = (self.sel_index + 1) % n
+		elif(btn == MOUSE_WHEEL_UP):
+			if(self.sel_index <= 0):
+				self.sel_index = 0
+			else:
+				self.sel_index = (self.sel_index - 1) % n
 
 	def display(self, search_results, buffers):
 		# data must be a dictionary indexed by buffer-IDs

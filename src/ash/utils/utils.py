@@ -218,7 +218,7 @@ def get_word_boundary(text, x):
 	x2 = x
 	while(x1 >= 0 and (text[x1] not in sep_list)): x1 -= 1
 	while(x2 < n and (text[x2] not in sep_list)): x2 += 1
-	return (x1, x2)
+	return (x1 + 1, x2)
 
 # read data from stdin pipe
 #def read_piped_data():

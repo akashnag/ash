@@ -357,6 +357,7 @@ class Editor(Widget):
 		self.repaint()
 
 	def on_click(self, y, x):
+		self.selection_mode = False
 		if(self.popup_menu != None): self.popup_menu.hide_menu_bar()
 		curpos = self.screen.get_curpos_after_click(y, x, self.buffer.lines, self.width, self.tab_size, self.word_wrap, self.hard_wrap)
 		if(curpos != None): self.curpos = copy.copy(curpos)

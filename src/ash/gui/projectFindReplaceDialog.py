@@ -110,7 +110,7 @@ class ProjectFindReplaceDialog(Window):
 							self.hide()
 							self.parent.repaint()
 							return
-					elif(btn == MOUSE_DOWN and is_enclosed(y, x, (self.y + 1, self.x + 1, 1, self.width - 2) )):
+					elif(btn == MOUSE_DOWN and is_enclosed(y, x, (self.y + 1, self.x + 1, 1, self.width - 3) )):
 						self.mouse_drag_start = True
 						self.mouse_drag_offset = (y, x)
 					elif(btn == MOUSE_UP and self.mouse_drag_start):

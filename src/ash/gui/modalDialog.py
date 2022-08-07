@@ -80,7 +80,7 @@ class ModalDialog(Window):
 						
 						if((not widget_found) and self.handler_func != None and is_enclosed(y, x, (self.y + 1, self.x + self.width - 3, 1, 1) )):
 							self.handler_func(KeyBindings.get_key("CLOSE_WINDOW"))					
-					elif(btn == MOUSE_DOWN and is_enclosed(y, x, (self.y + 1, self.x + 1, 1, self.width - 2) )):
+					elif(btn == MOUSE_DOWN and is_enclosed(y, x, (self.y + 1, self.x + 1, 1, self.width - 3) )):
 						self.mouse_drag_start = True
 						self.mouse_drag_offset = (y, x)
 					elif(btn == MOUSE_UP and self.mouse_drag_start):

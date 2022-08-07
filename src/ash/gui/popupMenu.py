@@ -113,7 +113,8 @@ class PopupMenu:
 					self.select_item(self.sel_index)
 				elif(btn == MOUSE_CLICK and self.parent_menu != None):
 					self.hide_menu_bar()
-					self.parent_menu.repaint(self.parent_menu.parent.width)					
+					self.parent_menu.repaint(self.parent_menu.parent.width)
+					self.parent_menu.mouse_click(btn, y, x)
 				elif(btn != None):
 					self.win = None					
 

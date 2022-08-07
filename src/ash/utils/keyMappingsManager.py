@@ -289,7 +289,7 @@ class KeyMappingsManager:
 
 		keyFile = open(keymap_file, "wt")
 		json_object = json.dumps(data, indent = 4)
-		keyFile.write(json_object)
+		keyFile.write(json_object + "\n")
 		keyFile.close()
 
 	def remove_installed_keymap(self, keymap_name):

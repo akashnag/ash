@@ -76,7 +76,7 @@ class SettingsManager:
 	def write_settings(self, filename, settings):
 		sFile = open(filename, "wt")
 		json_object = json.dumps(settings, indent = 4)
-		sFile.write(json_object)
+		sFile.write(json_object + "\n")
 		sFile.close()
 
 	def load_settings(self, filename):

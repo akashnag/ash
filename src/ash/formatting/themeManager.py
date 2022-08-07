@@ -181,7 +181,7 @@ class ThemeManager:
 
 		json_object = json.dumps(data, indent = 4)
 		fp = open(theme_file, "wt")
-		fp.write(json_object)
+		fp.write(json_object + "\n")
 		fp.close()
 
 	def remove_installed_theme(self, theme_name):

@@ -480,7 +480,7 @@ class DialogHandler:
 			lstKeys.add_item(info)
 			lstKeys.add_item(" ")
 		
-		lstKeys.add_item("Custom key mappings can be set in $HOME/.ash-editor/keymaps/default.json")
+		lstKeys.add_item("Custom key mappings can be set in ~/.config/ash-editor/keymaps/default.json")
 		lstKeys.repaint()
 
 	def help_key_handler(self, ch):

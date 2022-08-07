@@ -1,3 +1,8 @@
+<!--
+	Copyright (c) Akash Nag. All rights reserved.
+	Licensed under the MIT License. See LICENSE.md in the project root for license information.
+-->
+
 # Contribution Guidelines
 
 This section contains the list of known bugs and features that are on the roadmap for implementation. If you want to contribute to this project, please start here. If you want to contribute, please consider contributing in the following order:

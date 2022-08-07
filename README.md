@@ -1,3 +1,8 @@
+<!--
+	Copyright (c) Akash Nag. All rights reserved.
+	Licensed under the MIT License. See LICENSE.md in the project root for license information.
+-->
+
 ![ash logo](./assets/banner.png)
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/akashnag/ash/blob/master/LICENSE.md) ![Downloads](https://img.shields.io/github/downloads/akashnag/ash/total) ![Size](https://img.shields.io/github/size/akashnag/ash/dist/ash-editor-0.1.0.dev13.tar.gz) ![SLOC](https://sloc.xyz/github/akashnag/ash)
@@ -11,6 +16,7 @@
 ## Table of Contents
 
 - [Features](#features)
+- [Release Notes](RELEASE_NOTES.md)
 - [Requirements](#requirements)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
@@ -142,7 +148,7 @@ $ python3 setup.py sdist
 
 ### Setting paths
 
-To run **ash** make sure you have `:$HOME/.local/bin` appended to your $PATH variable in the file `~/.bashrc`. To execute **ash**, see the [Usage](#usage) section.
+To run **ash** make sure you have `:$HOME/.local/bin` appended to your $PATH variable in the file `~/.bashrc` (If you are using `bash` as your shell. If not open your corresponding .rc file). To execute **ash**, see the [Usage](#usage) section.
 
 ### Uninstalling ash
 
@@ -158,7 +164,7 @@ Since **ash** is still under development, prebuilt binaries are not yet availabl
 
 ## Colors
 
-If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `default.json` JSON file inside the ~/.ash-editor/themes directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.ash-editor/themes/default.json`. The theme file defines the color names first followed by setting the foreground and the background colors of each GUI element of the app.
+If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `default.json` JSON file inside the `~/.config/ash-editor/themes` directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.config/ash-editor/themes/default.json`. The theme file defines the color names first followed by setting the foreground and the background colors of each GUI element of the app.
 
 ## Usage
 
@@ -168,6 +174,7 @@ Once you have downloaded the **ash** source code, and set it up as detailed abov
 
 1. If you have not updated your path variable, you must specify the full path to the ash binary.
 1. Your terminal resolution should be at least 102 (width) x 22 (height). Opening the editor in a lower resolution may unexpectedly crash the application. This requirement is necessary to properly display the dialog-boxes.
+1. It will take a while to start up **ash** for the first time, this is normal. From the second time onwards, it should start up faster.
 
 To run **ash**:
 
@@ -197,7 +204,7 @@ If you find any bugs, please report them. I am also happy to accept pull request
 
 ### Bug-fixes and feature enhancements
 
-You can use the [GitHub issue tracker](https://github.com/akashnag/ash/issues) to report bugs, ask questions, or suggest new features. You can include the log if that is relevant, which can be found in `~/.ash-editor/log.txt`.
+You can use the [GitHub issue tracker](https://github.com/akashnag/ash/issues) to report bugs, ask questions, or suggest new features. You can include the log if that is relevant, which can be found in `~/.config/ash-editor/log.txt`.
 
 ### Discussions
 

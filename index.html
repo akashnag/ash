@@ -1,3 +1,8 @@
+<!--
+	Copyright (c) Akash Nag. All rights reserved.
+	Licensed under the MIT License. See LICENSE.md in the project root for license information.
+-->
+
 <!DOCTYPE HTML>
 <html>
 	<head>
@@ -51,6 +56,7 @@
 
 				<ul>
 					<li><a href="#features">Features</a></li>
+					<li><a href="RELEASE_NOTES.md">Release Notes</a></li>
 					<li>
 						<a href="#installation">Installation</a>
 						<ul>
@@ -120,7 +126,7 @@ $ sudo apt install python3-pip
 				<p>Depending on your system, you may also need to install the following packages:</p>
 				<div class="highlight highlight-source-shell">
 <pre>
-$ sudo apt python3-devel
+$ sudo apt install python3-devel
 </pre>
 				</div>
 				
@@ -156,7 +162,7 @@ $ sudo pip3 uninstall ash-editor
 				<p>Since <strong>ash</strong> is still under development, prebuilt binaries are not yet available. You can use PyInstaller or similar tools to build one for your system.</p>
 				
 				<h2><a id="colors" class="anchor" href="#colors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Colors</h2>
-				<p>If you are using the default Ubuntu terminal, to enable 256 make sure your <code>TERM</code> variable is set to <code>xterm-256color</code>. After <strong>ash</strong> runs for the first time, it creates a <code>theme.txt</code> file inside your home directory. You can edit that file directly to change how <strong>ash</strong> looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset <strong>ash</strong> to its default colors, delete the configuration file using: <code>rm ~/.ash-editor/theme.txt</code>.</p>
+				<p>If you are using the default Ubuntu terminal, to enable 256 make sure your <code>TERM</code> variable is set to <code>xterm-256color</code>. After <strong>ash</strong> runs for the first time, it creates a <code>default.json</code> file inside your ~/.config/ash-editor/themes directory. You can edit that file directly to change how <strong>ash</strong> looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset <strong>ash</strong> to its default colors, delete the default theme file using: <code>rm ~/.config/ash-editor/themes/default.json</code>.</p>
 
 				<h2><a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
 				<p>Once you have downloaded the <strong>ash</strong> source code, and set it up as detailed above, you are ready to use it.</p>
@@ -164,6 +170,7 @@ $ sudo pip3 uninstall ash-editor
 				<ol>
 					<li>If you have not updated your path variable, you must specify the full path to the ash binary.</li>
 					<li>Your terminal resolution should be at least 102 (width) x 22 (height). Opening the editor in a lower resolution may unexpectedly crash the application. This requirement is necessary to properly display the dialog-boxes.</li>
+					<li>It will take a while to start up <strong>ash</strong> for the first time, this is normal. From the second time onwards, it should start up faster.</li>
 				</ol>
 				<p>To run <strong>ash</strong>:</p>
 

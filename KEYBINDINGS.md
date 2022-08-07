@@ -1,6 +1,11 @@
+<!--
+	Copyright (c) Akash Nag. All rights reserved.
+	Licensed under the MIT License. See LICENSE.md in the project root for license information.
+-->
+
 # Key Bindings for ash
 
-The following is a list of default key bindings for **ash**. All of these can be remapped as per the user's preferences by creating new keymaps in the `~/.ash-editor/keymaps/` directory. The default keymap is stored in the file 'default.json'.
+The following is a list of default key bindings for **ash**. All of these can be remapped as per the user's preferences by creating new keymaps in the `~/.config/ash-editor/keymaps/` directory. The default keymap is stored in the file 'default.json'.
 
 ### Global key combinations
 
@@ -108,4 +113,4 @@ These key combinations work when the Project Explorer dialog-box is active:
 
 **ash** also provides certain shortcuts for helping in editing code. It has support for auto-indentation when the previous line is indented. Also, pressing any of theese keys: <kbd>\`</kbd> <kbd>\'</kbd> <kbd>\"</kbd> <kbd>\(</kbd> <kbd>\{</kbd> <kbd>\[</kbd> while some text is selected, will cause **ash** to enclose the selected text within the pair of matching quotes/brackets.
 
-All of these key bindings can be changed by editing the file `~/.ash-editor/keymappings.txt`.
+All of these key bindings can be changed by editing the file `~/.config/ash-editor/keymaps/default.json`.

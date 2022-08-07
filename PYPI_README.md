@@ -1,3 +1,8 @@
+<!--
+	Copyright (c) Akash Nag. All rights reserved.
+	Licensed under the MIT License. See LICENSE.md in the project root for license information.
+-->
+
 ![ash logo](https://github.com/akashnag/ash/raw/master/assets/banner.png)
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/akashnag/ash/blob/master/LICENSE.md) ![Downloads](https://img.shields.io/github/downloads/akashnag/ash/total) ![Size](https://img.shields.io/github/size/akashnag/ash/dist/ash-editor-0.1.0.dev13.tar.gz) ![SLOC](https://sloc.xyz/github/akashnag/ash)
@@ -11,6 +16,7 @@
 ## Table of Contents
 
 - [Features](#features)
+- [Release Notes](https://github.com/akashnag/ash/blob/master/RELEASE_NOTES.md)
 - [Requirements](#requirements)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
@@ -24,8 +30,6 @@
 - [License](#license)
 
 - - -
-
-**Note: The latest version is always the nightly build that can be downloaded from the ash [website](https://akashnag.github.io/ash), and the information presented here always refers to that build only. Unless you have any specific reason not to, you should always download the nightly build to get the latest features/updates/bug-fixes.**
 
 ## Features
 
@@ -97,7 +101,7 @@ $ sudo apt install python3-devel
 $ sudo pip3 install ash-editor
 ```
 
-To run **ash** make sure you have `:$HOME/.local/bin` appended to your $PATH variable in the file `~/.bashrc`. To execute **ash**, see the [Usage](#usage) section.
+To run **ash** make sure you have `:$HOME/.local/bin` appended to your $PATH variable in the file `~/.bashrc` (If you are using `bash` as your shell. If not, edit the corresponding .rc file for your shell). To execute **ash**, see the [Usage](#usage) section.
 
 ### Uninstalling ash
 
@@ -109,7 +113,7 @@ $ sudo pip3 uninstall ash-editor
 
 ## Colors
 
-If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `default.json` JSON file inside the ~/.ash-editor/themes directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.ash-editor/themes/default.json`. The theme file defines the color names first followed by setting the foreground and the background colors of each GUI element of the app.
+If you are using the default Ubuntu terminal, to enable 256 make sure your `TERM` variable is set to `xterm-256color`. After **ash** runs for the first time, it creates a `default.json` JSON file inside the `~/.config/ash-editor/themes` directory. You can edit that file directly to change how **ash** looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset **ash** to its default colors, delete the configuration file using: `rm ~/.config/ash-editor/themes/default.json`. The theme file defines the color names first followed by setting the foreground and the background colors of each GUI element of the app.
 
 ## Usage
 

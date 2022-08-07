@@ -1,3 +1,8 @@
+# ---------------------------------------------------------------------------------------------
+#  Copyright (c) Akash Nag. All rights reserved.
+#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
+# ---------------------------------------------------------------------------------------------
+
 from setuptools import setup, find_packages
 
 # read the contents of the README file
@@ -36,6 +41,14 @@ setup(
 	package_data={'ash.core':['screen.pyx']},
 	include_package_data=True,
     entry_points = {'console_scripts': ['ash = ash.ash_main:run']},
-    data_files=[('docs', ['README.md', 'KEYBINDINGS.md', 'LICENSE.md']),
-    			('assets', ['assets/banner.png', 'assets/ash-default.png', 'assets/ss1.png', 'assets/ss2.png', 'assets/ss3.png', 'assets/ss4.png', 'assets/ss5.png'])]
+    data_files=[('docs', ['README.md', 'KEYBINDINGS.md', 'LICENSE.md', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md']),
+    			('assets', [
+								'assets/banner.png', 'assets/ash-default.png', 'assets/bmc-button.png',
+								'assets/ss1.png', 'assets/ss2.png', 'assets/ss3.png', 'assets/ss4.png', 
+								'assets/ss5.png', 'assets/ss6.png', 'assets/ss7.png', 'assets/ss8.png',
+								'assets/ss9.png', 'assets/ss10.png', 'assets/ss11.png', 'assets/ss12.png',
+								'assets/ss13.png', 'assets/ss14.png', 'assets/ss15.png', 'assets/ss16.png',
+								'assets/ss17.png', 'assets/ss18.png', 'assets/ss19.png', 'assets/ss20.png'
+							]
+				)]
 )

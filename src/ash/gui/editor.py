@@ -29,6 +29,7 @@ class Editor(Widget):
 		# initialize helper classes
 		self.utility = EditorUtility(self)
 		self.key_handler = EditorKeyHandler(self)
+		self.mouse_drag_start = False
 
 		# set up the text and cursor data structures
 		self.curpos = CursorPosition(0,0)
@@ -404,4 +405,33 @@ class Editor(Widget):
 		if(ret_code): self.buffer.update(self.curpos, self)
 
 		return ret_code
+
+	def on_drag_start(self, y, x):
+		self.mouse_drag_start = True
+		self.on_click(y, x)
 		
+	def on_drag_end(self, y, x):
+		if(self.mouse_drag_start):
+			self.mouse_drag_start = False
+			self.on_ctrl_click(y, x)
+
+	def on_ctrl_click(self, y, x):
+		if(self.popup_menu != None): self.popup_menu.hide_menu_bar()
+		curpos = self.screen.get_curpos_after_click(y, x, self.buffer.lines, self.width, self.tab_size, self.word_wrap, self.hard_wrap)
+		if(curpos == None): return
+		
+		if(self.curpos.y > curpos.y or (self.curpos.y == curpos.y and self.curpos.x >= curpos.x)):
+			self.sel_start.y = curpos.y
+			self.sel_start.x = curpos.x
+			self.sel_end.y = self.curpos.y
+			self.sel_end.x = self.curpos.x
+		else:
+			self.sel_start.y = self.curpos.y
+			self.sel_start.x = self.curpos.x
+			self.sel_end.y = curpos.y
+			self.sel_end.x = curpos.x
+
+		self.find_mode = False
+		self.selection_mode = True
+		self.highlighted_text = None
+		self.repaint()

@@ -120,7 +120,8 @@ class TopLevelWindow(Window):
 			elif(self.menu_bar_visible and (KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_UP") or KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_DOWN") or KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_NEXT") or KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_PREVIOUS") or KeyBindings.is_key(ch, "LIST_MAKE_SELECTION"))):
 				self.menu_bar.perform_action(ch)
 			elif(KeyBindings.is_mouse(ch)):
-				btn, y, x = KeyBindings.get_mouse(ch)				
+				btn, y, x = KeyBindings.get_mouse(ch)
+
 				if(btn == MOUSE_CLICK and y == 0 and self.menu_bar == None):
 					self.show_menu_bar()
 				elif(btn == MOUSE_CLICK and self.menu_bar != None and y == self.menu_bar.y):
@@ -143,6 +144,12 @@ class TopLevelWindow(Window):
 								w.on_scroll_up()
 							elif(btn == MOUSE_WHEEL_DOWN):
 								w.on_scroll_down()
+							elif(btn == MOUSE_DOWN):
+								w.on_drag_start(ry, rx)
+							elif(btn == MOUSE_UP):
+								w.on_drag_end(ry, rx)
+							elif(btn == MOUSE_CTRL_CLICK):
+								w.on_ctrl_click(ry, rx)
 							break
 				
 			else:

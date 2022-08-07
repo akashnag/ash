@@ -62,33 +62,35 @@ class ModalDialog(Window):
 					self.parent.repaint()
 					ch = -1
 			
-			if(ch > -1):
-				if(KeyBindings.is_mouse(ch)):
-					btn, y, x = KeyBindings.get_mouse(ch)
-										
-					if(btn == MOUSE_CLICK):
-						widget_found = False
-						for i, w in enumerate(self.widgets):
-							if(is_enclosed(y, x, w.get_bounds())):
-								self.get_active_widget().blur()
-								w.focus()
-								self.active_widget_index = i
-								ry, rx = w.get_relative_coords(y,x)
-								w.on_click(ry,rx)
-								widget_found = True
-								break					
-						
-						if((not widget_found) and self.handler_func != None and is_enclosed(y, x, (self.y + 1, self.x + self.width - 3, 1, 1) )):
-							self.handler_func(KeyBindings.get_key("CLOSE_WINDOW"))					
-					elif(btn == MOUSE_DOWN and is_enclosed(y, x, (self.y + 1, self.x + 1, 1, self.width - 3) )):
-						self.mouse_drag_start = True
-						self.mouse_drag_offset = (y, x)
-					elif(btn == MOUSE_UP and self.mouse_drag_start):
-						self.mouse_drag_start = False
-						self.drag_window(y, x, *self.mouse_drag_offset)
+			if(ch == -1):
+				self.repaint()
+				continue
 
-				elif(self.active_widget_index > -1):
-					self.get_active_widget().perform_action(ch)
+			if(KeyBindings.is_mouse(ch)):
+				btn, y, x = KeyBindings.get_mouse(ch)
+									
+				if(btn == MOUSE_CLICK):
+					widget_found = False
+					for i, w in enumerate(self.widgets):
+						if(is_enclosed(y, x, w.get_bounds())):
+							self.get_active_widget().blur()
+							w.focus()
+							self.active_widget_index = i
+							ry, rx = w.get_relative_coords(y,x)
+							w.on_click(ry,rx)
+							widget_found = True
+							break					
+					
+					if((not widget_found) and self.handler_func != None and is_enclosed(y, x, (self.y + 1, self.x + self.width - 3, 1, 1) )):
+						self.handler_func(KeyBindings.get_key("CLOSE_WINDOW"))					
+				elif(btn == MOUSE_DOWN and is_enclosed(y, x, (self.y + 1, self.x + 1, 1, self.width - 3) )):
+					self.mouse_drag_start = True
+					self.mouse_drag_offset = (y, x)
+				elif(btn == MOUSE_UP and self.mouse_drag_start):
+					self.mouse_drag_start = False
+					self.drag_window(y, x, *self.mouse_drag_offset)	
+			elif(self.active_widget_index > -1):
+				self.get_active_widget().perform_action(ch)
 
 			self.repaint()
 		

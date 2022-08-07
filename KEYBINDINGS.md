@@ -84,6 +84,8 @@ These key combinations work only if an editor is currently active.
 |<kbd>Ctrl</kbd> + <kbd>K</kbd>|Add a cursor below|
 |<kbd>Ctrl</kbd> + <kbd>^</kbd>|Cancel multi-cursor mode|
 
+Besides the above, <kbd>Ctrl</kbd> + <kbd>click</kbd> and mouse-drag will select text, and mouse wheel will move the cursor 2 lines in either direction.
+
 ### Commands for find and replace operations
 
 These key combinations work when the Find/Replace dialog box is active:

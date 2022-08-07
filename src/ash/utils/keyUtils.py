@@ -17,6 +17,10 @@ MOUSE_WHEEL_UP			= 5
 MOUSE_WHEEL_DOWN		= 6
 MOUSE_TRIPLE_CLICK		= 7
 
+MOUSE_SHIFT_CLICK		= 8
+MOUSE_CTRL_CLICK		= 9
+MOUSE_ALT_CLICK			= 10
+
 # <------------------ arrow symbols ----------------------->
 
 ARROW_LEFT				= "\u2190"
@@ -74,6 +78,12 @@ class KeyBindings:
 			btn = MOUSE_WHEEL_UP
 		elif(bstate == 2097152):
 			btn = MOUSE_WHEEL_DOWN
+		elif(bstate == curses.BUTTON_SHIFT | curses.BUTTON1_CLICKED):
+			btn = MOUSE_SHIFT_CLICK		# this is not working
+		elif(bstate == 33554436):
+			btn = MOUSE_CTRL_CLICK
+		elif(bstate == 134217729 or bstate == 134217730):
+			btn = MOUSE_ALT_CLICK
 		else:
 			btn = None
 		return (btn, y, x)

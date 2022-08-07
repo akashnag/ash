@@ -162,7 +162,7 @@ class AshEditorApp:
 		self.stdscr = stdscr
 		self.screen_height, self.screen_width = self.stdscr.getmaxyx()				
 		curses.raw()
-		curses.mousemask(curses.ALL_MOUSE_EVENTS)
+		curses.mousemask(curses.REPORT_MOUSE_POSITION | curses.ALL_MOUSE_EVENTS)
 		
 		# create manager objects
 		self.buffers = BufferManager(self)

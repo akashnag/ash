@@ -70,9 +70,9 @@ class KeyBindings:
 			btn = MOUSE_DOWN
 		elif(bstate == curses.BUTTON1_RELEASED):
 			btn = MOUSE_UP
-		elif(bstate == curses.BUTTON4_CLICKED):
+		elif(bstate == curses.BUTTON4_PRESSED):
 			btn = MOUSE_WHEEL_UP
-		elif(bstate == curses.BUTTON2_CLICKED):
+		elif(bstate == 2097152):
 			btn = MOUSE_WHEEL_DOWN
 		else:
 			btn = None

@@ -346,6 +346,14 @@ class Editor(Widget):
 	def get_relative_coords(self, y, x):
 		return (y - self.y, x - self.x)
 
+	def on_scroll_up(self):
+		self.key_handler.handle_arrow_keys(KeyBindings.get_key("MOVE_CURSOR_UP"))
+		self.key_handler.handle_arrow_keys(KeyBindings.get_key("MOVE_CURSOR_UP"))
+
+	def on_scroll_down(self):
+		self.key_handler.handle_arrow_keys(KeyBindings.get_key("MOVE_CURSOR_DOWN"))
+		self.key_handler.handle_arrow_keys(KeyBindings.get_key("MOVE_CURSOR_DOWN"))
+
 	def on_double_click(self, y, x):
 		self.on_click(y, x)
 		self.key_handler.handle_select_word()

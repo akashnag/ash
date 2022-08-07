@@ -120,7 +120,7 @@ class TopLevelWindow(Window):
 			elif(self.menu_bar_visible and (KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_UP") or KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_DOWN") or KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_NEXT") or KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_PREVIOUS") or KeyBindings.is_key(ch, "LIST_MAKE_SELECTION"))):
 				self.menu_bar.perform_action(ch)
 			elif(KeyBindings.is_mouse(ch)):
-				btn, y, x = KeyBindings.get_mouse(ch)
+				btn, y, x = KeyBindings.get_mouse(ch)				
 				if(btn == MOUSE_CLICK and y == 0 and self.menu_bar == None):
 					self.show_menu_bar()
 				elif(btn == MOUSE_CLICK and self.menu_bar != None and y == self.menu_bar.y):
@@ -139,7 +139,12 @@ class TopLevelWindow(Window):
 								w.on_double_click(ry, rx)
 							elif(btn == MOUSE_TRIPLE_CLICK):
 								w.on_triple_click(ry, rx)
+							elif(btn == MOUSE_WHEEL_UP):
+								w.on_scroll_up()
+							elif(btn == MOUSE_WHEEL_DOWN):
+								w.on_scroll_down()
 							break
+				
 			else:
 				aed = self.get_active_editor()
 				if(aed != None):
@@ -393,7 +398,6 @@ class TopLevelWindow(Window):
 		
 		self.app.command_interpreter.execute_shell_command_in_terminal([compiler_command])
 
-
 	def execute_current_file(self):
 		aed = self.get_active_editor()
 		if(aed == None):
@@ -431,7 +435,6 @@ class TopLevelWindow(Window):
 		execution_command = execution_command.replace("%f", f"'{filename}'")
 		
 		self.app.command_interpreter.execute_shell_command_in_terminal([execution_command])
-
 
 	def build_current_project(self):
 		if(self.app.app_mode != APP_MODE_PROJECT):

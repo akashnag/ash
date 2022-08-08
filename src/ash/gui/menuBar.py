@@ -24,6 +24,13 @@ class MenuBar:
 		self.items.append( (text, dropdown_menu) )
 		self.active_menu_index = 0
 		self.update_item_offsets()
+
+	def get_menu_offset(self, menu_text):
+		offset = 0
+		for i, (text, _) in enumerate(self.items):
+			if(text == menu_text): return offset
+			offset += (2 + len(text))
+		return None
 	
 	def update_item_offsets(self):
 		offset = self.x

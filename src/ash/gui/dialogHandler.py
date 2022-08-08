@@ -95,10 +95,10 @@ class DialogHandler:
 			self.app.warn_insufficient_screen_space()
 			return
 
-		self.app.dlgGoTo = ModalDialog(self.app.main_window, y, x, 5, 25, "GO TO LINE", self.go_to_key_handler)
+		self.app.dlgGoTo = ModalDialog(self.app.main_window, y, x, 5, 25, self.app.localisation_manager.translate("GO TO LINE"), self.go_to_key_handler)
 		currentLine = str(self.app.main_window.get_active_editor().curpos.y + 1)
 		
-		lblLineNumber = Label(self.app.dlgGoTo, 3, 2, "Line.Col: ")
+		lblLineNumber = Label(self.app.dlgGoTo, 3, 2, self.app.localisation_manager.translate("Line.Col: "))
 		txtLineNumber = TextField(self.app.dlgGoTo, 3, 12, 11, currentLine, True, callback = self.go_to_live_preview_key_handler)
 		
 		self.app.dlgGoTo.add_widget("lblLineNumber", lblLineNumber)
@@ -133,7 +133,7 @@ class DialogHandler:
 					col = 0
 			except:
 				if(isn): 
-					self.app.show_error("Invalid line number specified")
+					self.app.show_error(self.app.localisation_manager.translate("Invalid line number specified"))
 					return -1
 				else:
 					return ch
@@ -177,7 +177,11 @@ class DialogHandler:
 				mw.close_active_editor()
 				return
 			
-			response = self.app.ask_question("SAVE/DISCARD ALL", "One or more unsaved files exist, choose:\nYes: save all filed-changes and quit (unguaranteed in case of errors)\nNo: discard all unsaved changes and quit\nCancel: don't quit", True)
+			response = self.app.ask_question(
+				self.app.localisation_manager.translate("SAVE/DISCARD ALL"), 
+				self.app.localisation_manager.translate("One or more unsaved files exist, choose:\nYes: save all filed-changes and quit (unguaranteed in case of errors)\nNo: discard all unsaved changes and quit\nCancel: don't quit"), 
+				True
+			)
 			if(response == None): return
 			if(response): self.app.buffers.write_all_wherever_possible()
 			
@@ -854,112 +858,6 @@ class DialogHandler:
 
 	def invoke_command_palette(self):
 		self.app.command_interpreter.interpret_command(self.app.prompt("COMMAND", "Enter command:", width=50))
-
-	# <-------------------------------- Theme Manager ---------------------------->
-
-	def invoke_theme_manager(self):
-		self.app.readjust()
-		try:
-			y, x = get_center_coords(self.app, 16, 60)
-		except:
-			self.app.warn_insufficient_screen_space()
-			return
-			
-		self.app.dlgThemeManager = ModalDialog(self.app.main_window, y, x, 16, 60, "THEME MANAGER", self.theme_manager_key_handler)
-		
-		lblFileName = Label(self.app.dlgThemeManager, 3, 2, "Install theme from URL:")
-		txtFileName = TextField(self.app.dlgThemeManager, 4, 2, 56, "http://")
-		
-		lblChangeTheme = Label(self.app.dlgThemeManager, 6, 2, "Change theme:")
-		lstThemes = ListBox(self.app.dlgThemeManager, 7, 2, 56, 8, "(No themes installed)", callback=self.theme_selection_changed, supports_colors=self.app.supports_colors)
-
-		installed_themes = self.app.theme_manager.get_installed_themes()
-		for t in installed_themes:
-			current = t[1]
-			theme_name = t[0]
-			lstThemes.add_item("  " if not current else TICK_MARK + " " + theme_name, tag=theme_name)
-		
-		self.app.dlgThemeManager.add_widget("lblFileName", lblFileName)
-		self.app.dlgThemeManager.add_widget("txtFileName", txtFileName)
-		self.app.dlgThemeManager.add_widget("lblChangeTheme", lblChangeTheme)
-		self.app.dlgThemeManager.add_widget("lstThemes", lstThemes)
-		
-		self.app.dlgThemeManager.show()
-
-	def theme_manager_key_handler(self, ch):
-		txtFileName = self.app.dlgThemeManager.get_widget("txtFileName")
-		lstThemes = self.app.dlgThemeManager.get_widget("lstThemes")
-
-		if(KeyBindings.is_key(ch, "CLOSE_WINDOW") or KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")):
-			self.app.dlgThemeManager.hide()
-			return -1
-		elif(txtFileName.is_in_focus and KeyBindings.is_key(ch, "FINALIZE_CHOICE")):
-			if(self.app.ask_question("INSTALL THEME", "Are you sure you want to fetch and install the specified theme?")):
-				self.app.dlgThemeManager.hide()
-				self.app.theme_manager.install_theme(str(txtFileName))
-				return -1
-		elif(lstThemes.is_in_focus and KeyBindings.is_key(ch, "LIST_MAKE_SELECTION")):
-			self.app.dlgThemeManager.hide()
-			return -1
-		
-		return ch
-
-	def theme_selection_changed(self, sel_index):
-		lstThemes = self.app.dlgThemeManager.get_widget("lstThemes")
-		theme_name = lstThemes.get_sel_tag()
-		self.app.theme_manager.set_theme(theme_name)
-
-	# <---------------------- Key Mappings Manager ------------------------------------>
-
-	def invoke_key_mappings_manager(self):
-		self.app.readjust()
-		try:
-			y, x = get_center_coords(self.app, 16, 60)
-		except:
-			self.app.warn_insufficient_screen_space()
-			return
-			
-		self.app.dlgKeyMappingsManager = ModalDialog(self.app.main_window, y, x, 16, 60, "KEY MAPPINGS", self.key_mappings_manager_key_handler)
-		
-		lblFileName = Label(self.app.dlgKeyMappingsManager, 3, 2, "Install keymap from URL:")
-		txtFileName = TextField(self.app.dlgKeyMappingsManager, 4, 2, 56, "http://")
-		
-		lblChangeKeyMap = Label(self.app.dlgKeyMappingsManager, 6, 2, "Change keymap:")
-		lstKeyMaps = ListBox(self.app.dlgKeyMappingsManager, 7, 2, 56, 8, "(No keymaps installed)", supports_colors=self.app.supports_colors)
-
-		installed_keymaps = self.app.key_mappings_manager.get_installed_keymaps()
-		for t in installed_keymaps:
-			current = t[1]
-			keymap_name = t[0]
-			lstKeyMaps.add_item("  " if not current else TICK_MARK + " " + keymap_name, tag=keymap_name)
-		
-		self.app.dlgKeyMappingsManager.add_widget("lblFileName", lblFileName)
-		self.app.dlgKeyMappingsManager.add_widget("txtFileName", txtFileName)
-		self.app.dlgKeyMappingsManager.add_widget("lblChangeKeyMap", lblChangeKeyMap)
-		self.app.dlgKeyMappingsManager.add_widget("lstKeyMaps", lstKeyMaps)
-		
-		self.app.dlgKeyMappingsManager.show()
-
-	def key_mappings_manager_key_handler(self, ch):
-		txtFileName = self.app.dlgKeyMappingsManager.get_widget("txtFileName")
-		lstKeyMaps = self.app.dlgKeyMappingsManager.get_widget("lstKeyMaps")
-
-		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
-			self.app.dlgKeyMappingsManager.hide()
-			return -1
-		elif(txtFileName.is_in_focus and KeyBindings.is_key(ch, "FINALIZE_CHOICE")):
-			if(self.app.ask_question("INSTALL KEYMAP", "Are you sure you want to fetch and install the specified keymap?")):
-				self.app.dlgKeyMappingsManager.hide()
-				self.app.key_mappings_manager.install_keymap(str(txtFileName))
-				return -1
-		elif(lstKeyMaps.is_in_focus and KeyBindings.is_key(ch, "LIST_MAKE_SELECTION")):
-			if(self.app.ask_question("CHANGE KEYMAP", "Are you sure you want to change the current keymap?")):
-				self.app.dlgKeyMappingsManager.hide()
-				keymap_name = lstKeyMaps.get_sel_tag()
-				self.app.key_mappings_manager.set_keymap(keymap_name)
-				return -1
-		
-		return ch
 
 	# <---------------------- Settings ------------------------------------------------>
 

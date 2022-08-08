@@ -19,6 +19,7 @@ from ash.utils.fileUtils import *
 from ash.utils.commandUtils import *
 from ash.utils.keyMappingsManager import *
 from ash.utils.settingsManager import *
+from ash.utils.localisationManager import *
 
 from ash.formatting.colors import *
 from ash.formatting.formatting import *
@@ -45,8 +46,13 @@ class AshEditorApp:
 		if(not os.path.exists(APP_THEMES_DIR)): os.mkdir(APP_THEMES_DIR)
 
 		log_init()
-		
-	
+			
+	def recreate_manager_objects(self):
+		self.settings_manager = SettingsManager(self)
+		self.theme_manager = ThemeManager(self)
+		self.key_mappings_manager = KeyMappingsManager(self)
+		self.localisation_manager = LocalisationManager(self)
+
 	def open_project(self, progress_handler = None, ask_to_restore_session = True):
 		# add project path to recent record
 		self.session_storage.add_opened_file_to_record(self.project_dir)
@@ -55,7 +61,7 @@ class AshEditorApp:
 		all_files = glob.glob(self.project_dir + "/**/*", recursive=True)
 
 		# reset the settings
-		self.settings_manager = SettingsManager(self)
+		self.recreate_manager_objects()
 
 		# create buffers for each file
 		for i, f in enumerate(all_files):
@@ -95,7 +101,7 @@ class AshEditorApp:
 			self.app_mode = APP_MODE_FILE
 			
 			# SettingsManager must be initialized after setting of app_mode property
-			self.settings_manager = SettingsManager(self)
+			self.recreate_manager_objects()
 		
 			# data is piped: will hang due to not processing EOF
 			# no solution found :(
@@ -104,14 +110,14 @@ class AshEditorApp:
 			self.project_dir = str(os.path.abspath(self.args[1]))
 
 			# SettingsManager must be initialized after setting of app_mode property
-			self.settings_manager = SettingsManager(self)
+			self.recreate_manager_objects()
 		
 			self.open_project(progress_handler)
 		else:
 			self.app_mode = APP_MODE_FILE
 		
 			# SettingsManager must be initialized after setting of app_mode property
-			self.settings_manager = SettingsManager(self)
+			self.recreate_manager_objects()
 		
 			self.open_files_from_commandline_args(progress_handler)
 
@@ -166,8 +172,6 @@ class AshEditorApp:
 		
 		# create manager objects
 		self.buffers = BufferManager(self)
-		self.theme_manager = ThemeManager(self)
-		self.key_mappings_manager = KeyMappingsManager(self)
 		
 		# create the Main Window and session storage objects
 		self.main_window = TopLevelWindow(self, self.stdscr, "ash " + self.get_app_version(), self.main_key_handler)

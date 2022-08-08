@@ -229,6 +229,26 @@ def get_word_boundary(text, x):
 #		data += x
 #	return (data if len(data) > 0 else None)
 
+def recurse_up_till_app(obj_start):
+	obj = obj_start
+	while(obj != None):
+		try:
+			obj = obj.app
+			break
+		except:
+			try:
+				obj = obj.win
+			except:
+				obj = obj.parent
+	return obj
+
+def get_max_length_in_list(data, is_tuple = False, tuple_index = 0):
+	max_len = 0
+	for d in data:
+		item = d[tuple_index] if(is_tuple) else d
+		if(len(item) > max_len): max_len = len(item)
+	return max_len
+
 """
 def read_char_from_stdin(data):
 	data.append(sys.stdin.read(1))

@@ -231,7 +231,12 @@ class Buffer:
 	# checks to see if current file is any one of special files, if so trigger refresh
 	def fire_special_file_on_save_triggers(self):
 		if(self.filename == self.manager.app.settings_manager.get_current_settings_file()):
+			# reload settings, locale and theme (do not reload keymap as it may cause issues for the user: keymap changes will take effect on app restart)
 			self.manager.app.settings_manager.reload_settings()
+			self.manager.app.theme_manager.refresh_theme()
+			self.manager.app.localisation_manager.refresh_locale()
+			self.reload_from_disk()		# this is needed if bogus theme/language set then it will revert to default: this change will be missed by ash unless this function is called
+			
 			aed = self.manager.app.main_window.get_active_editor()
 			if(aed != None): aed.reset_preferences()
 			self.manager.app.main_window.repaint()

@@ -121,7 +121,6 @@ class TopLevelWindow(Window):
 				self.menu_bar.perform_action(ch)
 			elif(KeyBindings.is_mouse(ch)):
 				btn, y, x = KeyBindings.get_mouse(ch)
-
 				if(btn == MOUSE_CLICK and y == 0 and self.menu_bar == None):
 					self.show_menu_bar()
 				elif(btn == MOUSE_CLICK and self.menu_bar != None and y == self.menu_bar.y):
@@ -256,106 +255,113 @@ class TopLevelWindow(Window):
 		self.menu_bar = MenuBar(self, self.win, 0, 0, supports_colors=self.app.supports_colors)
 		has_editor = (True if aed != None else False)
 
+		lang_mgr = self.app.localisation_manager
+
 		file_menu_items = [
-			("New File...", True, adh.invoke_file_new),
-			("Open File/Project...", True, adh.invoke_file_open),
+			(lang_mgr.translate("New File..."), True, adh.invoke_file_new),
+			(lang_mgr.translate("Open File/Project..."), True, adh.invoke_file_open),
 			("---", True, None),
-			("Save", has_editor, self.save_active_editor),
-			("Save As...", has_editor, (adh.invoke_file_save_as, aed_buffer) if has_editor else None),
-			("Save & Close", has_editor, self.save_and_close_active_editor),
-			("Save All", True, adh.handle_save_all),
+			(lang_mgr.translate("Save"), has_editor, self.save_active_editor),
+			(lang_mgr.translate("Save As..."), has_editor, (adh.invoke_file_save_as, aed_buffer) if has_editor else None),
+			(lang_mgr.translate("Save & Close"), has_editor, self.save_and_close_active_editor),
+			(lang_mgr.translate("Save all"), True, adh.handle_save_all),
 			("---", True, None),
-			("Close All", True, self.close_all_tabs),
-			("Exit", True, adh.handle_exit)
+			(lang_mgr.translate("Close all"), True, self.close_all_tabs),
+			(lang_mgr.translate("Exit"), True, adh.handle_exit)
 		]
 
 		edit_menu_items = [
-			("Undo", has_editor, (aedkh.handle_undo if has_editor else None)),
-			("Redo", has_editor, (aedkh.handle_redo if has_editor else None)),
+			(lang_mgr.translate("Undo"), has_editor, (aedkh.handle_undo if has_editor else None)),
+			(lang_mgr.translate("Redo"), has_editor, (aedkh.handle_redo if has_editor else None)),
 			("---", True, None),
-			("Cut", has_editor and aed.selection_mode, (aedkh.handle_cut if has_editor else None)),
-			("Copy", has_editor and aed.selection_mode, (aedkh.handle_copy if has_editor else None)),
-			("Paste", has_editor, (aedkh.handle_paste if has_editor else None)),
+			(lang_mgr.translate("Cut"), has_editor and aed.selection_mode, (aedkh.handle_cut if has_editor else None)),
+			(lang_mgr.translate("Copy"), has_editor and aed.selection_mode, (aedkh.handle_copy if has_editor else None)),
+			(lang_mgr.translate("Paste"), has_editor, (aedkh.handle_paste if has_editor else None)),
 			("---", True, None),
-			("Select All", has_editor, (aedkh.handle_select_all if has_editor else None)),
-			("Select Line", has_editor, (aedkh.handle_select_line if has_editor else None)),
+			(lang_mgr.translate("Select all"), has_editor, (aedkh.handle_select_all if has_editor else None)),
+			(lang_mgr.translate("Select line"), has_editor, (aedkh.handle_select_line if has_editor else None)),
 			("---", True, None),
-			("Find", has_editor, adh.invoke_find),
-			("Find & Replace", has_editor, adh.invoke_find_and_replace),
-			("Find in all files", True, adh.invoke_project_find),
-			("Find & Replace in all files", True, adh.invoke_project_find_and_replace)
+			(lang_mgr.translate("Find..."), has_editor, adh.invoke_find),
+			(lang_mgr.translate("Find & Replace..."), has_editor, adh.invoke_find_and_replace),
+			(lang_mgr.translate("Find in all files..."), True, adh.invoke_project_find),
+			(lang_mgr.translate("Find & Replace in all files..."), True, adh.invoke_project_find_and_replace)
 		]
 
 		view_menu_items = [
-			("Go to line...", has_editor, adh.invoke_go_to_line),
-			("Command Palette...", True, adh.invoke_command_palette),
-			("Preferences...", has_editor, adh.invoke_set_preferences),
-			("Open tabs...", True, adh.invoke_show_active_tabs),
+			(lang_mgr.translate("Go to line..."), has_editor, adh.invoke_go_to_line),
+			(lang_mgr.translate("Command Palette..."), True, adh.invoke_command_palette),
+			(lang_mgr.translate("Preferences..."), has_editor, adh.invoke_set_preferences),
+			(lang_mgr.translate("Open tabs..."), True, adh.invoke_show_active_tabs),
 			("---", True, None),
-			("Active Buffers/Files...", True, adh.invoke_list_active_files),
-			("Recent Files...", True, adh.invoke_recent_files),
-			("Project Explorer...", self.app.app_mode == APP_MODE_PROJECT, adh.invoke_project_explorer),
+			(lang_mgr.translate("Active Buffers/Files..."), True, adh.invoke_list_active_files),
+			(lang_mgr.translate("Recent files..."), True, adh.invoke_recent_files),
+			(lang_mgr.translate("Project Explorer..."), self.app.app_mode == APP_MODE_PROJECT, adh.invoke_project_explorer),
 			("---", True, None),
-			((TICK_MARK + " Status bar" if self.show_statusbar else "Status bar"), True, self.toggle_statusbar_visibility)
+			(lang_mgr.translate((TICK_MARK + " Status bar" if self.show_statusbar else "Status bar")), True, self.toggle_statusbar_visibility)
 		]
 
 		tools_menu_items = [
-			("Theme Manager...", True, adh.invoke_theme_manager),
-			("Key Mappings...", True, adh.invoke_key_mappings_manager),
-			("---", True, None),
-			("Project Settings", self.app.app_mode == APP_MODE_PROJECT, adh.invoke_project_settings),
-			("Global Settings", True, adh.invoke_global_settings)
+			(lang_mgr.translate("Project Settings"), self.app.app_mode == APP_MODE_PROJECT, adh.invoke_project_settings),
+			(lang_mgr.translate("Global Settings"), True, adh.invoke_global_settings)
 		]
 
 		run_menu_items = [
-			("Compile file", has_editor, self.compile_current_file),
-			("Execute file", has_editor, self.execute_current_file),
+			(lang_mgr.translate("Compile file"), has_editor, self.compile_current_file),
+			(lang_mgr.translate("Execute file"), has_editor, self.execute_current_file),
 			("---", True, None),
-			("Build project", self.app.app_mode == APP_MODE_PROJECT, self.build_current_project),
-			("Execute project", self.app.app_mode == APP_MODE_PROJECT, self.execute_current_project)
+			(lang_mgr.translate("Build project"), self.app.app_mode == APP_MODE_PROJECT, self.build_current_project),
+			(lang_mgr.translate("Execute project"), self.app.app_mode == APP_MODE_PROJECT, self.execute_current_project)
 		]
 
 		window_menu_items = [
-			("New Tab", True, self.add_blank_tab),
+			(lang_mgr.translate("New tab"), True, self.add_blank_tab),
 			("---", True, None),
-			("Close active tab", True, self.close_active_tab),
-			("Close active editor", True, self.close_active_editor),
-			("Close all but active editor", True, self.close_all_except_active_editor),
+			(lang_mgr.translate("Close active tab"), True, self.close_active_tab),
+			(lang_mgr.translate("Close active editor"), True, self.close_active_editor),
+			(lang_mgr.translate("Close all but active editor"), True, self.close_all_except_active_editor),
 			("---", True, None),
-			("Split Horizontally", True, self.split_horizontally),
-			("Split Vertically", True, self.split_vertically),
-			("Merge Horizontally", True, self.merge_horizontally),
-			("Merge Vertically", True, self.merge_vertically),
+			(lang_mgr.translate("Split horizontally"), True, self.split_horizontally),
+			(lang_mgr.translate("Split vertically"), True, self.split_vertically),
+			(lang_mgr.translate("Merge horizontally"), True, self.merge_horizontally),
+			(lang_mgr.translate("Merge vertically"), True, self.merge_vertically),
 			("---", True, None),
-			("Switch to next editor", True, self.switch_to_next_editor),
-			("Switch to previous editor", True, self.switch_to_previous_editor),
-			("Switch to next tab", True, self.switch_to_next_tab),
-			("Switch to previous tab", True, self.switch_to_previous_tab)
+			(lang_mgr.translate("Switch to next editor"), True, self.switch_to_next_editor),
+			(lang_mgr.translate("Switch to previous editor"), True, self.switch_to_previous_editor),
+			(lang_mgr.translate("Switch to next tab"), True, self.switch_to_next_tab),
+			(lang_mgr.translate("Switch to previous tab"), True, self.switch_to_previous_tab)
 		]
 
 		help_menu_items = [
-			("Key Bindings", True, adh.invoke_help_key_bindings),
-			("About...", True, adh.invoke_help_about)
+			(lang_mgr.translate("Key Bindings"), True, adh.invoke_help_key_bindings),
+			(lang_mgr.translate("About..."), True, adh.invoke_help_about)
 		]
 
-		mnuFile = PopupMenu(self, 1, 0, file_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
-		mnuEdit = PopupMenu(self, 1, 6, edit_menu_items, width = 35, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
-		mnuView = PopupMenu(self, 1, 12, view_menu_items, width=28, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
-		mnuTools = PopupMenu(self, 1, 18, tools_menu_items, width=25, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
-		mnuRun = PopupMenu(self, 1, 25, run_menu_items, width = 20, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
-		mnuWindow = PopupMenu(self, 1, 30, window_menu_items, width = 35, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
-		mnuHelp = PopupMenu(self, 1, 38, help_menu_items, width=20, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuFile = PopupMenu(self, 1, 0, file_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuEdit = PopupMenu(self, 1, 0, edit_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuView = PopupMenu(self, 1, 0, view_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuTools = PopupMenu(self, 1, 0, tools_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuRun = PopupMenu(self, 1, 0, run_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuWindow = PopupMenu(self, 1, 0, window_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuHelp = PopupMenu(self, 1, 0, help_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
 
 		# |FILE||EDIT||VIEW||TOOLS||RUN||WINDOW||HELP|
 		# 01234567890123456789012345678901234567890123
 
-		self.menu_bar.add_menu("File", mnuFile)
-		self.menu_bar.add_menu("Edit", mnuEdit)
-		self.menu_bar.add_menu("View", mnuView)
-		self.menu_bar.add_menu("Tools", mnuTools)
-		self.menu_bar.add_menu("Run", mnuRun)
-		self.menu_bar.add_menu("Window", mnuWindow)
-		self.menu_bar.add_menu("Help", mnuHelp)
+		self.menu_bar.add_menu(lang_mgr.translate("File"), mnuFile)
+		self.menu_bar.add_menu(lang_mgr.translate("Edit"), mnuEdit)
+		self.menu_bar.add_menu(lang_mgr.translate("View"), mnuView)
+		self.menu_bar.add_menu(lang_mgr.translate("Tools"), mnuTools)
+		self.menu_bar.add_menu(lang_mgr.translate("Run"), mnuRun)
+		self.menu_bar.add_menu(lang_mgr.translate("Window"), mnuWindow)
+		self.menu_bar.add_menu(lang_mgr.translate("Help"), mnuHelp)
+
+		mnuFile.update_position(1, self.menu_bar.get_menu_offset(lang_mgr.translate("File")))
+		mnuEdit.update_position(1, self.menu_bar.get_menu_offset(lang_mgr.translate("Edit")))
+		mnuView.update_position(1, self.menu_bar.get_menu_offset(lang_mgr.translate("View")))
+		mnuTools.update_position(1, self.menu_bar.get_menu_offset(lang_mgr.translate("Tools")))
+		mnuRun.update_position(1, self.menu_bar.get_menu_offset(lang_mgr.translate("Run")))
+		mnuWindow.update_position(1, self.menu_bar.get_menu_offset(lang_mgr.translate("Window")))
+		mnuHelp.update_position(1, self.menu_bar.get_menu_offset(lang_mgr.translate("Help")))
 
 		self.menu_bar_visible = True
 		self.repaint()

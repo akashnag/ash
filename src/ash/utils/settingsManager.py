@@ -18,6 +18,9 @@ class SettingsManager:
 
 	def get_default_settings(self):
 		settings = {
+			"ui_language"				: "en-US",
+			"theme"						: "default",
+			"keymap"					: "default",
 			"ignored_directories" 		: [ ".git", "__pycache__", ".vscode", ".ash-editor" ],
 			"ignored_file_extensions"	: [ ".class", ".tmp" ],
 			"default_encoding"			: "utf-8",

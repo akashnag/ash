@@ -10,18 +10,26 @@ from ash.gui import *
 from ash.formatting.colors import *
 
 class PopupMenu:
-	def __init__(self, parent, y, x, menu_items, width=20, is_dropdown=False, parent_menu=None, supports_colors=True):
+	def __init__(self, parent, y, x, menu_items, width=None, is_dropdown=False, parent_menu=None, supports_colors=True):
 		self.parent = parent
 		self.y = y
 		self.x = x
 		self.items = menu_items
 		self.height = len(self.items) + 2
-		self.width = width
 		self.win = None
 		self.sel_index = 0
 		self.is_dropdown = is_dropdown
 		self.parent_menu = parent_menu
 		self.supports_colors = supports_colors
+
+		if(width == None):
+			self.width = 4 + get_max_length_in_list(self.items, is_tuple = True, tuple_index = 0)
+		else:
+			self.width = width
+
+	def update_position(self, y, x):
+		self.y = y
+		self.x = x
 
 	def get_menu_index_from_offset(self, y, x):
 		item_index = y - self.y - 1
@@ -116,7 +124,7 @@ class PopupMenu:
 					self.parent_menu.repaint(self.parent_menu.parent.width)
 					self.parent_menu.mouse_click(btn, y, x)
 				elif(btn != None):
-					self.win = None					
+					self.win = None			
 
 			self.repaint()
 

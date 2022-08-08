@@ -368,6 +368,10 @@ class Editor(Widget):
 	def on_click(self, y, x):
 		self.selection_mode = False
 		if(self.popup_menu != None): self.popup_menu.hide_menu_bar()
+
+		app_ref = recurse_up_till_app(self)
+		app_ref.main_window.hide_menu_bar()
+
 		curpos = self.screen.get_curpos_after_click(y, x, self.buffer.lines, self.width, self.tab_size, self.word_wrap, self.hard_wrap)
 		if(curpos != None): self.curpos = copy.copy(curpos)
 		self.repaint()
@@ -377,6 +381,7 @@ class Editor(Widget):
 		
 		visual_curpos = self.screen.translate_real_to_visual_curpos(self.curpos, self.buffer.lines, self.width, self.tab_size, self.word_wrap, self.hard_wrap)
 		app_dh = self.parent.tab.manager.app.dialog_handler
+		lang_mgr = self.parent.tab.manager.app.localisation_manager
 
 		if(visual_curpos == None):
 			y, x = self.y + (self.height // 2), self.x + (self.width // 2)
@@ -384,17 +389,17 @@ class Editor(Widget):
 			y, x = visual_curpos.y + self.y + 1, visual_curpos.x + self.x + 1
 		
 		popup_menu_items = [
-			("Undo", True, self.key_handler.handle_undo),
-			("Redo", True, self.key_handler.handle_redo),
+			(lang_mgr.translate("Undo"), True, self.key_handler.handle_undo),
+			(lang_mgr.translate("Redo"), True, self.key_handler.handle_redo),
 			("---", False, None),
-			("Cut", self.selection_mode, self.key_handler.handle_cut),
-			("Copy", self.selection_mode, self.key_handler.handle_copy),
-			("Paste", True, self.key_handler.handle_paste),
+			(lang_mgr.translate("Cut"), self.selection_mode, self.key_handler.handle_cut),
+			(lang_mgr.translate("Copy"), self.selection_mode, self.key_handler.handle_copy),
+			(lang_mgr.translate("Paste"), True, self.key_handler.handle_paste),
 			("---", False, None),
-			("Find...", True, app_dh.invoke_find),
-			("Find & Replace...", True, app_dh.invoke_find_and_replace),
+			(lang_mgr.translate("Find..."), True, app_dh.invoke_find),
+			(lang_mgr.translate("Find & Replace..."), True, app_dh.invoke_find_and_replace),
 			("---", False, None),
-			("Preferences...", True, app_dh.invoke_set_preferences)
+			(lang_mgr.translate("Preferences..."), True, app_dh.invoke_set_preferences)
 		]
 		
 		self.popup_menu = PopupMenu(self, y, x, popup_menu_items, supports_colors=self.app.supports_colors)

@@ -44,11 +44,13 @@ if platform.system() == "Linux":
     APP_DATA_DIR			= os.path.join(os.path.expanduser("~"), ".config", "ash-editor")
 else:
     APP_DATA_DIR			= os.path.join(os.path.expanduser("~"), ".ash-editor")
+
 APP_PLUGINS_DIR			= os.path.join(APP_DATA_DIR, "plugins")
 APP_KEYMAPS_DIR			= os.path.join(APP_DATA_DIR, "keymaps")
 APP_THEMES_DIR			= os.path.join(APP_DATA_DIR, "themes")
+APP_LOCALES_DIR			= os.path.join(APP_DATA_DIR, "locales")
 
-PROJECT_SETTINGS_DIR_NAME = ".ash-editor"
+PROJECT_SETTINGS_DIR_NAME  = ".ash-editor"
 PROJECT_SETTINGS_FILE_NAME = "settings.json"
 
 TEMP_OUTPUT_FILE		= os.path.join(APP_DATA_DIR, "temp.output")

@@ -6,17 +6,14 @@
 # This module handles installation of keymaps
 
 import ash
-from ash.formatting.colors import *
-from urllib.request import urlopen
-
-from ash.utils import *
-from ash.utils.fileUtils import get_file_title
-from ash.utils.keyUtils import *
+import os
 import json
+from ash.utils.keyUtils import *
 
 class KeyMappingsManager:
 	def __init__(self, app):
 		self.app = app
+		self.keymap_name = self.app.settings_manager.get_setting("keymap")
 		self.init_keymap()
 
 	def get_default_key_bindings(self):
@@ -145,35 +142,25 @@ class KeyMappingsManager:
 		
 		return BINDINGS
 
-	def init_keymap(self):
-		# write out the default keymap file (will reset any changes made to it)
-		BINDINGS = self.get_default_key_bindings()
-		self.write_out_keymap_file( os.path.join(ash.APP_KEYMAPS_DIR, "default.json"), BINDINGS )
+	def get_keymap_file(self):
+		return os.path.join(ash.APP_KEYMAPS_DIR, self.keymap_name + ".json")
 
-		# load the current keymap from installed_keymaps
-		installed_keymaps = self.get_installed_keymaps()
-		sel_keymap = None
-		sel_index = -1
-		for i,t in enumerate(installed_keymaps):
-			if(t[1] == True): 
-				sel_keymap = t[0]
-				sel_index = i
-				break
+	def init_keymap(self):
+		# if directory not present, create it		
+		if(not os.path.isdir(ash.APP_KEYMAPS_DIR)):
+			os.mkdir(ash.APP_KEYMAPS_DIR)
 		
-		# if not default keymap, load keymap from file
-		if(sel_index > 0):
-			if(sel_keymap == None): sel_keymap = "default"
-			sel_keymap_file = os.path.join(ash.APP_KEYMAPS_DIR, sel_keymap + ".json")
-			if(not os.path.isfile(sel_keymap_file)):
-				installed_keymaps.pop(sel_index)
-				installed_keymaps.pop(0)
-				installed_keymaps.insert( ("default", True))
-				self.write_out_installed_keymaps(installed_keymaps)
-			else:
-				BINDINGS = self.load_keymap_from_file(sel_keymap_file)
+		# write out the default keymap file (will reset any changes made to it)
+		def_keymap = self.app.settings_manager.get_default_settings()["keymap"]
+		self.write_out_keymap_file( os.path.join(ash.APP_KEYMAPS_DIR, def_keymap + ".json"), self.get_default_key_bindings())
+
+		# if current keymap file is not present, switch to default keymap
+		if(not os.path.isfile(self.get_keymap_file())):
+			self.keymap_name = def_keymap
+			self.app.settings_manager.add_to_setting("keymap", self.keymap_name, is_list = False)
 		
-		# set the current bindings
-		KeyBindings.BINDINGS = BINDINGS
+		# if keymap file is present, read it
+		KeyBindings.BINDINGS = self.load_keymap_from_file(self.get_keymap_file())		
 
 	def load_keymap_from_file(self, keymap_file):
 		if(not os.path.isfile(keymap_file)): return
@@ -195,75 +182,9 @@ class KeyMappingsManager:
 
 		return BINDINGS
 
-	def get_installed_keymaps(self):
-		if(not os.path.isfile(ash.INSTALLED_KEYMAPS_FILE)):
-			installed_keymaps = [("default", True)]
-			return installed_keymaps
-
-		fp = open(ash.INSTALLED_KEYMAPS_FILE, "rt")
-		keymap_names = fp.read().splitlines()
-		fp.close()
-
-		installed_keymaps = list()
-		is_set = False
-		for i, t in enumerate(keymap_names):
-			x = t.strip().lower().split(",")
-			if(i > 0 and x[0].strip() == "default"): continue
-			installed_keymaps.append( ( x[0].strip(), bool(x[1].strip()) ) )			
-			if(bool(x[1].strip()) == True): is_set = True
-		
-		if(len(installed_keymaps) == 0 or installed_keymaps[0][0] != "default"):
-			installed_keymaps.insert(0, ("default", not is_set))
-
-		return installed_keymaps
-
-	def install_keymap(self, keymap_file):
-		if(not keymap_file.endswith(".json")):
-			self.app.show_error("Keymap files must end with .json")
-			return
-
-		if((not keymap_file.startswith("file://")) and (not keymap_file.startswith("http://")) and (not keymap_file.startswith("https://"))):
-			self.app.show_error("Invalid URL protocol: use file:// for local files,\nhttp:// or https:// for remote files")
-			return
-
-		try:
-			with urlopen(url=keymap_file) as f:
-				keymap_data = f.read().decode("utf-8")
-		except:
-			self.app.show_error("An error occurred while fetching keymap")
-			return
-		
-		if(get_file_title(keymap_file) == "default.json"):
-			self.app.show_error("Cannot have keymap named 'default.json'")
-			return
-
-		local_keymap_file = os.path.join(ash.APP_KEYMAPS_DIR, get_file_title(keymap_file))
-		if(os.path.isfile(local_keymap_file)):
-			if(not self.app.ask_question("REPLACE KEYMAP", f"The keymap {get_file_title(keymap_file)} already exists, replace it?")): return
-
-		fp = open(local_keymap_file, "wt")
-		fp.write(keymap_data)
-		fp.close()
-
-		keymap_name = keymap_file[:-7]
-		installed_keymaps = self.get_installed_keymaps()
-		installed_keymaps.append( (keymap_name, False) )
-		self.write_out_installed_keymaps(installed_keymaps)
-
-	def set_keymap(self, keymap_name):
-		sel_keymap_file = os.path.join(ash.APP_KEYMAPS_DIR, keymap_name + ".json")
-		if(not os.path.isfile( sel_keymap_file )):
-			self.app.show_error(f"Cannot find file: '{keymap_name}.json'")
-			return
-		
-		BINDINGS = self.load_keymap_from_file(sel_keymap_file)
-		KeyBindings.BINDINGS = BINDINGS
-
-	def write_out_installed_keymaps(self, installed_keymaps):
-		fp = open(ash.INSTALLED_KEYMAPS_FILE, "wt")
-		for i in installed_keymaps:
-			fp.write(f"{i[0]},{i[1]}\n")
-		fp.close()
+	def refresh_keymap(self):
+		self.keymap_name = self.app.settings_manager.get_setting("keymap")
+		self.init_keymap()
 
 	def write_out_keymap_file(self, keymap_file, BINDINGS):
 		"""
@@ -291,16 +212,3 @@ class KeyMappingsManager:
 		json_object = json.dumps(data, indent = 4)
 		keyFile.write(json_object + "\n")
 		keyFile.close()
-
-	def remove_installed_keymap(self, keymap_name):
-		if(keymap_name == "default"):
-			self.app.show_error("Cannot remove default keymap")
-			return
-
-		installed_keymaps = self.get_installed_keymaps()
-		for i, t in enumerate(installed_keymaps):
-			if(t[0] == keymap_name):
-				installed_keymaps.pop(i)
-				break
-
-		self.write_out_installed_keymaps(installed_keymaps)

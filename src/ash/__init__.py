@@ -49,6 +49,7 @@ APP_PLUGINS_DIR			= os.path.join(APP_DATA_DIR, "plugins")
 APP_KEYMAPS_DIR			= os.path.join(APP_DATA_DIR, "keymaps")
 APP_THEMES_DIR			= os.path.join(APP_DATA_DIR, "themes")
 APP_LOCALES_DIR			= os.path.join(APP_DATA_DIR, "locales")
+APP_SNIPPETS_DIR		= os.path.join(APP_DATA_DIR, "snippets")
 
 PROJECT_SETTINGS_DIR_NAME  = ".ash-editor"
 PROJECT_SETTINGS_FILE_NAME = "settings.json"
@@ -57,8 +58,11 @@ TEMP_OUTPUT_FILE		= os.path.join(APP_DATA_DIR, "temp.output")
 LOG_FILE 				= os.path.join(APP_DATA_DIR, "log.txt")
 SESSION_FILE			= os.path.join(APP_DATA_DIR, "session.dat")
 SETTINGS_FILE			= os.path.join(APP_DATA_DIR, "settings.json")
-INSTALLED_THEMES_FILE 	= os.path.join(APP_DATA_DIR, "installed_themes.txt")
-INSTALLED_KEYMAPS_FILE 	= os.path.join(APP_DATA_DIR, "installed_keymaps.txt")
 
 DEFAULT_SHELL			= "bash"
 DEFAULT_TERMINAL		= "xterm"
+
+THEME_FILE_EXTENSION    = ".json"
+KEYMAP_FILE_EXTENSION   = ".json"
+LOCALE_FILE_EXTENSION   = ".json"
+SNIPPET_FILE_EXTENSION  = ".snippets"

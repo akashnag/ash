@@ -17,7 +17,7 @@ class ThemeManager:
 		self.init_colors()
 
 	def get_theme_file(self):
-		return os.path.join(ash.APP_THEMES_DIR, self.theme + ".json")
+		return os.path.join(ash.APP_THEMES_DIR, self.theme + ash.THEME_FILE_EXTENSION)
 
 	def init_colors(self):
 		# if directory not present, create it		
@@ -26,7 +26,7 @@ class ThemeManager:
 
 		# write out the default theme file (will reset any changes made to it)
 		def_theme = self.app.settings_manager.get_default_settings()["theme"]
-		self.write_out_theme_file(os.path.join(ash.APP_THEMES_DIR, def_theme + ".json"), *get_default_colors())
+		self.write_out_theme_file(os.path.join(ash.APP_THEMES_DIR, def_theme + ash.THEME_FILE_EXTENSION), *get_default_colors())
 
 		# if current theme file not present, switch theme to default theme (also update settings)
 		if(not os.path.isfile(self.get_theme_file())):

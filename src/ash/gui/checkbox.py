@@ -9,6 +9,7 @@ from ash.gui import *
 
 class CheckBox(Widget):
 	def __init__(self, parent, y, x, text):
+		text = parent.parent.app.localisation_manager.translate(text)
 		super().__init__(WIDGET_TYPE_CHECKBOX)
 		self.parent = parent
 		self.y = y

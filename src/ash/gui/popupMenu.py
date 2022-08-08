@@ -13,19 +13,24 @@ class PopupMenu:
 	def __init__(self, parent, y, x, menu_items, width=None, is_dropdown=False, parent_menu=None, supports_colors=True):
 		self.parent = parent
 		self.y = y
-		self.x = x
-		self.items = menu_items
-		self.height = len(self.items) + 2
+		self.x = x		
 		self.win = None
 		self.sel_index = 0
 		self.is_dropdown = is_dropdown
 		self.parent_menu = parent_menu
 		self.supports_colors = supports_colors
+		
+		app_ref = recurse_up_till_app(self.parent)
+		self.items = []
+		for (x, y, z) in menu_items:
+			self.items.append((app_ref.localisation_manager.translate(x) if(x != "---") else "---", y, z))
 
+		self.height = len(self.items) + 2		
 		if(width == None):
 			self.width = 4 + get_max_length_in_list(self.items, is_tuple = True, tuple_index = 0)
 		else:
 			self.width = width
+
 
 	def update_position(self, y, x):
 		self.y = y

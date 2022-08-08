@@ -20,6 +20,7 @@ from ash.utils.commandUtils import *
 from ash.utils.keyMappingsManager import *
 from ash.utils.settingsManager import *
 from ash.utils.localisationManager import *
+from ash.utils.snippetManager import *
 
 from ash.formatting.colors import *
 from ash.formatting.formatting import *
@@ -52,6 +53,7 @@ class AshEditorApp:
 		self.theme_manager = ThemeManager(self)
 		self.key_mappings_manager = KeyMappingsManager(self)
 		self.localisation_manager = LocalisationManager(self)
+		self.snippet_manager = SnippetManager(self)
 
 	def open_project(self, progress_handler = None, ask_to_restore_session = True):
 		# add project path to recent record
@@ -120,7 +122,6 @@ class AshEditorApp:
 			self.recreate_manager_objects()
 		
 			self.open_files_from_commandline_args(progress_handler)
-
 		
 	def run(self):
 		if(self.argc >= 2):
@@ -205,6 +206,7 @@ class AshEditorApp:
 	
 	# shows progress in the status bar
 	def progress_handler(self, msg, progress):
+		msg = self.localisation_manager.translate(msg)
 		if(progress == None):
 			self.main_window.repaint(f"{msg}")
 		else:
@@ -335,8 +337,11 @@ class AshEditorApp:
 
 	# displays an error message
 	def show_error(self, msg, error=True):
+		title = self.localisation_manager.translate("ERROR" if error else "INFORMATION")
+		msg = self.localisation_manager.translate(msg)
+
 		try:
-			self.msgBox = MessageBox(self, ("ERROR" if error else "INFORMATION"), msg)
+			self.msgBox = MessageBox(self, title, msg)
 		except:
 			self.warn_insufficient_screen_space()
 			raise
@@ -350,6 +355,9 @@ class AshEditorApp:
 
 	# displays a question
 	def ask_question(self, title, question, hasCancel=False):
+		title = self.localisation_manager.translate(title)
+		question = self.localisation_manager.translate(question)
+		
 		try:
 			self.msgBox = MessageBox(self, title, question, (MSGBOX_TYPE_YES_NO_CANCEL if hasCancel else MSGBOX_TYPE_YES_NO))
 		except:
@@ -371,6 +379,9 @@ class AshEditorApp:
 
 	# displays an inputbox
 	def prompt(self, title, prompt, default = "", width = 0):
+		title = self.localisation_manager.translate(title)
+		prompt = self.localisation_manager.translate(prompt)
+		
 		try:
 			self.inputBox = InputBox(self, title, prompt, default, width)
 		except:
@@ -398,7 +409,10 @@ class AshEditorApp:
 
 	# prints warning to user that the screen dimensions are below the minimum requirement
 	def warn_insufficient_screen_space(self):
-		self.main_window.repaint(f"error: insufficient screen space (minimum reqd.: {MIN_WIDTH}x{MIN_HEIGHT} ), ash may crash unexpectedly")
+		msg1 = self.localisation_manager.translate("error: insufficient screen space (minimum reqd.:")
+		msg2 = self.localisation_manager.translate("may crash unexpectedly")
+
+		self.main_window.repaint(f"{msg1} {MIN_WIDTH}x{MIN_HEIGHT} ), ash {msg2}")
 		beep()
 		time.sleep(1)
 

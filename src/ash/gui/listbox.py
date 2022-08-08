@@ -9,6 +9,7 @@ from ash.gui import *
 
 class ListBox(Widget):
 	def __init__(self, parent, y, x, width, row_count, placeholder_text = None, callback = None, supports_colors=True):
+		placeholder_text = parent.parent.app.localisation_manager.translate(placeholder_text)
 		super(ListBox, self).__init__(WIDGET_TYPE_LISTBOX)
 		self.parent = parent
 		self.y = y

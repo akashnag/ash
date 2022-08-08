@@ -143,7 +143,7 @@ class KeyMappingsManager:
 		return BINDINGS
 
 	def get_keymap_file(self):
-		return os.path.join(ash.APP_KEYMAPS_DIR, self.keymap_name + ".json")
+		return os.path.join(ash.APP_KEYMAPS_DIR, self.keymap_name + ash.KEYMAP_FILE_EXTENSION)
 
 	def init_keymap(self):
 		# if directory not present, create it		
@@ -152,7 +152,7 @@ class KeyMappingsManager:
 		
 		# write out the default keymap file (will reset any changes made to it)
 		def_keymap = self.app.settings_manager.get_default_settings()["keymap"]
-		self.write_out_keymap_file( os.path.join(ash.APP_KEYMAPS_DIR, def_keymap + ".json"), self.get_default_key_bindings())
+		self.write_out_keymap_file( os.path.join(ash.APP_KEYMAPS_DIR, def_keymap + ash.KEYMAP_FILE_EXTENSION), self.get_default_key_bindings())
 
 		# if current keymap file is not present, switch to default keymap
 		if(not os.path.isfile(self.get_keymap_file())):

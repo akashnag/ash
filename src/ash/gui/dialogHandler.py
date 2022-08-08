@@ -95,10 +95,10 @@ class DialogHandler:
 			self.app.warn_insufficient_screen_space()
 			return
 
-		self.app.dlgGoTo = ModalDialog(self.app.main_window, y, x, 5, 25, self.app.localisation_manager.translate("GO TO LINE"), self.go_to_key_handler)
+		self.app.dlgGoTo = ModalDialog(self.app.main_window, y, x, 5, 25, "GO TO LINE", self.go_to_key_handler)
 		currentLine = str(self.app.main_window.get_active_editor().curpos.y + 1)
 		
-		lblLineNumber = Label(self.app.dlgGoTo, 3, 2, self.app.localisation_manager.translate("Line.Col: "))
+		lblLineNumber = Label(self.app.dlgGoTo, 3, 2, "Line.Col: ")
 		txtLineNumber = TextField(self.app.dlgGoTo, 3, 12, 11, currentLine, True, callback = self.go_to_live_preview_key_handler)
 		
 		self.app.dlgGoTo.add_widget("lblLineNumber", lblLineNumber)
@@ -133,7 +133,7 @@ class DialogHandler:
 					col = 0
 			except:
 				if(isn): 
-					self.app.show_error(self.app.localisation_manager.translate("Invalid line number specified"))
+					self.app.show_error("Invalid line number specified")
 					return -1
 				else:
 					return ch
@@ -178,8 +178,8 @@ class DialogHandler:
 				return
 			
 			response = self.app.ask_question(
-				self.app.localisation_manager.translate("SAVE/DISCARD ALL"), 
-				self.app.localisation_manager.translate("One or more unsaved files exist, choose:\nYes: save all filed-changes and quit (unguaranteed in case of errors)\nNo: discard all unsaved changes and quit\nCancel: don't quit"), 
+				"SAVE/DISCARD ALL", 
+				"One or more unsaved files exist, choose:\nYes: save all filed-changes and quit (unguaranteed in case of errors)\nNo: discard all unsaved changes and quit\nCancel: don't quit", 
 				True
 			)
 			if(response == None): return
@@ -484,7 +484,6 @@ class DialogHandler:
 			lstKeys.add_item(info)
 			lstKeys.add_item(" ")
 		
-		lstKeys.add_item("Custom key mappings can be set in ~/.config/ash-editor/keymaps/default.json")
 		lstKeys.repaint()
 
 	def help_key_handler(self, ch):
@@ -740,7 +739,7 @@ class DialogHandler:
 
 		for i in range(len(tabs_info)):
 			tab_name, ed_count = tabs_info[i]
-			disp = tab_name + " (" + str(ed_count) + " editors)"
+			disp = tab_name + " (" + str(ed_count) + self.app.localisation_manager.translate(" editors)")
 			if(i == active_tab_index):
 				lstActiveTabs.add_item(TICK_MARK + " " + disp)
 				lstActiveTabs.sel_index = i

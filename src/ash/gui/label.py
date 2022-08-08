@@ -10,6 +10,7 @@ from ash.formatting.colors import *
 
 class Label(Widget):
 	def __init__(self, parent, y, x, text, theme = None):
+		text = parent.parent.app.localisation_manager.translate(text)
 		super().__init__(WIDGET_TYPE_LABEL, False)
 		self.parent = parent
 		self.y = y

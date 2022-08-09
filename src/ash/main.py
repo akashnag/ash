@@ -69,7 +69,7 @@ class AshEditorApp:
 		for i, f in enumerate(all_files):
 			if(not os.path.isfile(f)): continue
 			if(should_ignore_file(f)): continue
-			if(BufferManager.is_binary(f)): continue
+			if(BufferManager.is_binary(f, self)): continue
 			has_backup = BufferManager.backup_exists(f)
 			if(not self.buffers.does_file_have_its_own_buffer(f)):
 				self.buffers.create_new_buffer(filename=f, has_backup=has_backup)
@@ -89,7 +89,7 @@ class AshEditorApp:
 		for i in range(1, len(self.args)):
 			if(os.path.isdir(self.args[i])): continue			
 			filePath = str(os.path.abspath(self.args[i]))
-			if(BufferManager.is_binary(filePath)): continue
+			if(BufferManager.is_binary(filePath, self)): continue
 			has_backup = BufferManager.backup_exists(filePath)
 			if(not self.buffers.does_file_have_its_own_buffer(filePath)):
 				self.buffers.create_new_buffer(filename=filePath, has_backup=has_backup)

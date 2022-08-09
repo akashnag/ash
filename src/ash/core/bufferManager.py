@@ -309,7 +309,7 @@ class Buffer:
 	def read_file_from_disk(self, read_from_backup = False):
 		filename = (self.backup_file if read_from_backup else self.filename)
 
-		if(self.manager.is_binary(filename)): raise(AshException("Error: buffer: attempting to read binary file"))
+		if(self.manager.is_binary(filename, self.manager.app)): raise(AshException("Error: buffer: attempting to read binary file"))
 
 		if(not os.path.isfile(filename)):
 			textFile = codecs.open(filename, "w", self.encoding)
@@ -618,14 +618,15 @@ class BufferManager:
 
 	# checks to see if a specified file is a text file
 	@staticmethod
-	def is_binary(filename):
+	def is_binary(filename, app_ref):
 		if(not os.path.isfile(filename)): return True
 		mt = str(mimetypes.guess_type(filename, strict=False)[0]).lower()
 		if(mt.startswith("text/")):
 			return False
-		elif(mt in ["application/json", "application/xml", "application/xhtml+xml"]):
+		elif(mt in app_ref.settings_manager.get_setting("supported_mime_types")):
 			return False
 		elif(mt != "none"):
+			log(f"Binary MIME type: {mt}")
 			return True
 		else:
 			pf = predict_file_encoding(filename)

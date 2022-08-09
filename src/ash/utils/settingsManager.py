@@ -43,7 +43,12 @@ class SettingsManager:
 			"wrap_text"					: False,
 			"hard_wrap"					: True,
 			"syntax_highlighting"		: True,
-			"auto_close_matching_pairs"	: False
+			"auto_close_matching_pairs"	: False,
+			"supported_mime_types"		: [
+											"application/json", "application/javascript", 
+											"application/xml", "application/xhtml+xml",
+											"application/x-sh", "image/svg+xml"
+			]
 		}
 		return settings
 

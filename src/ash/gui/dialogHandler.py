@@ -275,7 +275,7 @@ class DialogHandler:
 					self.app.dlgRecentFiles.repaint()
 					return -1
 			else:
-				if(BufferManager.is_binary(filename)):
+				if(BufferManager.is_binary(filename, self.app)):
 					self.app.show_error("Cannot open binary file!")
 					mw.repaint()
 					self.app.dlgRecentFiles.repaint()
@@ -540,7 +540,7 @@ class DialogHandler:
 			filename = tag[2:]
 			if(file_type == "d"): return -1
 			
-			if(BufferManager.is_binary(filename)):
+			if(BufferManager.is_binary(filename, self.app)):
 				self.app.show_error("Cannot open binary file!")
 				mw.repaint()
 				self.app.dlgProjectExplorer.repaint()
@@ -741,7 +741,7 @@ class DialogHandler:
 					mw.repaint()
 					return -1
 
-				if(BufferManager.is_binary(filename)):
+				if(BufferManager.is_binary(filename, self.app)):
 					self.app.show_error("Cannot open binary file!")
 					mw.repaint()
 					self.app.dlgFileOpen.repaint()

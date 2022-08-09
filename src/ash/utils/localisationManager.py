@@ -230,5 +230,10 @@ class LocalisationManager:
 			"INSERT SNIPPET": "INSERT SNIPPET",
 			"Snippet:": "Snippet:",
 			"(No snippets found)": "(No snippets found)",
-			"Snippet not found!": "Snippet not found!"
+			"Snippet not found!": "Snippet not found!",
+
+			"Ready": "Ready",
+			"Loading...": "Loading...",
+			"PROJECT EXPLORER": "PROJECT EXPLORER",
+			"Cannot open binary file!": "Cannot open binary file!"
 		}

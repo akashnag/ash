@@ -170,10 +170,10 @@ class TreeView(Widget):
 			gsc = None
 			if(not c.is_dir()): 
 				if(self.search_text != None and str(c).lower().find(self.search_text) < 0): continue
-				if(not BufferManager.is_binary(c.path)):
+				if(not BufferManager.is_binary(c.path, self.parent.parent.app)):
 					buffer = self.buffer_manager.get_buffer_by_filename(c.path)
 					save_status = buffer.save_status if buffer != None else True
-					extra_space += (LINE_HORIZONTAL * (INDENT_SIZE-3)) + " " + ("" if save_status else UNSAVED_BULLET) + " "
+					extra_space += (LINE_HORIZONTAL * (INDENT_SIZE-3)) + " " + (" " if save_status else UNSAVED_BULLET) + " "
 				else:
 					extra_space += (LINE_HORIZONTAL * (INDENT_SIZE-3)) + "   "
 				gs, gsc = GitRepo.format_status_type(self.git_repo.get_file_status(c.path))

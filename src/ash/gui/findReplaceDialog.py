@@ -13,7 +13,7 @@ from ash.gui.checkbox import *
 
 class FindReplaceDialog(Window):
 	def __init__(self, parent, y, x, ed, replace = False):
-		super().__init__(y, x, (9 if replace else 7), 50, ("FIND AND REPLACE" if replace else "FIND"))
+		super().__init__(y, x, (11 if replace else 9), 50, ("FIND AND REPLACE" if replace else "FIND"))
 		self.ed = ed
 		self.parent = parent
 		self.theme = gc("outer-border")
@@ -26,15 +26,15 @@ class FindReplaceDialog(Window):
 		if(ed.selection_mode): init_text = ed.get_selected_text().replace("\n", "")
 
 		self.lblFind = Label(self, 3, 2, "Find: ")		
-		self.txtFind = TextField(self, 3, 8, 40, init_text)
+		self.txtFind = TextField(self, 3, 2 + len(str(self.lblFind)), 46 - len(str(self.lblFind)), init_text)
 
 		if(self.replace): 
 			self.lblReplace = Label(self, 5, 2, "Replace with: ")
-			self.txtReplace = TextField(self, 5, 16, 32)
+			self.txtReplace = TextField(self, 5, 2 + len(str(self.lblReplace)), 46 - len(str(self.lblReplace)))
 		
 		self.chkMatchCase = CheckBox(self, (7 if self.replace else 5), 2, "Match case")
-		self.chkWholeWords = CheckBox(self, (7 if self.replace else 5), 18, "Whole words")
-		self.chkRegex = CheckBox(self, (7 if self.replace else 5), 35, "Regex")
+		self.chkWholeWords = CheckBox(self, (8 if self.replace else 6), 2, "Whole words")
+		self.chkRegex = CheckBox(self, (9 if self.replace else 7), 2, "Regex")
 		
 		self.add_widget("lblFind", self.lblFind)
 		self.add_widget("txtFind", self.txtFind)

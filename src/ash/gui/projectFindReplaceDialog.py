@@ -13,7 +13,7 @@ from ash.gui.checkbox import *
 
 class ProjectFindReplaceDialog(Window):
 	def __init__(self, parent, y, x, buffers, replace = False):
-		super().__init__(y, x, 20, 70, ("SEARCH AND REPLACE IN ALL FILES" if replace else "SEARCH IN ALL FILES"))
+		super().__init__(y, x, 22, 70, ("SEARCH AND REPLACE IN ALL FILES" if replace else "SEARCH IN ALL FILES"))
 		self.buffers = buffers
 		self.parent = parent
 		self.theme = gc("outer-border")
@@ -25,9 +25,9 @@ class ProjectFindReplaceDialog(Window):
 		if(self.replace): self.txtReplace = TextField(self, 6, 2, 66)
 		
 		self.chkMatchCase = CheckBox(self, (7 if self.replace else 5), 2, "Match case")
-		self.chkWholeWords = CheckBox(self, (7 if self.replace else 5), 18, "Whole words")
-		self.chkRegex = CheckBox(self, (7 if self.replace else 5), 35, "Regex")
-		self.lstResults = GroupedListBox(self, (8 if self.replace else 6), 2, 66, (11 if self.replace else 13), "No results", supports_colors=self.parent.app.supports_colors)
+		self.chkWholeWords = CheckBox(self, (8 if self.replace else 6), 2, "Whole words")
+		self.chkRegex = CheckBox(self, (9 if self.replace else 7), 2, "Regex")
+		self.lstResults = GroupedListBox(self, (10 if self.replace else 8), 2, 66, (11 if self.replace else 13), "No results", supports_colors=self.parent.app.supports_colors)
 		
 		self.add_widget("txtFind", self.txtFind)
 		if(self.replace): self.add_widget("txtReplace", self.txtReplace)
@@ -116,6 +116,8 @@ class ProjectFindReplaceDialog(Window):
 					elif(btn == MOUSE_UP and self.mouse_drag_start):
 						self.mouse_drag_start = False
 						self.drag_window(y, x, *self.mouse_drag_offset)
+					elif(btn in { MOUSE_WHEEL_UP, MOUSE_WHEEL_DOWN } and self.active_widget_index > -1):
+						self.get_active_widget().on_scroll(btn)
 
 				elif(self.active_widget_index > -1):
 					aw =self.get_active_widget()

@@ -68,7 +68,7 @@ def get_default_colors():
 	element_colors["scrollbar-buttons"] = ("white", "darkgray")
 	element_colors["scrollbar-empty"] = ("white", "darkgray")
 	element_colors["scrollbar-bar"] = ("white", "darkgray")
-
+	
 	element_colors["status-0"] = ("darkgray", "white")
 	element_colors["status-1"] = ("darkgray", "white")
 	element_colors["status-2"] = ("darkgray", "white")
@@ -143,13 +143,16 @@ def get_element_color_index(element_name):
 
 # records color pairs into curses color-pair palette
 def set_colors(colors, element_colors):
-	supports_colors = True
+	supports_colors = curses.has_colors() and curses.can_change_color()
+	curses.start_color()
+	
+	if(not supports_colors): return False
 
 	for colname, rgb in colors.items():
 		index = get_color_index(colname)
 		if(index < 0): continue
 		try:
-			curses.init_color(index, rgb[0], rgb[1], rgb[2])
+			curses.init_color(index, rgb[0], rgb[1], rgb[2])			
 		except:
 			supports_colors = False
 			break
@@ -160,7 +163,7 @@ def set_colors(colors, element_colors):
 		bgindex = get_color_index(pair[1])
 		if(index < 0 or fgindex < 0 or bgindex < 0): continue
 		try:
-			curses.init_pair(index, fgindex, bgindex)
+			curses.init_pair(index, fgindex, bgindex)			
 		except:
 			# if terminal does not support color remapping
 			supports_colors = False

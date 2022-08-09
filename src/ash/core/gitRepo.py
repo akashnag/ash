@@ -9,6 +9,8 @@ from ash.core import *
 from ash.formatting.formatting import *
 from ash.formatting.colors import *
 from git import Repo
+from ash.gui import *
+from ash.utils.utils import *
 
 class GitRepo:
 	def __init__(self, repo_dir):

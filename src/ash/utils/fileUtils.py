@@ -141,3 +141,36 @@ def should_ignore_directory(dirname):
 		return False
 	else:
 		return True
+
+# returns a set of line numbers which have been added to the file
+def get_added_lines_from_git_diff(filename):
+	if(filename == None): return set()
+	command = f"git --no-pager diff '{filename}' | cat"
+	
+	try:
+		output = subprocess.check_output(command, shell=True).decode("utf-8")
+	except:
+		return set()
+
+	if(len(output) == 0): return set()
+	output = output.split("\n")
+
+	ignore_flag = True
+	line_nums = list()
+
+	for i, line in enumerate(output):
+		if(ignore_flag and (not line.startswith("@@"))): continue
+		if(ignore_flag and line.startswith("@@")): ignore_flag = False
+		if(ignore_flag): continue
+		if(line.startswith("@@")):
+			pos = line.find("+")
+			start_line = int(line[pos+1:line.find(",",pos+1)])
+			start_offset = i
+			ignore_count = 0
+		else:
+			if(line.startswith("-")):
+				ignore_count += 1
+			elif(line.startswith("+")):
+				line_nums.append(start_line + (i - start_offset) - 1 - ignore_count)
+					
+	return set(line_nums)

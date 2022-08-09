@@ -56,6 +56,8 @@ class PopupMenu:
 		self.parent.repaint()
 		if(params == None):
 			ret_code = func_name()
+		elif(type(params) == tuple):
+			ret_code = func_name(*params)
 		else:
 			ret_code = func_name(params)
 		

@@ -213,6 +213,7 @@ class LocalisationManager:
 			"Syntax highlighting": "Syntax highlighting",
 			"Complete matching pairs": "Complete matching pairs",
 			"Show scrollbar": "Show scrollbar",
+			"Show git diff": "Show git diff",
 
 			"ACTIVE TABS": "ACTIVE TABS",
 			" editors)": " editors)",

@@ -57,6 +57,15 @@ BORDER_TOP_RIGHT		= "\u2510"
 BORDER_BOTTOM_LEFT		= "\u2514"
 BORDER_BOTTOM_RIGHT		= "\u2518"
 
+# <------------------- scrollbar and git-diff constants ------------------------->
+
+SCROLLBAR_ARROW_UP		= "\u25b4"
+SCROLLBAR_ARROW_DOWN	= "\u25be"
+SCROLLBAR_BLOCK			= "\u2588"
+SCROLLBAR_TRACK			= "\u2503"
+
+GIT_DIFF_LINE			= "\u2503"
+
 # <------------------- widget types ------------------------->
 WIDGET_TYPE_FRAME			= 0
 WIDGET_TYPE_LABEL			= 1

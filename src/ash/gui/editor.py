@@ -59,6 +59,7 @@ class Editor(Widget):
 		self.selection_mode = False
 		self.bid = -1
 		self.buffer = None
+		
 		self.resize(area.y, area.x, area.height, area.width, True)
 		
 	def _get_app_object(self):
@@ -90,7 +91,9 @@ class Editor(Widget):
 		self.bid = bid
 		self.buffer = buffer
 		self.buffer.attach_editor(self)
-		if(self.screen != None): self.screen.update(self.parent, self.buffer)
+		if(self.screen != None): 
+			self.screen.update(self.parent, self.buffer)
+			self.screen.update_git_diff(self.buffer.git_diff_lines)
 		self.reset()
 
 	def destroy(self):			# called by TopLevelWindow.close_active_editor()
@@ -104,7 +107,9 @@ class Editor(Widget):
 		self.auto_close = self.app.settings_manager.get_setting("auto_close_matching_pairs")
 		self.show_line_numbers = self.app.settings_manager.get_setting("line_numbers")
 		self.show_scrollbars = self.app.settings_manager.get_setting("scrollbars")
-		if(self.screen != None): self.screen.toggle_line_numbers_and_scrollbars(self.show_line_numbers, self.show_scrollbars)
+		self.show_git_diff = self.app.settings_manager.get_setting("git_diff")
+		
+		if(self.screen != None): self.screen.toggle_line_numbers_and_scrollbars(self.show_line_numbers, self.show_scrollbars, self.show_git_diff)
 		self.reset()
 		self.repaint()
 	
@@ -117,7 +122,8 @@ class Editor(Widget):
 		self.height = height
 		self.width = width		
 		if(self.screen == None):
-			self.screen = Screen(self.app.supports_colors, self.parent, self.buffer, self.height, self.width, self.show_line_numbers, self.show_scrollbars)
+			self.screen = Screen(self.app.supports_colors, self.parent, self.buffer, self.height, self.width, self.show_line_numbers, self.show_scrollbars, self.show_git_diff)
+			if(self.buffer != None): self.screen.update_git_diff(self.buffer.git_diff_lines)
 		else:
 			self.screen.resize(self.height, self.width)
 		self.reset()

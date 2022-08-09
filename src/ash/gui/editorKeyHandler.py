@@ -30,7 +30,7 @@ class EditorKeyHandler:
 			return self.handle_paste()
 		elif(KeyBindings.is_key(ch, "SAVE")):
 			try:
-				self.handle_save()
+				self.handle_save()				
 			except:
 				self.ed.parent.win.app.show_error("An error occurred while saving the file!")
 		elif(KeyBindings.is_key(ch, "SAVE_AS")):

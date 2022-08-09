@@ -321,7 +321,7 @@ class DialogHandler:
 		chkStylize = CheckBox(self.app.dlgPreferences, 6, 32, "Syntax highlighting")
 		chkAutoClose = CheckBox(self.app.dlgPreferences, 7, 32, "Complete matching pairs")
 		chkShowScrollbars = CheckBox(self.app.dlgPreferences, 8, 32, "Show scrollbar")
-		#chkShowSuggestions = CheckBox(self.app.dlgPreferences, 9, 32, "Show suggestions")
+		chkShowGitDiff = CheckBox(self.app.dlgPreferences, 9, 32, "Show git diff")
 		
 		for enc in SUPPORTED_ENCODINGS:
 			lstEncodings.add_item(("  " if aed.buffer.encoding != enc else TICK_MARK + " ") +  enc)
@@ -332,6 +332,7 @@ class DialogHandler:
 		chkStylize.set_value(self.app.settings_manager.get_setting("syntax_highlighting"))
 		chkAutoClose.set_value(self.app.settings_manager.get_setting("auto_close_matching_pairs"))
 		chkShowScrollbars.set_value(self.app.settings_manager.get_setting("scrollbars"))
+		chkShowGitDiff.set_value(self.app.settings_manager.get_setting("git_diff"))
 		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index(aed.buffer.encoding)
 		
 		self.app.dlgPreferences.add_widget("lblTabSize", lblTabSize)
@@ -345,7 +346,7 @@ class DialogHandler:
 		self.app.dlgPreferences.add_widget("chkStylize", chkStylize)
 		self.app.dlgPreferences.add_widget("chkAutoClose", chkAutoClose)
 		self.app.dlgPreferences.add_widget("chkShowScrollbars", chkShowScrollbars)
-		#self.app.dlgPreferences.add_widget("chkShowSuggestions", chkShowSuggestions)
+		self.app.dlgPreferences.add_widget("chkShowGitDiff", chkShowGitDiff)
 		
 		self.app.dlgPreferences.show()
 
@@ -368,6 +369,7 @@ class DialogHandler:
 			stylize = self.app.dlgPreferences.get_widget("chkStylize").is_checked()
 			auto_close = self.app.dlgPreferences.get_widget("chkAutoClose").is_checked()
 			show_scrollbars = self.app.dlgPreferences.get_widget("chkShowScrollbars").is_checked()
+			show_git_diff = self.app.dlgPreferences.get_widget("chkShowGitDiff").is_checked()
 
 			self.app.dlgPreferences.hide()
 
@@ -384,7 +386,8 @@ class DialogHandler:
 				"hard_wrap": hard_wrap,
 				"syntax_highlighting": stylize,
 				"auto_close_matching_pairs": auto_close,
-				"scrollbars": show_scrollbars
+				"scrollbars": show_scrollbars,
+				"git_diff": show_git_diff
 			})
 			aed.reset_preferences()
 			
@@ -898,6 +901,7 @@ class DialogHandler:
 		lstFiles = ListBox(self.app.dlgSaveAs, 5, 2, 76, 12, "(Empty directory)", supports_colors=self.app.supports_colors)
 
 		self.app.dlgSaveAs_Buffer = buffer
+		
 		self.app.dlgSaveAs.add_widget("lblFileName", lblFileName)
 		self.app.dlgSaveAs.add_widget("txtFileName", txtFileName)
 		self.app.dlgSaveAs.add_widget("lstFiles", lstFiles)
@@ -939,7 +943,7 @@ class DialogHandler:
 				self.file_save_as_filename_changed()
 			elif(not os.path.isfile(filename)):
 				self.app.dlgSaveAs.hide()
-				buffer.write_to_disk(filename)
+				buffer.write_to_disk(filename)				
 			elif(not os.path.isdir(filename) and os.path.isfile(filename)):
 				if(self.app.ask_question("REPLACE FILE", "File already exists, replace?")):
 					buffer.write_to_disk(filename)

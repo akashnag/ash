@@ -44,10 +44,14 @@ class SettingsManager:
 			"hard_wrap"					: True,
 			"syntax_highlighting"		: True,
 			"auto_close_matching_pairs"	: False,
+			"git_diff"					: True,
 			"supported_mime_types"		: [
 											"application/json", "application/javascript", 
 											"application/xml", "application/xhtml+xml",
 											"application/x-sh", "image/svg+xml"
+			],
+			"supported_file_types"		: [
+											"pyx"
 			]
 		}
 		return settings

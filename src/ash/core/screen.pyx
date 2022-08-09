@@ -8,10 +8,11 @@
 from ash.formatting.colors import *
 from ash.gui.cursorPosition import *
 from ash.utils.utils import *
+from ash.gui import *
 import datetime
 
 cdef class Screen:
-	cdef bint show_line_numbers, show_scrollbars
+	cdef bint show_line_numbers, show_scrollbars, show_git_diff
 	cdef int total_rendered_lines
 	cdef int height, width
 	cdef int line_start, line_end
@@ -23,6 +24,7 @@ cdef class Screen:
 	cdef dict mapping_rendered_line_to_real_line
 	cdef list screen_buffer
 	cdef list style_buffer
+	cdef set git_diff_lines
 	cdef int real_line_start_index_visible, real_line_end_index_visible
 	cdef int last_gutter_width
 	cdef int last_tab_size, last_text_area_width
@@ -30,17 +32,23 @@ cdef class Screen:
 	cdef bint supports_colors
 
 	# initialize the screen buffer
-	def __init__(self, supports_colors, win, buffer, int height, int width, show_line_numbers, show_scrollbars):
+	def __init__(self, supports_colors, win, buffer, int height, int width, show_line_numbers, show_scrollbars, show_gdiff):
 		self.supports_colors = 1 if supports_colors else 0
 		self.all_col_spans = None
 		self.show_line_numbers = show_line_numbers
 		self.show_scrollbars = show_scrollbars
+		self.show_git_diff = show_gdiff
+		self.git_diff_lines = set()
 		self.update(win, buffer)
 		self.resize(height, width)
 
-	def toggle_line_numbers_and_scrollbars(self, show_ln, show_sb):
+	def update_git_diff(self, gdiff_data):
+		self.git_diff_lines = gdiff_data
+
+	def toggle_line_numbers_and_scrollbars(self, show_ln, show_sb, show_gdiff):
 		self.show_line_numbers = show_ln
 		self.show_scrollbars = show_sb
+		self.show_git_diff = show_gdiff
 		self.last_gutter_width = self._get_gutter_width(self.line_end)
 
 	# resize the screen buffer
@@ -71,7 +79,7 @@ cdef class Screen:
 
 	# puts the line number in the gutter
 	cdef put_line_number(self, int y, int line_number, int gutter_width):
-		self.putstr(y, 0, str(line_number).rjust(gutter_width-1))
+		self.putstr(y, 0, str(line_number).rjust(gutter_width-(2 if self.show_git_diff else 1)))
 
 	# show the fake cursor in the specified location
 	cdef put_cursor(self, int y, int x):
@@ -82,7 +90,7 @@ cdef class Screen:
 
 	# highlight a line
 	cdef highlight_line(self, int y, int gutter_width):
-		self.set_style(y, 0, gutter_width, gc("highlighted-line-number") | (0 if(self.supports_colors==1) else curses.A_BOLD))
+		self.set_style(y, 0, gutter_width-(2 if self.show_git_diff else 1), gc("highlighted-line-number") | (0 if(self.supports_colors==1) else curses.A_BOLD))
 
 	# set the style of the gutter
 	cdef set_gutter_style(self, int gutter_width):
@@ -106,9 +114,9 @@ cdef class Screen:
 	cdef _get_gutter_width(self, int line_end):
 		if(self.show_line_numbers):
 			x = str(line_end)
-			return (3 if line_end < 10 else 2) + len(x) + (1 if self.show_scrollbars else 0)
+			return (3 if line_end < 10 else 2) + len(x) + (1 if self.show_scrollbars else 0) + (1 if self.show_git_diff else 0)
 		else:
-			return 1 + (1 if self.show_scrollbars else 0)
+			return 1 + (1 if self.show_scrollbars else 0) + (1 if self.show_git_diff else 0)
 
 	# returns a list of indices in a text wherever separators (given in delims) are found
 	cdef get_delimiter_positions_list(self, text, delims):
@@ -535,7 +543,7 @@ cdef class Screen:
 
 		# determine line(start,end) and col(start,end): and return rendered_curpos
 		# Circular dependency: scroll() requires gutter_width, but gutter_width requires line_end which is computed by scroll()
-		# won't be a problem if you allow line numbers to start from screen-edge: that space will be taken up if user scrolls so much that 1/2 digits are added in the next scroll()
+		# won't be a problem if you allow line numbers to start from screen-edge: that space will be taken up if user scrolls so much that 1-2 digits are added in the next scroll()
 		
 		#t1 = datetime.datetime.now()
 		rendered_curpos = self.scroll(self.buffer.lines, real_curpos, self.width - self._get_gutter_width(self.line_end), tab_size, word_wrap, hard_wrap)
@@ -601,7 +609,12 @@ cdef class Screen:
 			if(self.show_line_numbers):
 				self.put_line_number(y, line_index+1, gutter_width)
 				if(line_index == real_curpos.y): current_line_number_y = y
-
+			
+			if(self.show_git_diff):
+				if((line_index+1) in self.git_diff_lines):
+					self.putstr(y, gutter_width-1, GIT_DIFF_LINE)
+					self.set_style(y, gutter_width-1, gutter_width, gc("gitstatus-A"))
+				
 			text = lines[line_index].expandtabs(tab_size)
 			col_spans = self.all_col_spans[line_index]
 			
@@ -614,6 +627,7 @@ cdef class Screen:
 				if(self.col_start < cs_end - cs_start):
 					vtext = vtext[self.col_start:]
 					self.putstr(y, gutter_width, vtext)
+				
 				y+=1
 				
 			# increment line-start so that it starts on a fresh real-line
@@ -626,8 +640,8 @@ cdef class Screen:
 
 		# show scrollbars
 		if(self.show_scrollbars):
-			self.putstr(0, 0, "\u25b4")
-			self.putstr(self.height-1, 0, "\u25be")
+			self.putstr(0, 0, SCROLLBAR_ARROW_UP)
+			self.putstr(self.height-1, 0, SCROLLBAR_ARROW_DOWN)
 			self.set_style(0, 0, 1, gc("scrollbar-buttons"))
 			self.set_style(self.height-1, 0, 1, gc("scrollbar-buttons"))
 
@@ -643,10 +657,10 @@ cdef class Screen:
 
 			for i in range(1, self.height-1):
 				if(i-1 >= bar_offset and i-1 < bar_offset+bar_height):
-					self.putstr(i,0,"\u2588")
+					self.putstr(i, 0, SCROLLBAR_BLOCK)
 					self.set_style(i, 0, 1, gc("scrollbar-bar"))
 				else:
-					self.putstr(i,0,"\u2503")
+					self.putstr(i, 0, SCROLLBAR_TRACK)
 					self.set_style(i, 0, 1, gc("scrollbar-empty"))
 
 		# stylize text

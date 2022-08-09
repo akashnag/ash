@@ -29,7 +29,7 @@ class Buffer:
 		self.encoding = encoding
 		self.editors = list()
 		self.display_name = None
-
+		
 		self.backup_edit_count = 0
 		self.undo_edit_count = 0
 		self.last_curpos = CursorPosition(0,0)
@@ -46,7 +46,9 @@ class Buffer:
 			self.backup_file = None
 			self.display_name = "untitled-" + str(self.id + 1)
 			self.formatter = SyntaxHighlighter(self.display_name)
+			self.git_diff_lines = set()
 		else:
+			self.git_diff_lines = get_added_lines_from_git_diff(self.filename)
 			if(has_backup):
 				self.backup_file = os.path.dirname(self.filename) + "/.ash.b-" + get_file_title(self.filename)
 				self.read_file_from_disk(True)
@@ -226,6 +228,7 @@ class Buffer:
 			self.manager.app.session_storage.add_opened_file_to_record(self.filename)
 
 		self.fire_special_file_on_save_triggers()
+		self.git_diff_lines = self.get_added_lines_from_git_diff(self.filename)
 		return self.manager.merge_if_required(self.id)
 
 	# checks to see if current file is any one of special files, if so trigger refresh
@@ -265,6 +268,7 @@ class Buffer:
 		if(self.filename != None):
 			self.read_file_from_disk()
 			self.display_name = None
+			self.git_diff_lines = get_added_lines_from_git_diff(self.filename)
 
 	# returns the size of the assigned file
 	def get_file_size(self):
@@ -621,12 +625,16 @@ class BufferManager:
 	def is_binary(filename, app_ref):
 		if(not os.path.isfile(filename)): return True
 		mt = str(mimetypes.guess_type(filename, strict=False)[0]).lower()
+		supported_mime_types = app_ref.settings_manager.get_setting("supported_mime_types")
+		supported_file_extensions = app_ref.settings_manager.get_setting("supported_file_types")
+
 		if(mt.startswith("text/")):
 			return False
-		elif(mt in app_ref.settings_manager.get_setting("supported_mime_types")):
+		elif(mt in supported_mime_types):
+			return False
+		elif(filename.rfind(".") > -1 and filename[filename.rfind(".")+1:].lower() in supported_file_extensions):
 			return False
 		elif(mt != "none"):
-			log(f"Binary MIME type: {mt}")
 			return True
 		else:
 			pf = predict_file_encoding(filename)

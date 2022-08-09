@@ -1,4 +1,5 @@
 unused
+.ash-editor
 bin/*.py
 bin/*
 src/__pycache__

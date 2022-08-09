@@ -81,7 +81,7 @@ class ThemeManager:
 					colors[color_name] = rgb
 
 		for element_name, color_value in temp_elements.items():
-			element_name = element_name.strip().lower()
+			element_name = element_name.strip()
 			color_value = color_value.strip().lower()
 			if(color_value.startswith("(") and color_value.endswith(")")):
 				pair = color_value[1:-1].split(",")

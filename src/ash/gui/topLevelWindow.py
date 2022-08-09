@@ -258,7 +258,7 @@ class TopLevelWindow(Window):
 
 		file_menu_items = [
 			("New File...", True, adh.invoke_file_new),
-			("Open File/Project...", True, adh.invoke_file_open),
+			("Open File/Folder...", True, adh.invoke_file_open),
 			("---", True, None),
 			("Save", has_editor, self.save_active_editor),
 			("Save As...", has_editor, (adh.invoke_file_save_as, aed_buffer) if has_editor else None),
@@ -283,7 +283,9 @@ class TopLevelWindow(Window):
 			("Find...", has_editor, adh.invoke_find),
 			("Find & Replace...", has_editor, adh.invoke_find_and_replace),
 			("Find in all files...", True, adh.invoke_project_find),
-			("Find & Replace in all files...", True, adh.invoke_project_find_and_replace)
+			("Find & Replace in all files...", True, adh.invoke_project_find_and_replace),
+			("---", True, None),
+			("Insert snippet...", has_editor, adh.invoke_insert_snippet),
 		]
 
 		view_menu_items = [

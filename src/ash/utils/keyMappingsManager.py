@@ -97,6 +97,7 @@ class KeyMappingsManager:
 			"INSERT_TAB"					: ["^I", "Tab/Ctrl+I", "Insert tab/Increase selection indent"],
 			"DECREASE_INDENT"				: ["KEY_BTAB", "Shift+Tab", "Decrease selection indent"],
 			"NEWLINE"						: [["^J", "KEY_ENTER"], "Enter/Ctrl+J", "New line"],
+			"INSERT_SNIPPET"				: ["", f"<Unassigned>", "Opens the Insert Snippet dialog-box"],
 
 			"FIND_NEXT"						: [[ "^J", "KEY_ENTER" ], "Enter/Ctrl+J", "Find the next match"],
 			"FIND_PREVIOUS"					: [fn(7), "F7", "Find the previous match"],

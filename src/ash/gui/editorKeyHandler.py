@@ -45,6 +45,8 @@ class EditorKeyHandler:
 				self.ed.parent.win.app.show_error("An error occurred while saving the file!")
 		elif(KeyBindings.is_key(ch, "GOTO_LINE")):
 			self.ed.parent.win.app.dialog_handler.invoke_go_to_line()
+		elif(KeyBindings.is_key(ch, "INSERT_SNIPPET")):
+			self.ed.parent.win.app.dialog_handler.invoke_insert_snippet()
 		elif(KeyBindings.is_key(ch, "OPEN_FILE")):
 			self.ed.parent.win.app.dialog_handler.invoke_file_open()
 		elif(KeyBindings.is_key(ch, "NEW_BUFFER")):
@@ -481,9 +483,9 @@ class EditorKeyHandler:
 		self.ed.recompute()
 		return True
 			
-	def handle_paste(self):
+	def handle_paste(self, text_to_paste = None):
 		self.cancel_multiple_cursors()
-		whole = clipboard.paste()
+		whole = clipboard.paste() if(text_to_paste == None) else text_to_paste
 		if(len(whole) == 0): return False
 
 		data = whole.splitlines()

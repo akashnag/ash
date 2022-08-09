@@ -544,7 +544,7 @@ class WindowManager:
 	def get_tabs_info(self):
 		info = list()
 		for i, t in enumerate(self.tabs):
-			info.append( ( "Tab-" + str(i+1), t.get_editor_count() ) )
+			info.append( ( self.app.localisation_manager.translate("Tab") + "-" + str(i+1), t.get_editor_count() ) )
 		return info
 
 	def get_tab_count(self):

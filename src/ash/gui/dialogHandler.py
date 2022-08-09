@@ -99,7 +99,7 @@ class DialogHandler:
 		currentLine = str(self.app.main_window.get_active_editor().curpos.y + 1)
 		
 		lblLineNumber = Label(self.app.dlgGoTo, 3, 2, "Line.Col: ")
-		txtLineNumber = TextField(self.app.dlgGoTo, 3, 12, 11, currentLine, True, callback = self.go_to_live_preview_key_handler)
+		txtLineNumber = TextField(self.app.dlgGoTo, 3, 2 + len(str(lblLineNumber)), 21 - len(str(lblLineNumber)), currentLine, True, callback = self.go_to_live_preview_key_handler)
 		
 		self.app.dlgGoTo.add_widget("lblLineNumber", lblLineNumber)
 		self.app.dlgGoTo.add_widget("txtLineNumber", txtLineNumber)
@@ -310,7 +310,7 @@ class DialogHandler:
 		current_tab_size = str(self.app.settings_manager.get_setting("tab_width"))
 
 		lblTabSize = Label(self.app.dlgPreferences, 3, 2, "Tab Width:")
-		txtTabSize = TextField(self.app.dlgPreferences, 3, 13, 17, current_tab_size, True)
+		txtTabSize = TextField(self.app.dlgPreferences, 3, 3 + len(str(lblTabSize)), 27 - len(str(lblTabSize)), current_tab_size, True)
 		
 		lblEncodings = Label(self.app.dlgPreferences, 5, 2, "Encoding:")
 		lstEncodings = ListBox(self.app.dlgPreferences, 6, 2, 28, 4, supports_colors=self.app.supports_colors)
@@ -410,7 +410,7 @@ class DialogHandler:
 				open_in_new_tab = True
 		mw.invoke_activate_editor(new_bid, new_buffer, open_in_new_tab)
 
-	# <------------------------------------ Help --------------------------------------------->
+	# <------------------------------------ Help: About --------------------------------------------->
 
 	def invoke_help_about(self):
 		self.app.readjust()
@@ -432,6 +432,8 @@ class DialogHandler:
 		
 		self.app.dlgHelp.show()
 
+	# <------------------------------------ Help: Key Bindings --------------------------------------------->
+
 	def invoke_help_key_bindings(self):
 		self.app.readjust()
 
@@ -444,7 +446,7 @@ class DialogHandler:
 		self.app.dlgHelp = ModalDialog(self.app.main_window, y, x, 20, 80, "HELP", self.help_key_handler)
 		
 		lblSearch = Label(self.app.dlgHelp, 3, 2, "Search: ")
-		txtSearch = TextField(self.app.dlgHelp, 3, 10, 68, callback=self.help_search_text_changed)
+		txtSearch = TextField(self.app.dlgHelp, 3, 2 + len(str(lblSearch)), 76 - len(str(lblSearch)), callback=self.help_search_text_changed)
 		lstKeys = ListBox(self.app.dlgHelp, 5, 2, 76, 14, supports_colors=self.app.supports_colors)
 
 		self.app.dlgHelp.add_widget("lblSearch", lblSearch)
@@ -509,7 +511,7 @@ class DialogHandler:
 		self.app.dlgProjectExplorer = ModalDialog(self.app.main_window, y, x, 20, 80, "PROJECT EXPLORER", self.project_explorer_key_handler)
 		
 		lblSearch = Label(self.app.dlgProjectExplorer, 3, 2, "Search:")
-		txtSearchFile = TextField(self.app.dlgProjectExplorer, 3, 10, 68, callback=self.project_explorer_search_text_changed)
+		txtSearchFile = TextField(self.app.dlgProjectExplorer, 3, 3 + len(str(lblSearch)), 75 - len(str(lblSearch)), callback=self.project_explorer_search_text_changed)
 		lstFiles = TreeView(self.app.dlgProjectExplorer, 5, 2, 76, 14, self.app.buffers, self.app.project_dir, supports_colors=self.app.supports_colors)
 		
 		self.app.dlgProjectExplorer.add_widget("lblSearch", lblSearch)
@@ -555,6 +557,101 @@ class DialogHandler:
 		
 		return ch
 
+	# <-------------------------------- Insert snippet ------------------------------->
+
+	def invoke_insert_snippet(self):
+		self.app.readjust()
+
+		try:
+			y, x = get_center_coords(self.app, 20, 80)
+		except:
+			self.app.warn_insufficient_screen_space()
+			return
+		
+		self.app.dlgInsertSnippet = ModalDialog(self.app.main_window, y, x, 19, 80, "INSERT SNIPPET", self.insert_snippet_key_handler)
+		
+		lblSnippetName = Label(self.app.dlgInsertSnippet, 3, 2, "Snippet:")
+		txtSnippetName = TextField(self.app.dlgInsertSnippet, 3, 3 + len(str(lblSnippetName)), 75 - len(str(lblSnippetName)), callback=self.insert_snippet_snippet_name_changed)
+		lstSnippets = ListBox(self.app.dlgInsertSnippet, 5, 2, 76, 12, "(No snippets found)", supports_colors=self.app.supports_colors)
+				
+		self.app.dlgInsertSnippet.add_widget("lblSnippetName", lblSnippetName)
+		self.app.dlgInsertSnippet.add_widget("txtSnippetName", txtSnippetName)
+		self.app.dlgInsertSnippet.add_widget("lstSnippets", lstSnippets)
+		
+		self.insert_snippet_snippet_name_changed()
+		self.app.dlgInsertSnippet.show()
+
+	def insert_snippet_snippet_name_changed(self, ch = None):
+		snippet_name = str(self.app.dlgInsertSnippet.get_widget("txtSnippetName")).strip()
+		lstSnippets = self.app.dlgInsertSnippet.get_widget("lstSnippets")
+
+		mw = self.app.main_window
+		aed = mw.get_active_editor()
+		filename = aed.buffer.filename
+		extension = ""
+		if(filename != None and filename.rfind(".") > -1): extension = filename[filename.rfind(".") + 1:]
+		
+		snippets = self.app.snippet_manager.get_snippets(extension)
+
+		lstSnippets.clear()
+
+		for i, name in enumerate(snippets.keys()):
+			if((snippet_name == "") or (snippet_name in name) or (snippet_name in str(i+1))):
+				lstSnippets.add_item(f"[{i+1}] {name}", tag=name)
+		
+		lstSnippets.repaint()
+
+	def insert_snippet_key_handler(self, ch):
+		txtSnippetName = self.app.dlgInsertSnippet.get_widget("txtSnippetName")
+		lstSnippets = self.app.dlgInsertSnippet.get_widget("lstSnippets")
+		
+		sel_index = lstSnippets.get_sel_index()
+		sel_tag = lstSnippets.get_sel_tag()
+		mw = self.app.main_window
+		aed = mw.get_active_editor()
+		filename = aed.buffer.filename
+		extension = ""
+		if(filename != None and filename.rfind(".") > -1): extension = filename[filename.rfind(".") + 1:]
+		
+		if(KeyBindings.is_key(ch, "CLOSE_WINDOW")):
+			self.app.dlgInsertSnippet.hide()
+			mw.repaint()
+			return -1
+		elif(KeyBindings.is_key(ch, "LIST_MAKE_SELECTION") or KeyBindings.is_key(ch, "FINALIZE_CHOICE")):
+			if(lstSnippets.is_in_focus and sel_index > -1):
+				snippet_name = sel_tag
+			else:							
+				snippet_name = str(txtSnippetName).strip()
+
+			if(snippet_name == None): return ch
+			
+			data = None
+			if(snippet_name.isdigit()):
+				# insert by code
+				snippet_list = lstSnippets.items
+				snippet_tags = lstSnippets.tags
+				sel_pos = -1
+
+				for i, x in enumerate(snippet_list):
+					if(x.startswith(f"[{snippet_name}]")):
+						sel_pos = i
+						break
+				
+				if(sel_pos == -1): return ch
+				data = self.app.snippet_manager.get_snippet(snippet_tags[sel_pos], extension)
+			else:
+				# insert by name
+				data = self.app.snippet_manager.get_snippet(snippet_name, extension)
+			
+			if(data == None):
+				self.app.show_error("Snippet not found!")
+			else:
+				aed.key_handler.handle_paste(data)
+			self.app.dlgInsertSnippet.hide()
+			mw.repaint()
+			return -1
+		
+		return ch
 
 	# <----------------------------------- File Open --------------------------------->
 
@@ -567,10 +664,10 @@ class DialogHandler:
 			self.app.warn_insufficient_screen_space()
 			return
 		
-		self.app.dlgFileOpen = ModalDialog(self.app.main_window, y, x, 20, 80, "OPEN FILE", self.file_open_key_handler)
+		self.app.dlgFileOpen = ModalDialog(self.app.main_window, y, x, 20, 80, "OPEN FILE/FOLDER", self.file_open_key_handler)
 		
 		lblFileName = Label(self.app.dlgFileOpen, 3, 2, "File/Folder:")
-		txtFileName = TextField(self.app.dlgFileOpen, 3, 15, 63, str(os.getcwd()) + "/", callback=self.file_open_filename_changed)
+		txtFileName = TextField(self.app.dlgFileOpen, 3, 3 + len(str(lblFileName)), 75 - len(str(lblFileName)), str(os.getcwd()) + "/", callback=self.file_open_filename_changed)
 		lstFiles = ListBox(self.app.dlgFileOpen, 5, 2, 76, 12, "(Empty directory)", supports_colors=self.app.supports_colors)
 		lblEncodings = Label(self.app.dlgFileOpen, 18, 2, "Encoding: ")
 		lstEncodings = ListBox(self.app.dlgFileOpen, 18, 12, 66, 1, supports_colors=self.app.supports_colors)
@@ -721,7 +818,7 @@ class DialogHandler:
 
 	# <----------------------------------------------------------------------------------->
 
-	# <----------------------------------- Show Active Tabs --------------------------------->
+	# <----------------------------------- Show Active/Open Tabs --------------------------------->
 
 	def invoke_show_active_tabs(self):
 		self.app.readjust()
@@ -792,12 +889,12 @@ class DialogHandler:
 			
 		self.app.dlgSaveAs = ModalDialog(self.app.main_window, y, x, 20, 80, "SAVE AS", self.file_save_as_key_handler)
 		if(buffer.filename == None): 
-			filename = str( self.app.project_dir if self.app.app_mode == APP_MODE_PROJECT else os.getcwd() ) + "/" + buffer.get_name()
+			filename = os.path.join(str( self.app.project_dir if self.app.app_mode == APP_MODE_PROJECT else os.getcwd() ), buffer.get_name())
 		else:
 			filename = get_copy_filename(buffer.filename)
 		
 		lblFileName = Label(self.app.dlgSaveAs, 3, 2, "Filename:")
-		txtFileName = TextField(self.app.dlgSaveAs, 3, 12, 66, filename, callback=self.file_save_as_filename_changed)
+		txtFileName = TextField(self.app.dlgSaveAs, 3, 3 + len(str(lblFileName)), 75 - len(str(lblFileName)), filename, callback=self.file_save_as_filename_changed)
 		lstFiles = ListBox(self.app.dlgSaveAs, 5, 2, 76, 12, "(Empty directory)", supports_colors=self.app.supports_colors)
 
 		self.app.dlgSaveAs_Buffer = buffer

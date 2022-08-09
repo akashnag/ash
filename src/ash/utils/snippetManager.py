@@ -21,6 +21,11 @@ class SnippetManager:
 		else:
 			return dict()
 
+	def get_snippet(self, name, file_extension):
+		data = self.get_snippets(file_extension)
+		if(name in data): return data[name]
+		return None
+
 	def read_snippet_file(self, filename):
 		snippets = dict()
 		current_data = []
@@ -28,9 +33,10 @@ class SnippetManager:
 
 		file = open(filename, "rt")
 		for line in file:
+			line = line.replace("\n", "").replace("\r", "")
 			start_flag = line.startswith("snippet ")
 			end_flag = (line == "endsnippet")
-
+			
 			if(current_snippet_name == None and start_flag):
 				current_snippet_name = line[8:].strip()
 				if(current_snippet_name[0].isdigit()):
@@ -45,4 +51,5 @@ class SnippetManager:
 				else:
 					current_data.append(line)
 		file.close()
+		
 		return snippets

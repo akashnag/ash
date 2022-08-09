@@ -96,7 +96,7 @@ class LocalisationManager:
 
 			# 'File' drop-down menu items
 			"New File...": "New File...",
-			"Open File/Project...": "Open File/Project...",
+			"Open File/Folder...": "Open File/Folder...",
 			"Save": "Save",
 			"Save As...": "Save As...",
 			"Save & Close": "Save & Close",
@@ -116,6 +116,7 @@ class LocalisationManager:
 			"Find & Replace...": "Find & Replace...",
 			"Find in all files...": "Find in all files...",
 			"Find & Replace in all files...": "Find & Replace in all files...",
+			"Insert snippet...": "Insert snippet...",
 
 			# 'View' drop-down menu items
 			"Go to line...": "Go to line...",
@@ -185,7 +186,7 @@ class LocalisationManager:
 			"CREATE IN NEW TAB": "CREATE IN NEW TAB",
 			"Create buffer in new tab?": "Create buffer in new tab?",
 
-			"OPEN FILE": "OPEN FILE",
+			"OPEN FILE/FOLDER": "OPEN FILE/FOLDER",
 			"File/Folder:": "File/Folder:",
 			"(Empty directory)": "(Empty directory)",
 			"Encoding: ": "Encoding: ",
@@ -222,5 +223,12 @@ class LocalisationManager:
 			"ERROR": "ERROR",
 
 			"HELP": "HELP",
-			"Search: ": "Search: "		
+			"Search: ": "Search: ",
+
+			"Tab": "Tab",
+
+			"INSERT SNIPPET": "INSERT SNIPPET",
+			"Snippet:": "Snippet:",
+			"(No snippets found)": "(No snippets found)",
+			"Snippet not found!": "Snippet not found!"
 		}

@@ -76,7 +76,7 @@ class FileLoader(Window):
 
 		if(self.total_size > 0):
 			w = int((self.bytes_read / self.total_size) * (self.width - 4))
-			self.win.addstr(5, 2, ("\u2588" * w).ljust(self.width-4), self.theme)
+			self.win.addstr(5, 2, (PROGRESS_BAR_THICK_LINE * w).ljust(self.width-4), self.theme)
 			self.win.refresh()
 
 	# check the response

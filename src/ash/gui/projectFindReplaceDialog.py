@@ -192,7 +192,7 @@ class ProjectFindReplaceDialog(Window):
 		self.win.addstr(2, 1, BORDER_HORIZONTAL * (self.width-2), self.theme)
 
 		self.win.addstr(1, 2, self.title, curses.A_BOLD | self.theme)
-		self.win.addstr(1, self.width-3, "\u2a2f", curses.A_BOLD | self.theme)
+		self.win.addstr(1, self.width-3, CLOSE_BUTTON, curses.A_BOLD | self.theme)
 
 		self.win.addstr(3, 2, "Find:", self.theme)
 		if(self.replace): self.win.addstr(5, 2, "Replace with:", self.theme)

@@ -203,7 +203,7 @@ class FindReplaceDialog(Window):
 		self.win.addstr(2, 1, BORDER_HORIZONTAL * (self.width-2), self.theme)
 
 		self.win.addstr(1, 2, self.title, curses.A_BOLD | self.theme)
-		self.win.addstr(1, self.width-3, "\u2a2f", curses.A_BOLD | self.theme)
+		self.win.addstr(1, self.width-3, CLOSE_BUTTON, curses.A_BOLD | self.theme)
 
 		# active widget must be repainted last, to correctly position cursor
 		aw = self.get_active_widget()

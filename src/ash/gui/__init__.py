@@ -36,12 +36,18 @@ LINE_EDGE 				= "\u2514"
 LINE_SPLIT 				= "\u251c"
 LINE_HORIZONTAL 		= "\u2500"
 
+PROGRESS_BAR_THIN_LINE	= "\u2501"
+PROGRESS_BAR_THICK_LINE	= "\u2588"
+
 # <------------------ other icon constants ----------------------->
 CHECKED_BOX				= "\u2611"
 UNCHECKED_BOX			= "\u2610"
 UNSAVED_BULLET			= "\u2022"
 TICK_MARK				= "\u2713"
 RIGHT_TRIANGLE			= "\u25b6"
+CLOSE_BUTTON			= "\u2a2f"
+PLUS_ICON				= "\u229e"
+MINUS_ICON				= "\u229f"
 
 # <------------------- border constants -------------------->
 BORDER_HORIZONTAL		= "\u2500"

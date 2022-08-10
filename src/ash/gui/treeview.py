@@ -10,6 +10,7 @@ from ash.gui import *
 from ash.gui.listbox import *
 from ash.core.bufferManager import *
 from ash.core.gitRepo import *
+from ash.utils.utils import *
 
 from send2trash import send2trash
 
@@ -47,7 +48,7 @@ class TreeNode:
 	def __str__(self):
 		title = get_file_title(self.path)
 		if(self.is_dir()):
-			return ("\u229f" if self.expanded else "\u229e")  + "   " + title
+			return (MINUS_ICON if self.expanded else PLUS_ICON)  + "   " + title
 		else:
 			return title
 
@@ -74,7 +75,7 @@ class TreeNode:
 				else:
 					gs = ""
 
-			return (("\u229f" if self.expanded else "\u229e")  + "   " + gs + title, gsc, 4)
+			return ((MINUS_ICON if self.expanded else PLUS_ICON)  + "   " + gs + title, gsc, 4)
 		else:
 			return None		# this fn is not for files
 	
@@ -153,12 +154,33 @@ class TreeView(Widget):
 		self.items = list()		# contains tuple(text, node_obj, style, offset(int) )
 		self.tags = list()
 
-		disp_text, disp_style, offset = self.tree_root.get_dirname_with_gitstatus(self.git_repo)
-		self.items.append( (disp_text, self.tree_root, disp_style, offset) )
-		self.tags.append(self.tree_root.type + ":" + self.tree_root.path)
-		if(self.tree_root.expanded): 
-			self.form_sublist_items(self.tree_root, 0, " " * INDENT_SIZE)
+		if(self.search_text != None):
+			self.form_sublist_items_for_search(self.tree_root)
+		else:
+			disp_text, disp_style, offset = self.tree_root.get_dirname_with_gitstatus(self.git_repo)
+			self.items.append( (disp_text, self.tree_root, disp_style, offset) )
+			self.tags.append(self.tree_root.type + ":" + self.tree_root.path)
+			
+			if(self.tree_root.expanded): 
+				self.form_sublist_items(self.tree_root, 0, " " * INDENT_SIZE)
 	
+	def form_sublist_items_for_search(self, root_node):
+		if(root_node.children == None): return
+
+		for _, c in enumerate(root_node.children):
+			if(c.is_dir()):
+				self.form_sublist_items_for_search(c)
+			else:
+				file_title = get_relative_file_title2(self.project_dir, c.path)
+				if(self.search_text not in file_title): continue
+				
+				buffer = self.buffer_manager.get_buffer_by_filename(c.path)
+				save_status = buffer.save_status if buffer != None else True
+				gs, gsc = GitRepo.format_status_type(self.git_repo.get_file_status(c.path))
+				gs += ("   " if gs == "" else "  ")
+				self.items.append( (gs + (" " if save_status else UNSAVED_BULLET) + " " + file_title, c, gsc, 0) )
+				self.tags.append(c.type + ":" + c.path)			
+
 	# form the displayed child nodes recursively
 	def form_sublist_items(self, root_node, root_level, space):
 		if(root_node.children == None): return
@@ -168,8 +190,10 @@ class TreeView(Widget):
 			extra_space = marker
 			gs = "  "
 			gsc = None
+
 			if(not c.is_dir()): 
-				if(self.search_text != None and str(c).lower().find(self.search_text) < 0): continue
+				if(self.search_text != None and c.path.find(self.search_text) < 0): continue
+
 				if(not BufferManager.is_binary(c.path, self.parent.parent.app)):
 					buffer = self.buffer_manager.get_buffer_by_filename(c.path)
 					save_status = buffer.save_status if buffer != None else True
@@ -178,6 +202,7 @@ class TreeView(Widget):
 					extra_space += (LINE_HORIZONTAL * (INDENT_SIZE-3)) + "   "
 				gs, gsc = GitRepo.format_status_type(self.git_repo.get_file_status(c.path))
 				gs += "  "
+				
 				self.items.append( (space + extra_space + gs + str(c), c, gsc, len(space+extra_space)) )
 			else:
 				disp_text, gsc, offset = c.get_dirname_with_gitstatus(self.git_repo)
@@ -254,6 +279,7 @@ class TreeView(Widget):
 		self.focus()
 		
 		n = len(self.items)
+		if(self.sel_index < 0 or self.sel_index >= n): self.sel_index = 0
 		sel_item_obj = self.items[self.sel_index][1]
 
 		if(KeyBindings.is_key(ch, "LIST_MOVE_SELECTION_UP")):
@@ -327,7 +353,7 @@ class TreeView(Widget):
 
 	def search(self, search_text):
 		if(search_text != None):
-			search_text = search_text.strip().lower()
+			search_text = search_text.strip()
 			if(len(search_text) == 0): search_text = None
 		self.search_text = search_text
 		self.mini_refresh()

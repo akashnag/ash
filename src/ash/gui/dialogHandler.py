@@ -538,6 +538,7 @@ class DialogHandler:
 			return -1
 		elif(KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW") or KeyBindings.is_key(ch, "LIST_MAKE_SELECTION") or KeyBindings.is_key(ch, "FINALIZE_CHOICE")):
 			tag = lstFiles.get_sel_tag()		# format: {d/f}:path
+			log(f"treeView:dialogHandler: {tag}")
 			if(tag == None): return -1
 			file_type = tag[0].lower()
 			filename = tag[2:]

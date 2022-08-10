@@ -29,9 +29,9 @@ class GroupedListItem:
 
 	def __str__(self):
 		if(self.collapsed):
-			return "\u229e " + self.text
+			return PLUS_ICON + " " + self.text
 		else:
-			return "\u229f " + self.text
+			return MINUS_ICON + " " + self.text
 
 	def get_sublist(self):
 		if(self.collapsed):
@@ -119,7 +119,7 @@ class GroupedListBox(Widget):
 			if(i == self.sel_index):
 				if(self.is_in_focus):
 					style = self.focus_theme | (0 if self.supports_colors else curses.A_REVERSE)
-					if(self.should_highlight[i]): style |= curses.A_BOLD
+					#if(self.should_highlight[i]): style |= curses.A_BOLD
 					self.parent.addstr(self.y + i - self.list_start, self.x, text, style)
 				else:
 					style = self.sel_blur_theme | (0 if self.supports_colors else curses.A_BOLD)

@@ -26,6 +26,7 @@ from ash.formatting.colors import *
 from ash.formatting.formatting import *
 from ash.formatting.themeManager import *
 
+from ash.gui import *
 from ash.gui.topLevelWindow import *
 from ash.gui.msgBox import *
 from ash.gui.inputBox import *
@@ -210,7 +211,7 @@ class AshEditorApp:
 		if(progress == None):
 			self.main_window.repaint(f"{msg}")
 		else:
-			progress_line = "\u2501" * int((progress/100) * (self.screen_width - 9 - len(msg)))
+			progress_line = PROGRESS_BAR_THIN_LINE * int((progress/100) * (self.screen_width - 9 - len(msg)))
 			self.main_window.repaint(f"{int(progress)}% {progress_line} {msg}")	
 
 	# called on app_exit

@@ -24,7 +24,7 @@
   - [Uninstalling **ash**](#uninstalling-ash)
   - [Setting paths](#setting-paths)
 - [Prebuilt binaries](#prebuilt-binaries)
-- [Customization](#CUSTOMIZATION.md)
+- [Customization](CUSTOMIZATION.md)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [Screenshots](#screenshots)

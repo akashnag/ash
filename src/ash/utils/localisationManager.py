@@ -88,9 +88,9 @@ class LocalisationManager:
 			# top menu bar items
 			"File": "File",
 			"Edit": "Edit",
-			"View": "View",
-			"Tools": "Tools",
-			"Run": "Run",
+			"Search": "Search",
+			"View": "View",			
+			"Build": "Build",			
 			"Window": "Window",
 			"Help": "Help",
 
@@ -236,5 +236,14 @@ class LocalisationManager:
 			"Ready": "Ready",
 			"Loading...": "Loading...",
 			"PROJECT EXPLORER": "PROJECT EXPLORER",
-			"Cannot open binary file!": "Cannot open binary file!"
+			"Cannot open binary file!": "Cannot open binary file!",
+
+			"Close": "Close",
+			"Reload from disk": "Reload from disk",
+
+			"(No recent files)": "(No recent files)",
+			"(No recent projects)": "(No recent projects)",
+			"Compiler for this file-type not set!": "Compiler for this file-type not set!",
+			"Build command not set for this project!": "Build command not set for this project!",
+			"Execution command not set for this project!": "Execution command not set for this project!",
 		}

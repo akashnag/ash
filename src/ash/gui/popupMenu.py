@@ -63,14 +63,12 @@ class PopupMenu:
 		
 		# hide the menu bar
 		self.win = None
-		obj = self
-		while(obj != None):
-			try:
-				obj.parent.hide_menu_bar()
-				break
-			except:
-				obj = obj.parent_menu
-				
+		if(self.parent_menu == None):
+			app_ref = recurse_up_till_app(self.parent)
+			app_ref.main_window.hide_menu_bar()
+		else:
+			self.parent_menu.parent.hide_menu_bar()
+		
 		if(type(ret_code) != bool):
 			return False
 		else:

@@ -30,8 +30,8 @@
 				<p class="view"><a href="https://github.com/akashnag/ash">View the Project on GitHub <small>akashnag/ash</small></a></p>
         
 				<ul>
-					<li><a href="https://github.com/akashnag/ash/releases/download/ash-editor-0.1.0.dev13/ash-editor-0.1.0.dev13.tar.gz">Stable release<strong>Download</strong></a></li>
-					<li><a href="https://github.com/akashnag/ash/releases/download/ash-editor-0.1.0.dev13/ash-editor-0.1.0.dev13.tar.gz">Nightly build<strong>Download</strong></a></li>
+					<li><a href="https://github.com/akashnag/ash/releases/download/ash-editor-0.1.0.dev14/ash-editor-0.1.0.dev14.tar.gz">Stable release<strong>Download</strong></a></li>
+					<li><a href="https://github.com/akashnag/ash/releases/download/ash-editor-0.1.0.dev14/ash-editor-0.1.0.dev14.tar.gz">Nightly build<strong>Download</strong></a></li>
 					<li><a href="https://github.com/akashnag/ash/zipball/master">Download (ZIP)<strong>Source</strong></a></li>          
 				</ul>
 
@@ -46,7 +46,7 @@
 				<p>
 					<a href="https://github.com/akashnag/ash/blob/master/LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"/></a>
 					<img src="https://img.shields.io/github/downloads/akashnag/ash/total" alt="Downloads"/>
-					<img src="https://img.shields.io/github/size/akashnag/ash/dist/ash-editor-0.1.0.dev13.tar.gz" alt="Size"/>
+					<img src="https://img.shields.io/github/size/akashnag/ash/dist/ash-editor-0.1.0.dev14.tar.gz" alt="Size"/>
 					<img src="https://sloc.xyz/github/akashnag/ash" alt="SLOC"/>
 				</p>
 				<p><strong>ash</strong> is a simple and clean terminal-based text editor, that aims to be easy to use with modern key-bindings. It is capable of handling multiple files simultaneously and has a wide array of modern features. Here is a picture of <strong>ash</strong> editing this README file:</p>
@@ -65,7 +65,7 @@
 							<li><a href="#uninstalling-ash">Uninstalling ash</a></li>
 						</ul>
 					</li>
-					<li><a href="#colors">Colors</a></li>
+					<li><a href="CUSTOMIZATION.md">Customization</a></li>
 					<li><a href="#usage">Usage</a></li>
 					<li><a href="#contributing">Contributing</a></li>
 					<li><a href="#screenshots">Screenshots</a></li>
@@ -103,10 +103,12 @@
 					<li>Git integration (shows untracked, modified files, etc.)</li>
 					<li>Multiple Cursors</li>
 					<li>Command palette</li>
-					<li>Basic mouse support</li>
+					<li>Basic mouse support (click to select, right-click, drag to select text, double-click to select word, triple-click to select line, drag to move dialog-boxes, etc.)</li>
 					<li>Open terminal / execute shell commands</li>
 					<li>Limited IDE features like compile, build, execute...</li>
 					<li>Supports project/folder specific settings along with global settings</li>
+					<li>Multi-language support</li>
+					<li>Support for snippets</li>
 				</ul>
 
 				<h2><a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
@@ -161,9 +163,6 @@ $ sudo pip3 uninstall ash-editor
 				<h2><a id="prebuilt-binaries" class="anchor" href="#prebuilt-binaries" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prebuilt binaries</h2>
 				<p>Since <strong>ash</strong> is still under development, prebuilt binaries are not yet available. You can use PyInstaller or similar tools to build one for your system.</p>
 				
-				<h2><a id="colors" class="anchor" href="#colors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Colors</h2>
-				<p>If you are using the default Ubuntu terminal, to enable 256 make sure your <code>TERM</code> variable is set to <code>xterm-256color</code>. After <strong>ash</strong> runs for the first time, it creates a <code>default.json</code> file inside your ~/.config/ash-editor/themes directory. You can edit that file directly to change how <strong>ash</strong> looks on your system. The RGB triplets listed in that file range from 0--255. If you want to reset <strong>ash</strong> to its default colors, delete the default theme file using: <code>rm ~/.config/ash-editor/themes/default.json</code>.</p>
-
 				<h2><a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
 				<p>Once you have downloaded the <strong>ash</strong> source code, and set it up as detailed above, you are ready to use it.</p>
 				<p><strong>NOTES:</strong></p>

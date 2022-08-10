@@ -14,7 +14,7 @@ with urlopen(url="https://github.com/akashnag/ash/raw/master/PYPI_README.md") as
 
 setup(
 	name="ash-editor",
-    version="0.1.0-dev13",
+    version="0.1.0-dev14",
 	description='A modern terminal text-editor',
 	classifiers=[
 	'License :: OSI Approved :: MIT License',

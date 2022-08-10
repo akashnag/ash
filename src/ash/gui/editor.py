@@ -245,8 +245,11 @@ class Editor(Widget):
 			"is_regex": self.find_regex
 		}
 		
-		self.screen.render(self.curpos, self.tab_size, self.word_wrap, self.hard_wrap, sel_info, highlight_info, self.is_in_focus, self.slave_cursors, self.should_stylize)
-		self.screen.draw(self.y, self.x)
+		try:
+			self.screen.render(self.curpos, self.tab_size, self.word_wrap, self.hard_wrap, sel_info, highlight_info, self.is_in_focus, self.slave_cursors, self.should_stylize)
+			self.screen.draw(self.y, self.x)
+		except Exception as e:
+			log(f"ERROR in editor.py:repaint(): str(e)")
 		
 	# <-------------------------------------------------------------------------------------->
 

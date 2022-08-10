@@ -259,12 +259,15 @@ class TopLevelWindow(Window):
 		file_menu_items = [
 			("New File...", True, adh.invoke_file_new),
 			("Open File/Folder...", True, adh.invoke_file_open),
+			("Recent files...", True, adh.invoke_recent_files),
+			("Reload from disk", has_editor, self.reload_active_buffer_from_disk),
 			("---", True, None),
 			("Save", has_editor, self.save_active_editor),
 			("Save As...", has_editor, (adh.invoke_file_save_as, aed_buffer) if has_editor else None),
 			("Save & Close", has_editor, self.save_and_close_active_editor),
 			("Save all", True, adh.handle_save_all),
 			("---", True, None),
+			("Close", has_editor, self.close_active_editor),
 			("Close all", True, self.close_all_tabs),
 			("Exit", True, adh.handle_exit)
 		]
@@ -278,35 +281,35 @@ class TopLevelWindow(Window):
 			("Paste", has_editor, (aedkh.handle_paste if has_editor else None)),
 			("---", True, None),
 			("Select all", has_editor, (aedkh.handle_select_all if has_editor else None)),
-			("Select line", has_editor, (aedkh.handle_select_line if has_editor else None)),
+			("Select line", has_editor, (aedkh.handle_select_line if has_editor else None)),			
+			("---", True, None),
+			("Preferences...", has_editor, adh.invoke_set_preferences),
+			("Project Settings", self.app.app_mode == APP_MODE_PROJECT, adh.invoke_project_settings),
+			("Global Settings", True, adh.invoke_global_settings),
+			("---", True, None),
+			("Insert snippet...", has_editor, adh.invoke_insert_snippet)
+		]
+
+		search_menu_items = [
+			("Go to line...", has_editor, adh.invoke_go_to_line),
 			("---", True, None),
 			("Find...", has_editor, adh.invoke_find),
 			("Find & Replace...", has_editor, adh.invoke_find_and_replace),
 			("Find in all files...", True, adh.invoke_project_find),
-			("Find & Replace in all files...", True, adh.invoke_project_find_and_replace),
-			("---", True, None),
-			("Insert snippet...", has_editor, adh.invoke_insert_snippet),
+			("Find & Replace in all files...", True, adh.invoke_project_find_and_replace)
 		]
 
-		view_menu_items = [
-			("Go to line...", has_editor, adh.invoke_go_to_line),
-			("Command Palette...", True, adh.invoke_command_palette),
-			("Preferences...", has_editor, adh.invoke_set_preferences),
-			("Open tabs...", True, adh.invoke_show_active_tabs),
+		view_menu_items = [			
+			("Command Palette...", True, adh.invoke_command_palette),			
 			("---", True, None),
-			("Active Buffers/Files...", True, adh.invoke_list_active_files),
-			("Recent files...", True, adh.invoke_recent_files),
+			("Open tabs...", True, adh.invoke_show_active_tabs),			
+			("Active Buffers/Files...", True, adh.invoke_list_active_files),			
 			("Project Explorer...", self.app.app_mode == APP_MODE_PROJECT, adh.invoke_project_explorer),
 			("---", True, None),
 			((TICK_MARK + " Status bar" if self.show_statusbar else "Status bar"), True, self.toggle_statusbar_visibility)
 		]
 
-		tools_menu_items = [
-			("Project Settings", self.app.app_mode == APP_MODE_PROJECT, adh.invoke_project_settings),
-			("Global Settings", True, adh.invoke_global_settings)
-		]
-
-		run_menu_items = [
+		build_menu_items = [
 			("Compile file", has_editor, self.compile_current_file),
 			("Execute file", has_editor, self.execute_current_file),
 			("---", True, None),
@@ -339,25 +342,25 @@ class TopLevelWindow(Window):
 
 		mnuFile = PopupMenu(self, 1, 0, file_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
 		mnuEdit = PopupMenu(self, 1, 0, edit_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuSearch = PopupMenu(self, 1, 0, search_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
 		mnuView = PopupMenu(self, 1, 0, view_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
-		mnuTools = PopupMenu(self, 1, 0, tools_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
-		mnuRun = PopupMenu(self, 1, 0, run_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
+		mnuBuild = PopupMenu(self, 1, 0, build_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
 		mnuWindow = PopupMenu(self, 1, 0, window_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
 		mnuHelp = PopupMenu(self, 1, 0, help_menu_items, is_dropdown=True, parent_menu=self.menu_bar, supports_colors=self.app.supports_colors)
 
 		self.menu_bar.add_menu("File", mnuFile)
 		self.menu_bar.add_menu("Edit", mnuEdit)
+		self.menu_bar.add_menu("Search", mnuSearch)
 		self.menu_bar.add_menu("View", mnuView)
-		self.menu_bar.add_menu("Tools", mnuTools)
-		self.menu_bar.add_menu("Run", mnuRun)
+		self.menu_bar.add_menu("Build", mnuBuild)
 		self.menu_bar.add_menu("Window", mnuWindow)
 		self.menu_bar.add_menu("Help", mnuHelp)
 
 		mnuFile.update_position(1, self.menu_bar.get_menu_offset("File"))
 		mnuEdit.update_position(1, self.menu_bar.get_menu_offset("Edit"))
+		mnuSearch.update_position(1, self.menu_bar.get_menu_offset("Search"))
 		mnuView.update_position(1, self.menu_bar.get_menu_offset("View"))
-		mnuTools.update_position(1, self.menu_bar.get_menu_offset("Tools"))
-		mnuRun.update_position(1, self.menu_bar.get_menu_offset("Run"))
+		mnuBuild.update_position(1, self.menu_bar.get_menu_offset("Build"))
 		mnuWindow.update_position(1, self.menu_bar.get_menu_offset("Window"))
 		mnuHelp.update_position(1, self.menu_bar.get_menu_offset("Help"))
 
@@ -560,6 +563,9 @@ class TopLevelWindow(Window):
 		return self.window_manager.get_active_tab_index()
 
 	def reload_active_buffer_from_disk(self):
+		aed = self.get_active_editor()
+		if(not aed.buffer.has_file()): return
+		aed.curpos = CursorPosition(0,0)
 		self.window_manager.reload_active_buffer_from_disk()
 		self.repaint()
 

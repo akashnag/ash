@@ -172,7 +172,7 @@ class TreeView(Widget):
 				self.form_sublist_items_for_search(c)
 			else:
 				file_title = get_relative_file_title2(self.project_dir, c.path)
-				if(self.search_text not in file_title): continue
+				if(self.search_text.lower() not in file_title.lower()): continue
 				
 				buffer = self.buffer_manager.get_buffer_by_filename(c.path)
 				save_status = buffer.save_status if buffer != None else True
@@ -272,7 +272,6 @@ class TreeView(Widget):
 			else:				
 				self.parent.addstr(self.y + i - self.start, self.x, text[0:text_offset], self.theme)
 				self.parent.addstr(self.y + i - self.start, self.x + text_offset, text[text_offset:], style)
-
 		
 	# handle key presses
 	def perform_action(self, ch):

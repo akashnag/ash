@@ -55,6 +55,7 @@ class KeyMappingsManager:
 			"SHOW_ACTIVE_TABS"				: ["^T", "Ctrl+T", "Show the list of active tabs"],
 			"SHOW_PROJECT_EXPLORER"			: ["^E", "Ctrl+E", "Open Project Explorer"],
 			"SHOW_PREFERENCES"				: ["^P", "Ctrl+P", "Open the Preferences window"],
+			"RELOAD_FILE"					: ["", f"<Unassigned>", "Reloads the current file from disk"],
 			"SHOW_HELP"						: [fn(1), "F1", "Show help"],
 			"SHOW_RECENT_FILES"				: [fn(2), "F2", "Show the list of recent files"],
 			"SWITCH_TO_PREVIOUS_EDITOR"		: [fn(3), "F3", "Switch to the previous editor in the active tab"],

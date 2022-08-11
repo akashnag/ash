@@ -681,7 +681,7 @@ class DialogHandler:
 			lstEncodings.add_item(enc)
 		
 		# set default encoding to UTF-8
-		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index("utf-8")
+		lstEncodings.sel_index = SUPPORTED_ENCODINGS.index(self.app.settings_manager.get_setting("default_encoding"))
 
 		self.app.dlgFileOpen.add_widget("lblFileName", lblFileName)
 		self.app.dlgFileOpen.add_widget("txtFileName", txtFileName)

@@ -79,7 +79,7 @@ def predict_file_encoding(filename, n = 20):
 	n = min([fs, n])
 	with open(filename, "rb") as f:
 		rawdata = b"".join([f.readline() for _ in range(n)])
-	enc = chardet.detect(rawdata)["encoding"]
+	enc = chardet.detect(rawdata)["encoding"].lower()
 	return ("utf-8" if enc == "ascii" else enc)		# assume UTF-8
 
 # returns the size of a filename formatted in units

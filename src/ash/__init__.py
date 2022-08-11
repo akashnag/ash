@@ -23,7 +23,16 @@ APP_WEBSITE_URL		= "https://akashnag.github.io/ash"
 APP_GITHUB_URL		= "https://github.com/akashnag/ash"
 
 # list of supported encodings
-SUPPORTED_ENCODINGS = [ "utf-8", "ascii", "utf-7", "utf-16", "utf-32", "latin-1" ]
+SUPPORTED_ENCODINGS = sorted([ 
+                            "utf-8", "utf-7", "utf-16", "utf-32", 
+                            "latin-1", "tis-620"
+                            "big5", "gb2312", "gb18030", "euc-tw", "hz-gb-2312", 
+                            "iso-2022-cn", "euc-jp", "shift_jis", "iso-2022-jp",
+                            "euc-kr", "iso-2022-kr", "koi8-r", "maccyrillic", "ibm855",
+                            "ibm866", "iso-8859-5", "windows-1251", "iso-8859-2",
+                            "windows-1250", "iso-8859-5", "iso-8859-1", "windows-1252",
+                            "iso-8859-7", "iso-8859-8", "windows-1253", "windows-1255"                            
+                        ])
 
 APP_MODE_FILE		= 1		# if ash is invoked with zero or more file names
 APP_MODE_PROJECT	= 2		# if ash is invoked with a single directory name

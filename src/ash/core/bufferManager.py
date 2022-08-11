@@ -201,6 +201,7 @@ class Buffer:
 	# write out a copy
 	def write_a_copy(self, filename, encoding = None):
 		if(encoding == None): encoding = self.manager.app.settings_manager.get_setting("default_encoding")
+		log(f"Writing file with encoding={encoding}")
 		textFile = codecs.open(filename, "w", encoding)
 		for line in self.lines:
 			textFile.write(line + "\n")
@@ -228,7 +229,7 @@ class Buffer:
 			self.manager.app.session_storage.add_opened_file_to_record(self.filename)
 
 		self.fire_special_file_on_save_triggers()
-		self.git_diff_lines = self.get_added_lines_from_git_diff(self.filename)
+		self.git_diff_lines = get_added_lines_from_git_diff(self.filename)
 		return self.manager.merge_if_required(self.id)
 
 	# checks to see if current file is any one of special files, if so trigger refresh

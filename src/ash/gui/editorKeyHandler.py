@@ -31,7 +31,7 @@ class EditorKeyHandler:
 		elif(KeyBindings.is_key(ch, "SAVE")):
 			try:
 				self.handle_save()				
-			except:
+			except Exception as e:
 				self.ed.parent.win.app.show_error("An error occurred while saving the file!")
 		elif(KeyBindings.is_key(ch, "SAVE_AS")):
 			try:
@@ -64,6 +64,8 @@ class EditorKeyHandler:
 			self.handle_redo()
 		elif(KeyBindings.is_key(ch, "SHOW_PREFERENCES")):
 			self.ed.parent.win.app.dialog_handler.invoke_set_preferences()
+		elif(KeyBindings.is_key(ch, "RELOAD_FILE")):
+			self.ed.parent.win.app.main_window.reload_active_buffer_from_disk()
 		elif(KeyBindings.is_key(ch, "DECODE_UNICODE")):
 			self.ed.buffer.decode_unicode()
 			return True

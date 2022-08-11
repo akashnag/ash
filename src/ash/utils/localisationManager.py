@@ -246,4 +246,14 @@ class LocalisationManager:
 			"Compiler for this file-type not set!": "Compiler for this file-type not set!",
 			"Build command not set for this project!": "Build command not set for this project!",
 			"Execution command not set for this project!": "Execution command not set for this project!",
+
+			"RELOAD FILE": "RELOAD FILE", 
+			"Are you sure you want to reload this file?": "Are you sure you want to reload this file?",
+			"WARNING: All unsaved changes will be lost.": "WARNING: All unsaved changes will be lost.",
+			"An error occurred while saving the file!": "An error occurred while saving the file!",
+
+			"(O)K": "(O)K",
+			"(Y)ES": "(Y)ES",
+			"(N)O": "(N)O",
+			"(C)ANCEL": "(C)ANCEL",
 		}

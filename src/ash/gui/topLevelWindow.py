@@ -566,9 +566,11 @@ class TopLevelWindow(Window):
 	def reload_active_buffer_from_disk(self):
 		aed = self.get_active_editor()
 		if(not aed.buffer.has_file()): return
-		aed.curpos = CursorPosition(0,0)
-		self.window_manager.reload_active_buffer_from_disk()
-		self.repaint()
+
+		if(self.app.ask_question("RELOAD FILE", "Are you sure you want to reload this file?\nWARNING: All unsaved changes will be lost.")):
+			aed.curpos = CursorPosition(0,0)
+			self.window_manager.reload_active_buffer_from_disk()
+			self.repaint()
 
 	def save_and_close_active_editor(self):
 		aed = self.window_manager.get_active_editor()

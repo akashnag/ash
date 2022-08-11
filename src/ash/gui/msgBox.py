@@ -27,21 +27,64 @@ class MessageBox(Window):
 
 		super().__init__(y, x, msg_lines + 5, msg_len + 4, title)
 		self.type = type
+		self.app = parent
 		self.parent = parent.stdscr
 		self.border_theme = gc("messagebox-border")
 		self.theme = gc("messagebox-background")
-		self.message = message
 		self.title = title
 		self.win = None
 
 		if(self.type == MSGBOX_TYPE_OK):
-			self.message += "\n" + "(O)K".center(self.width-3)
+			self.button_text = self.app.localisation_manager.translate("(O)K").center(self.width-3)			
 		elif(self.type == MSGBOX_TYPE_OK_CANCEL):
-			self.message += "\n" + "(O)K | (C)ANCEL".center(self.width-3)
+			self.button_text = (self.app.localisation_manager.translate("(O)K") + " | " + self.app.localisation_manager.translate("(C)ANCEL")).center(self.width-3)
 		elif(self.type == MSGBOX_TYPE_YES_NO):
-			self.message += "\n" + "(Y)ES | (N)O".center(self.width-3)
+			self.button_text = (self.app.localisation_manager.translate("(Y)ES") + " | " + self.app.localisation_manager.translate("(N)O")).center(self.width-3)
 		elif(self.type == MSGBOX_TYPE_YES_NO_CANCEL):
-			self.message += "\n" + "(Y)ES | (N)O | (C)ANCEL".center(self.width-3)
+			self.button_text = (self.app.localisation_manager.translate("(Y)ES") + " | " + self.app.localisation_manager.translate("(N)O") + " | " + self.app.localisation_manager.translate("(C)ANCEL")).center(self.width-3)
+
+		self.button_codes = self.identify_button_codes(self.type, self.button_text)
+		self.message = message + "\n" + self.button_text
+
+	# identifies the hotkey to use for the button
+	def identify_button_codes(self, btype, btext):
+		mapper = {
+			"YES": "y",
+			"NO": "n",
+			"OK": "o",
+			"CANCEL": "c"
+		}
+
+		buttons = btext.lower().split(" | ")
+		if(btype == MSGBOX_TYPE_OK):
+			codes = [ "OK" ]
+		elif(btype == MSGBOX_TYPE_OK_CANCEL):
+			codes = [ "OK", "CANCEL" ]
+		elif(btype == MSGBOX_TYPE_YES_NO):
+			codes = [ "YES", "NO" ]
+		elif(btype == MSGBOX_TYPE_YES_NO_CANCEL):
+			codes = [ "YES", "NO", "CANCEL" ]
+
+		used_codes = ""
+		for i, b in enumerate(buttons):
+			b = b.strip()
+			sel_code = None
+			if((b.find("(") > -1) and (b.rfind(")") > -1) and (b.rfind(")") - b.find("(") >= 2)):
+				temp = b[b.find("(")+1: b.rfind(")")][0]
+				if(temp not in used_codes): sel_code = temp
+
+			if(sel_code == None):
+				for c in b:
+					if(c not in used_codes):
+						sel_code = c
+						break
+			
+			# if sel_code is still None at this point, use the default en-US hot keys
+			if(sel_code != None): 
+				used_codes += sel_code
+				mapper[codes[i]] = sel_code
+		
+		return mapper
 
 	# show the window and start the event-loop
 	def show(self):
@@ -92,13 +135,13 @@ class MessageBox(Window):
 	# check the response
 	def check_response(self, ch):
 		s = str(chr(ch)).lower()
-		if(s == "y" and (self.type == MSGBOX_TYPE_YES_NO or self.type == MSGBOX_TYPE_YES_NO_CANCEL)):
+		if(s == self.button_codes["YES"] and (self.type == MSGBOX_TYPE_YES_NO or self.type == MSGBOX_TYPE_YES_NO_CANCEL)):
 			return MSGBOX_YES
-		elif(s == "n" and (self.type == MSGBOX_TYPE_YES_NO or self.type == MSGBOX_TYPE_YES_NO_CANCEL)):
+		elif(s == self.button_codes["NO"] and (self.type == MSGBOX_TYPE_YES_NO or self.type == MSGBOX_TYPE_YES_NO_CANCEL)):
 			return MSGBOX_NO
-		elif((s == "o" or KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")) and (self.type == MSGBOX_TYPE_OK or self.type == MSGBOX_TYPE_OK_CANCEL)):
+		elif((s == self.button_codes["OK"] or KeyBindings.is_key(ch, "SAVE_AND_CLOSE_WINDOW")) and (self.type == MSGBOX_TYPE_OK or self.type == MSGBOX_TYPE_OK_CANCEL)):
 			return MSGBOX_OK
-		elif(s == "c" and (self.type == MSGBOX_TYPE_YES_NO_CANCEL or self.type == MSGBOX_TYPE_OK_CANCEL)):
+		elif(s == self.button_codes["CANCEL"] and (self.type == MSGBOX_TYPE_YES_NO_CANCEL or self.type == MSGBOX_TYPE_OK_CANCEL)):
 			return MSGBOX_CANCEL
 		else:
 			return -1

@@ -103,6 +103,7 @@ class TopLevelWindow(Window):
 		self.repaint(welcome_msg)
 		
 		while(self.win != None):
+			curses.napms(ash.SLEEP_MS)
 			ch = self.win.getch()
 			if(ch == -1): continue
 			

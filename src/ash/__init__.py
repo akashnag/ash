@@ -35,6 +35,9 @@ SETTINGS			= None
 MIN_WIDTH			= 102
 MIN_HEIGHT			= 22
 
+# no. of milliseconds to sleep before checking for input (decreasing it will increase CPU usage; increasing it will reduce responsiveness)
+SLEEP_MS            = 10
+
 # minimum dimensions for any particular editor
 MIN_EDITOR_WIDTH	= 15
 MIN_EDITOR_HEIGHT	= 5

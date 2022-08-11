@@ -48,6 +48,7 @@ class ProjectFindReplaceDialog(Window):
 
 		# start of the event loop	
 		while(self.win != None):
+			curses.napms(ash.SLEEP_MS)
 			ch = self.win.getch()
 			if(ch == -1): continue
 			

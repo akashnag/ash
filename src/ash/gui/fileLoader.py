@@ -38,6 +38,7 @@ class FileLoader(Window):
 		lines = list()
 
 		while(True):
+			curses.napms(ash.SLEEP_MS)
 			ch = self.win.getch()			
 			
 			if(ch > -1 and KeyBindings.is_key(ch, "CANCEL_OPERATION")):

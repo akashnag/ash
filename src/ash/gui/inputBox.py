@@ -37,6 +37,7 @@ class InputBox(Window):
 
 		# start of the event loop	
 		while(True):
+			curses.napms(ash.SLEEP_MS)
 			ch = self.win.getch()
 			if(ch > -1): 
 				response = self.check_response(ch)

@@ -201,7 +201,6 @@ class Buffer:
 	# write out a copy
 	def write_a_copy(self, filename, encoding = None):
 		if(encoding == None): encoding = self.manager.app.settings_manager.get_setting("default_encoding")
-		log(f"Writing file with encoding={encoding}")
 		textFile = codecs.open(filename, "w", encoding)
 		for line in self.lines:
 			textFile.write(line + "\n")

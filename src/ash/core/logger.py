@@ -1,7 +1,8 @@
-# ---------------------------------------------------------------------------------------------
-#  Copyright (c) Akash Nag. All rights reserved.
-#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
-# ---------------------------------------------------------------------------------------------
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# /src/ash/core/logger.py
+#
+# Copyright (C) 2022-2022  Akash Nag
 
 # This module handles all logging functions for diagnostic purposes
 

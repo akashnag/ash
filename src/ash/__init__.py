@@ -1,7 +1,8 @@
-# ---------------------------------------------------------------------------------------------
-#  Copyright (c) Akash Nag. All rights reserved.
-#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
-# ---------------------------------------------------------------------------------------------
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# /src/ash/__init__.py
+#
+# Copyright (C) 2022-2022  Akash Nag
 
 # This is imported by all modules, sets global parameters
 
@@ -18,7 +19,7 @@ __build__			= "14"
 __release_date__	= "Aug 10, 2022"
 
 APP_COPYRIGHT_TEXT	= "© Copyright 2020-2022, Akash Nag. All rights reserved."
-APP_LICENSE_TEXT	= "Licensed under the MIT License."
+APP_LICENSE_TEXT	= "Licensed under the GPL-2.0 License."
 APP_WEBSITE_URL		= "https://akashnag.github.io/ash"
 APP_GITHUB_URL		= "https://github.com/akashnag/ash"
 

@@ -1,3 +1,11 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+/*!
+ * /javascripts/scale.fix.js
+ *
+ * Copyright (C) 2022-2022  Akash Nag
+ *
+ */
+
 var metas = document.getElementsByTagName('meta');
 var i;
 if (navigator.userAgent.match(/iPhone/i)) {

@@ -1,7 +1,8 @@
-# ---------------------------------------------------------------------------------------------
-#  Copyright (c) Akash Nag. All rights reserved.
-#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
-# ---------------------------------------------------------------------------------------------
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# /src/ash/gui/windowManager.py
+#
+# Copyright (C) 2022-2022  Akash Nag
 
 # This module implements:
 # The WindowManager class which handles multiple tabs and editor configuration

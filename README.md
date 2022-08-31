@@ -1,11 +1,13 @@
+<!-- SPDX-License-Identifier: GPL-2.0-only -->
 <!--
-	Copyright (c) Akash Nag. All rights reserved.
-	Licensed under the MIT License. See LICENSE.md in the project root for license information.
+/README.md
+
+Copyright (C) 2022-2022  Akash Nag
 -->
 
 ![ash logo](./assets/banner.png)
 
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/akashnag/ash/blob/master/LICENSE.md) ![Downloads](https://img.shields.io/github/downloads/akashnag/ash/total) ![Size](https://img.shields.io/github/size/akashnag/ash/dist/ash-editor-0.1.0.dev14.tar.gz) ![SLOC](https://sloc.xyz/github/akashnag/ash)
+[![GPL-2.0 License](https://img.shields.io/badge/license-GPL_2.0-blue.svg)](https://github.com/akashnag/ash/blob/master/LICENSE.txt) ![Downloads](https://img.shields.io/github/downloads/akashnag/ash/total) ![Size](https://img.shields.io/github/size/akashnag/ash/dist/ash-editor-0.1.0.dev14.tar.gz) ![SLOC](https://sloc.xyz/github/akashnag/ash)
 
 **ash** is a simple and clean terminal-based text editor, that aims to be easy to use with modern key-bindings. It is capable of handling multiple files simultaneously and has a wide array of modern features. Here is a picture of **ash** editing this README file:
 
@@ -243,4 +245,4 @@ If you are not into software development, you can still contribute financially. 
 
 Copyright &copy; Akash Nag. All rights reserved.
 
-Licensed under the [MIT](LICENSE.md) license.
+Licensed under the [GPL-2.0](LICENSE.txt) license.

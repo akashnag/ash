@@ -1,7 +1,8 @@
-# ---------------------------------------------------------------------------------------------
-#  Copyright (c) Akash Nag. All rights reserved.
-#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
-# ---------------------------------------------------------------------------------------------
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# /src/ash/core/internalClipboard.py
+#
+# Copyright (C) 2022-2022  Akash Nag
 
 # This module implements the internal clipboard if pyperclip/xclip is unavailable
 

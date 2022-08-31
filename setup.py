@@ -1,7 +1,9 @@
-# ---------------------------------------------------------------------------------------------
-#  Copyright (c) Akash Nag. All rights reserved.
-#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
-# ---------------------------------------------------------------------------------------------
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# /setup.py
+#
+# Copyright (C) 2022-2022  Akash Nag
+#
 
 from setuptools import setup, find_packages
 
@@ -17,7 +19,7 @@ setup(
     version="0.1.0-dev14",
 	description='A modern terminal text-editor',
 	classifiers=[
-	'License :: OSI Approved :: MIT License',
+	'License :: OSI Approved :: GPL-2.0 License',
 	'Programming Language :: Python :: 3.8',
 	'Topic :: Text Editors',
 	],
@@ -27,7 +29,7 @@ setup(
 	url='https://akashnag.github.io/ash',
 	author='Akash Nag',
 	author_email='nag.akash.cs@gmail.com',
-	license='MIT',
+	license='GPL-2.0',
 	install_requires=[
 		'chardet>=3.0.4',
 		'Pygments>=2.7.4',
@@ -41,7 +43,7 @@ setup(
 	package_data={'ash.core':['screen.pyx']},
 	include_package_data=True,
     entry_points = {'console_scripts': ['ash = ash.ash_main:run']},
-    data_files=[('docs', ['README.md', 'KEYBINDINGS.md', 'LICENSE.md', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md']),
+    data_files=[('docs', ['README.md', 'KEYBINDINGS.md', 'LICENSE.txt', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md']),
     			('assets', [
 								'assets/banner.png', 'assets/ash-default.png', 'assets/bmc-button.png',
 								'assets/ss1.png', 'assets/ss2.png', 'assets/ss3.png', 'assets/ss4.png', 

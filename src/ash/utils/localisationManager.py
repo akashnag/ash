@@ -1,7 +1,8 @@
-# ---------------------------------------------------------------------------------------------
-#  Copyright (c) Akash Nag. All rights reserved.
-#  Licensed under the MIT License. See LICENSE.md in the project root for license information.
-# ---------------------------------------------------------------------------------------------
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# /src/ash/utils/localisationManager.py
+#
+# Copyright (C) 2022-2022  Akash Nag
 
 # This module handles all language settings for Ash
 
@@ -178,7 +179,7 @@ class LocalisationManager:
 			"Version": "Version",
 			"Released": "Released",
 			"© Copyright 2020-2022, Akash Nag. All rights reserved.": "© Copyright 2020-2022, Akash Nag. All rights reserved.",
-			"Licensed under the MIT License.": "Licensed under the MIT License.",
+			"Licensed under the GPL-2.0 License.": "Licensed under the GPL-2.0 License.",
 			"For more information, visit:": "For more information, visit:",
 			"Website": "Website",
 			"GitHub": "GitHub",

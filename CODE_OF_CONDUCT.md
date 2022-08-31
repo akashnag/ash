@@ -1,6 +1,8 @@
+<!-- SPDX-License-Identifier: GPL-2.0-only -->
 <!--
-	Copyright (c) Akash Nag. All rights reserved.
-	Licensed under the MIT License. See LICENSE.md in the project root for license information.
+/CODE_OF_CONDUCT.md
+
+Copyright (C) 2022-2022  Akash Nag
 -->
 
 # Contributor Covenant Code of Conduct

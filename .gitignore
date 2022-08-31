@@ -13,6 +13,7 @@ dist/*
 ash_editor.egg-info
 *.pyc
 *.txt
+!/LICENSE.txt
 !/requirements.txt
 !/bin/ash
 !/dist/*.tar.gz
